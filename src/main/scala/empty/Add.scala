@@ -7,17 +7,16 @@
 
 package empty
 
-import chisel3._
-import chisel3.util._
+import Chisel._
 
 class Add extends Module {
   val io = IO(new Bundle {
-    val a = Input(UInt(8.W))
-    val b = Input(UInt(8.W))
-    val c = Output(UInt(8.W))
+    val a = Input(UInt(width = 8))
+    val b = Input(UInt(width = 8))
+    val c = Output(UInt(width = 8))
   })
 
-  val reg = RegInit(0.U(8.W))
+  val reg = RegInit(UInt(0.U, width = 8))
   reg := io.a + io.b
 
   io.c := reg
@@ -25,5 +24,7 @@ class Add extends Module {
 
 object AddMain extends App {
   println("Generating the adder hardware")
-  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
+  chiselMain(Array(), () => Module(new Add()))
+
+//  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
 }
