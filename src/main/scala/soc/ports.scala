@@ -23,6 +23,6 @@ class MultiPort(nrPorts: Int, addrWidth: Int) extends Bundle {
   val ports = Vec(nrPorts, new Port(addrWidth))
 }
 
-abstract class MultiCoreDevice(nrPorts: Int, addrWidth: Int) extends Module {
-  val io = IO(new MultiPort(nrPorts, addrWidth))
+abstract class MultiCoreDevice(nrCores: Int, addrWidth: Int) extends Module {
+  val io = IO(new MultiPort(nrCores, addrWidth))
 }
