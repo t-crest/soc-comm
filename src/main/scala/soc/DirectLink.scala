@@ -23,8 +23,8 @@ class SimpleBuffer extends Module {
     val out = new Interface().flip()
   })
 
-  val full = RegInit(Bool(false.B))
-  val data = RegInit(UInt(width = 32))
+  val full = RegInit(false.B)
+  val data = RegInit(UInt(0, width = 32))
 
   io.in.ready := true.B
   io.out.valid := false.B
@@ -52,7 +52,7 @@ class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, log2Ceil(4*2)) {
 }
 
 object DirectLink extends App {
-  chiselMain(Array(), () => Module(new DirectLink(4)))
 
-  //  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
+  //chiselMain(Array(), () => Module(new DirectLink(4)))
+  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new DirectLink(4))
 }

@@ -16,7 +16,7 @@ class Add extends Module {
     val c = Output(UInt(width = 8))
   })
 
-  val reg = RegInit(UInt(0.U, width = 8))
+  val reg = RegInit(UInt(0, width = 8))
   reg := io.a + io.b
 
   io.c := reg
@@ -24,7 +24,6 @@ class Add extends Module {
 
 object AddMain extends App {
   println("Generating the adder hardware")
-  chiselMain(Array(), () => Module(new Add()))
-
-//  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
+  //chiselMain(Array(), () => Module(new Add()))
+  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
 }

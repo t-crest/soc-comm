@@ -1,5 +1,7 @@
 SBT = sbt
 
+all: doit test
+
 # Generate Verilog code
 doit:
 	$(SBT) "runMain empty.AddMain"
