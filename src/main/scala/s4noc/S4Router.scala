@@ -61,6 +61,9 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   // TDM schedule starts one cycles later for read data delay
   val regDelay = RegNext(regCounter, init=UInt(0))
   val currentSched = sched(regDelay)
+  // TODO: test if this movement of the register past the schedule table works, better here a register
+  // val currentSched = RegNext(sched(regCounter))
+
 
   // We assume that on reset the valid signal is false.
   // Better have it reset.

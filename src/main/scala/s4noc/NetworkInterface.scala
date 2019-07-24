@@ -8,23 +8,30 @@ package s4noc
 
 import Chisel._
 
-class CpuPort() extends Bundle {
+class CpuPort(width: Int) extends Bundle {
   val addr = UInt(width = 8).asInput
-  val rdData = UInt(width = 32).asOutput
-  val wrData = UInt(width = 32).asInput
+  val rdData = UInt(width = width).asOutput
+  val wrData = UInt(width = width).asInput
   val rd = Bool().asInput
   val wr = Bool().asInput
 }
 
 // This should be a generic for the FIFO
-class Entry extends Bundle {
-  val data = UInt(width = 32).asOutput
+class Entry(width: Int) extends Bundle {
+  val data = UInt(width = width).asOutput
   val time = UInt(width = 8).asInput
+
+  override def cloneType() = {
+    val res = new Entry(width)
+    res.asInstanceOf[this.type]
+  }
 }
 
-class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T) extends Module {
+
+
+class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, width: Int) extends Module {
   val io = new Bundle {
-    val cpuPort = new CpuPort()
+    val cpuPort = new CpuPort(width)
     val local = new Channel(dt)
   }
 
@@ -41,13 +48,13 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T) ext
   val regDelay = RegNext(regCnt, init = UInt(0))
 
 
-  val entryReg = Reg(new Entry())
+  val entryReg = Reg(new Entry(width))
   when(io.cpuPort.wr) {
     entryReg.data := io.cpuPort.wrData
     entryReg.time := io.cpuPort.addr
   }
 
-  val inFifo = Module(new BubbleFifo(rxFifo))
+  val inFifo = Module(new BubbleFifo(rxFifo, width))
   inFifo.io.enq.write := Bool(false)
   inFifo.io.enq.din.data := io.cpuPort.wrData
   inFifo.io.enq.din.time := io.cpuPort.addr
@@ -66,7 +73,7 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T) ext
 
   // for now same clock cycle
 
-  val outFifo = Module(new BubbleFifo(txFifo))
+  val outFifo = Module(new BubbleFifo(txFifo, width))
   outFifo.io.enq.write := Bool(false)
   outFifo.io.enq.din.data := io.local.in.data
   outFifo.io.enq.din.time := regDelay

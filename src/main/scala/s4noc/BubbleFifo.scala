@@ -26,30 +26,30 @@ import Chisel._
  *
  */
 
-class WriterIO() extends Bundle {
+class WriterIO(width: Int) extends Bundle {
   val write = Bool(INPUT)
   val full = Bool(OUTPUT)
-  val din = new Entry().asInput()
+  val din = new Entry(width).asInput()
 }
 
-class ReaderIO() extends Bundle {
+class ReaderIO(width: Int) extends Bundle {
   val read = Bool(INPUT)
   val empty = Bool(OUTPUT)
-  val dout = new Entry().asOutput()
+  val dout = new Entry(width).asOutput()
 }
 
 /**
   * A single register (=stage) to build the FIFO.
   */
-class FifoRegister() extends Module {
+class FifoRegister(width: Int) extends Module {
   val io = new Bundle {
-    val enq = new WriterIO()
-    val deq = new ReaderIO()
+    val enq = new WriterIO(width)
+    val deq = new ReaderIO(width)
   }
 
   val empty :: full :: Nil = Enum(UInt(), 2)
   val stateReg = Reg(init = empty)
-  val dataReg = Reg(new Entry())
+  val dataReg = Reg(new Entry(width))
 
   when(stateReg === empty) {
     when(io.enq.write) {
@@ -71,14 +71,14 @@ class FifoRegister() extends Module {
 /**
   * This is a bubble FIFO.
   */
-class BubbleFifo(depth: Int) extends Module {
+class BubbleFifo(depth: Int, width: Int) extends Module {
   val io = new Bundle {
-    val enq = new WriterIO()
-    val deq = new ReaderIO()
+    val enq = new WriterIO(width)
+    val deq = new ReaderIO(width)
   }
 
-  val stage = Module(new FifoRegister())
-  val buffers = Array.fill(depth) { Module(new FifoRegister()) }
+  val stage = Module(new FifoRegister(width))
+  val buffers = Array.fill(depth) { Module(new FifoRegister(width)) }
   for (i <- 0 until depth - 1) {
     buffers(i + 1).io.enq.din := buffers(i).io.deq.dout
     buffers(i + 1).io.enq.write := ~buffers(i).io.deq.empty
@@ -170,7 +170,7 @@ object FifoTester {
   def main(args: Array[String]): Unit = {
     chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
       "--compile", "--vcd", "--targetDir", "generated"),
-      () => Module(new BubbleFifo(4))) {
+      () => Module(new BubbleFifo(4, width = 32))) {
       f => new FifoTester(f)
     }
   }

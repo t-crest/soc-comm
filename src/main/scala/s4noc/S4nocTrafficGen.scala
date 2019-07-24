@@ -8,25 +8,25 @@ package s4noc
 
 import Chisel._
 
-class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int) extends Module {
+class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module {
 
-  val s4noc = Module(new S4noc(nrNodes, txFifo, rxFifo))
+  val s4noc = Module(new S4noc(nrNodes, txFifo, rxFifo, width))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
-    val data = Output(UInt(width = 32))
+    val data = Output(UInt(width = width))
   })
 
-  val outReg = Vec(nrNodes, Reg(init = UInt(0, width = 32)))
+  val outReg = Vec(nrNodes, Reg(init = UInt(0, width = width)))
 
 
   for (i <- 0 until nrNodes) {
 
-    val cntReg = RegInit(UInt(i*7+5, width = 40))
+    val cntReg = RegInit(UInt(i*7+5, width = width+8))
     cntReg := cntReg + 1.U
 
     // addresses are in words
     s4noc.io.cpuPorts(i).addr := cntReg(7, 2)
-    s4noc.io.cpuPorts(i).wrData := cntReg(39, 8)
+    s4noc.io.cpuPorts(i).wrData := cntReg(width+7, 8)
     s4noc.io.cpuPorts(i).wr := cntReg(0)
     s4noc.io.cpuPorts(i).rd := cntReg(1)
     // Have some registers before or reduce
@@ -43,7 +43,7 @@ class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int) extends Module {
 }
 
 object S4nocTrafficGen extends App {
-    println("Generating the S4NoC hardware")
+    println("Generating the S4NoC hardware with a traffic generator")
     chiselMain(Array("--backend", "v", "--targetDir", "generated"),
-      () => Module(new S4nocTrafficGen(args(0).toInt, 4, 4)))
+      () => Module(new S4nocTrafficGen(args(0).toInt, 8, 8, 32)))
 }
