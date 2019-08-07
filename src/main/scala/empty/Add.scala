@@ -24,6 +24,6 @@ class Add extends Module {
 
 object AddMain extends App {
   println("Generating the adder hardware")
-  chiselMain(Array(), () => Module(new Add()))
-  //chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
+  //chiselMain(Array(), () => Module(new Add()))
+  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new Add())
 }

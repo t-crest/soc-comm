@@ -8,12 +8,22 @@ package s4noc
 
 import Chisel._
 
-class CpuPort(width: Int) extends Bundle {
+class CpuPort(val w: Int) extends Bundle {
   val addr = UInt(width = 8).asInput
-  val rdData = UInt(width = width).asOutput
-  val wrData = UInt(width = width).asInput
+  val rdData = UInt(width = w).asOutput
+  val wrData = UInt(width = w).asInput
   val rd = Bool().asInput
   val wr = Bool().asInput
+
+  // The following was not needed in Chisel 2, but now in Chisel 3
+  // the issue is the width parameter, what is the right Chisel 3 idiom for this?
+    /*
+  override def cloneType() = {
+    val res = new CpuPort(width)
+    res.asInstanceOf[this.type]
+  }
+
+     */
 }
 
 // This should be a generic for the FIFO

@@ -6,22 +6,24 @@
 
 package s4noc
 
-import Chisel._
+import chisel3._
 import Const._
 
 /**
  * Create and connect a n x n NoC.
  */
 class Network[T <: Data](n: Int, dt: T) extends Module {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val local = Vec(n * n, new Channel(dt))
-  }
+  })
 
   val schedule = Schedule.getSchedule(n)._1
 
   val net = new Array[S4Router[T]](n * n)
   for (i <- 0 until n * n) {
+    println("Hello " + dt.toString)
     net(i) = Module(new S4Router(schedule, dt))
+    println("generate")
     io.local(i).out := net(i).io.ports(LOCAL).out
     net(i).io.ports(LOCAL).in := io.local(i).in
   }

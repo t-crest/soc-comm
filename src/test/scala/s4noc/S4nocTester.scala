@@ -7,9 +7,12 @@
 
 package s4noc
 
-import Chisel._
+import chisel3._
+import chisel3.iotesters.PeekPokeTester
+// import Chisel._
 
-class S4nocTester (dut: S4noc) extends Tester(dut) {
+// class S4nocTester (dut: S4noc) extends Tester(dut) {
+  class S4nocTester (dut: S4noc) extends PeekPokeTester(dut) {
 
   def read(): Int = {
     poke(dut.io.cpuPorts(3).rd, 1)
@@ -47,10 +50,14 @@ class S4nocTester (dut: S4noc) extends Tester(dut) {
 
 object S4nocTester {
   def main(args: Array[String]): Unit = {
+    iotesters.Driver.execute(Array[String](), () => new S4noc(4, 2, 2, 32)) { c => new S4nocTester(c) }
+    /*
     chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
       "--compile", "--vcd", "--targetDir", "generated"),
       () => Module(new S4noc(4, 2, 2, 32))) {
       c => new S4nocTester(c)
     }
+
+     */
   }
 }

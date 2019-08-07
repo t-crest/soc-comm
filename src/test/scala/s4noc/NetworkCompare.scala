@@ -8,7 +8,9 @@
 
 package s4noc
 
-import Chisel._
+import chisel3._
+import chisel3.iotesters.PeekPokeTester
+//import Chisel._
 
 import Const._
 
@@ -17,13 +19,13 @@ import Const._
  */
 class NetworkOfFour() extends Module {
   val io = new Bundle {
-    val local = Vec(4, new Channel(UInt(width = 32)))
+    val local = Vec(4, new Channel(UInt(32.W)))
   }
 
   val schedule = Schedule.getSchedule(2)
   val net = new Array[S4Router[UInt]](4)
   for (i <- 0 until 4) {
-    net(i) = Module(new S4Router(schedule._1, UInt(width = 32)))
+    net(i) = Module(new S4Router(schedule._1, UInt(32.W)))
     io.local(i).out := net(i).io.ports(LOCAL).out
     net(i).io.ports(LOCAL).in := io.local(i).in
   }
@@ -51,12 +53,12 @@ class NetworkOfFour() extends Module {
 
 class TwoNetworks() extends Module {
   val io = new Bundle {
-    val toNocA = Vec(4, new Channel(UInt(width = 32)))
-    val toNocB = Vec(4, new Channel(UInt(width = 32)))
+    val toNocA = Vec(4, new Channel(UInt(32.W)))
+    val toNocB = Vec(4, new Channel(UInt(32.W)))
   }
 
   val na = Module(new NetworkOfFour())
-  val nb = Module(new Network(2, UInt(width = 32)))
+  val nb = Module(new Network(2, UInt(32.W)))
   for (i <- 0 until 4) {
     io.toNocA(i).out := na.io.local(i).out
     na.io.local(i).in := io.toNocA(i).in
@@ -68,7 +70,8 @@ class TwoNetworks() extends Module {
 /**
  * Compare two 2x2 networks.
  */
-class NetworkCompare(dut: TwoNetworks) extends Tester(dut) {
+class NetworkCompare(dut: TwoNetworks) extends PeekPokeTester(dut) {
+//  class NetworkCompare(dut: TwoNetworks) extends Tester(dut) {
 
   // Again, after 6 clock cycles there are just zeros on the output. why?
   // for (i <- 0 until 8) {
@@ -88,10 +91,15 @@ class NetworkCompare(dut: TwoNetworks) extends Tester(dut) {
 
 object NetworkCompare {
   def main(args: Array[String]): Unit = {
+    iotesters.Driver.execute(Array[String](), () => new TwoNetworks()) { c => new NetworkCompare(c) }
+
+    /*
     chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
       "--compile", "--targetDir", "generated"),
       () => Module(new TwoNetworks())) {
         c => new NetworkCompare(c)
       }
+
+     */
   }
 }

@@ -56,6 +56,6 @@ class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
 
 object DirectLink extends App {
 
-  chiselMain(Array(), () => Module(new DirectLink(4)))
-  // chisel3.Driver.execute(Array("--target-dir", "generated"), () => new DirectLink(4))
+  // chiselMain(Array(), () => Module(new DirectLink(4)))
+  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new DirectLink(4))
 }

@@ -24,26 +24,36 @@ object Const {
   val NR_OF_PORTS = 5
 }
 
-class SingleChannel[T <: Data](dt: T) extends Bundle {
-  val data = dt.clone
+class SingleChannel[T <: Data](val dt: T) extends Bundle {
+  val data = dt.cloneType
+  // val data = dt.clone
   val valid = Bool()
 
-  override def clone() = (new SingleChannel(dt)).asInstanceOf[this.type]
+  // override def clone() = (new SingleChannel(dt)).asInstanceOf[this.type]
+
+  /*
+  override def cloneType() = {
+    val res = new SingleChannel(dt)
+    res.asInstanceOf[this.type]
+  }
+
+   */
 }
 
-class Channel[T <: Data](dt: T) extends Bundle {
-  val out = new SingleChannel(dt).asOutput
-  val in = new SingleChannel(dt).asInput
+class Channel[T <: Data](val dt: T) extends Bundle {
+  val out = Output(new SingleChannel(dt))
+  val in = Input(new SingleChannel(dt))
 
-  override def clone() = (new Channel(dt)).asInstanceOf[this.type]
+  // override def clone() = (new Channel(dt)).asInstanceOf[this.type]
 }
 
-class RouterPorts[T <: Data](dt: T) extends Bundle {
+class RouterPorts[T <: Data](val dt: T) extends Bundle {
   val ports = Vec(Const.NR_OF_PORTS, new Channel(dt))
 }
 
 class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
-  val io = new RouterPorts(dt)
+  val io = IO(new RouterPorts(dt))
+  println("In S4Router")
 
   val regCounter = RegInit(UInt(0, log2Up(schedule.length)))
   val end = regCounter === UInt(schedule.length - 1)
@@ -51,7 +61,7 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
 
 
   // Convert schedule table to a Chisel type table
-  val sched = Vec(schedule.length, Vec(Const.NR_OF_PORTS, UInt(width = 3)))
+  val sched = Wire(Vec(schedule.length, Vec(Const.NR_OF_PORTS, UInt(width = 3))))
   for (i <- 0 until schedule.length) {
     for (j <- 0 until Const.NR_OF_PORTS) {
       sched(i)(j) := UInt(schedule(i)(j), 3)

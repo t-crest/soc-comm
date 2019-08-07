@@ -6,13 +6,16 @@
 
 package s4noc
 
-import Chisel._
+import chisel3._
+import chisel3.iotesters.PeekPokeTester
+// import Chisel._
 
 /**
  * Test the router by printing out the value at each clock cycle
  * and checking some known end values.
  */
-class RouterTester(c: S4Router[UInt]) extends Tester(c) {
+// class RouterTester(c: S4Router[UInt]) extends Tester(c) {
+class RouterTester(c: S4Router[UInt]) extends PeekPokeTester(c) {
 
   for (i <- 0 until 5) {
     poke(c.io.ports(0).in.data, 0x10 + i)
@@ -20,13 +23,13 @@ class RouterTester(c: S4Router[UInt]) extends Tester(c) {
     poke(c.io.ports(2).in.data, 0x30 + i)
     poke(c.io.ports(3).in.data, 0x40 + i)
     poke(c.io.ports(4).in.data, 0x50 + i)
-    poke(c.io.ports(0).in.valid, 1)    
-    poke(c.io.ports(1).in.valid, 1)    
-    poke(c.io.ports(2).in.valid, 1)    
-    poke(c.io.ports(3).in.valid, 1)    
-    poke(c.io.ports(4).in.valid, 1)    
+    poke(c.io.ports(0).in.valid, 1)
+    poke(c.io.ports(1).in.valid, 1)
+    poke(c.io.ports(2).in.valid, 1)
+    poke(c.io.ports(3).in.valid, 1)
+    poke(c.io.ports(4).in.valid, 1)
     step(1)
-    println(peek(c.io.ports))
+    println(peek(c.io.ports).toString())
   }
   expect(c.io.ports(0).out.data, 0x14)
   expect(c.io.ports(4).out.data, 0x34)
@@ -35,10 +38,14 @@ class RouterTester(c: S4Router[UInt]) extends Tester(c) {
 
 object RouterTester {
   def main(args: Array[String]): Unit = {
+    iotesters.Driver.execute(Array[String](), () => new S4Router(Schedule.getSchedule(2)._1, UInt(16.W))) { c => new RouterTester(c) }
+    /*
     chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
       "--compile", "--targetDir", "generated"),
       () => Module(new S4Router(Schedule.getSchedule(2)._1, UInt(width = 16)))) {
         c => new RouterTester(c)
       }
+
+     */
   }
 }
