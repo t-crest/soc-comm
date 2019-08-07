@@ -29,6 +29,6 @@ object AddTester extends App {
 
   println("Testing the adder")
   //iotesters.Driver.execute(Array[String](), () => new Add()) { c => new AddTester(c) }
-  chiselMainTest(Array[String](), () => Module(new Add())) { c => new AddTester(c) }
+  chiselMainTest(Array("--genHarness", "--compile", "--test"), () => Module(new Add())) { c => new AddTester(c) }
 
 }
