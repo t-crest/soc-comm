@@ -10,7 +10,8 @@
 
 package s4noc
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 
 /*
  * On signal naming:
@@ -26,32 +27,30 @@ import Chisel._
  *
  */
 
-class WriterIO(width: Int) extends Bundle {
-  val write = Bool(INPUT)
-  val full = Bool(OUTPUT)
-  // val din = new Entry(width).asInput()
-  val din = Input(new Entry(width))
+class WriterIO(size: Int) extends Bundle {
+  val write = Input(Bool())
+  val full = Output(Bool())
+  val din = Input(new Entry(size))
 }
 
-class ReaderIO(width: Int) extends Bundle {
-  val read = Bool(INPUT)
-  val empty = Bool(OUTPUT)
-  // val dout = new Entry(width).asOutput()
-  val dout = Output(new Entry(width))
+class ReaderIO(size: Int) extends Bundle {
+  val read = Input(Bool())
+  val empty = Output(Bool())
+  val dout = Output(new Entry(size))
 }
 
 /**
   * A single register (=stage) to build the FIFO.
   */
-class FifoRegister(width: Int) extends Module {
-  val io = new Bundle {
-    val enq = new WriterIO(width)
-    val deq = new ReaderIO(width)
-  }
+class FifoRegister(size: Int) extends Module {
+  val io = IO(new Bundle {
+    val enq = new WriterIO(size)
+    val deq = new ReaderIO(size)
+  })
 
-  val empty :: full :: Nil = Enum(UInt(), 2)
-  val stateReg = Reg(init = empty)
-  val dataReg = Reg(new Entry(width))
+  val empty :: full :: Nil = Enum(2)
+  val stateReg = RegInit(empty)
+  val dataReg = Reg(new Entry(size))
 
   when(stateReg === empty) {
     when(io.enq.write) {
@@ -73,14 +72,13 @@ class FifoRegister(width: Int) extends Module {
 /**
   * This is a bubble FIFO.
   */
-class BubbleFifo(depth: Int, width: Int) extends Module {
-  val io = new Bundle {
-    val enq = new WriterIO(width)
-    val deq = new ReaderIO(width)
-  }
+class BubbleFifo(depth: Int, size: Int) extends Module {
+  val io = IO(new Bundle {
+    val enq = new WriterIO(size)
+    val deq = new ReaderIO(size)
+  })
 
-  val stage = Module(new FifoRegister(width))
-  val buffers = Array.fill(depth) { Module(new FifoRegister(width)) }
+  val buffers = Array.fill(depth) { Module(new FifoRegister(size)) }
   for (i <- 0 until depth - 1) {
     buffers(i + 1).io.enq.din := buffers(i).io.deq.dout
     buffers(i + 1).io.enq.write := ~buffers(i).io.deq.empty
@@ -89,11 +87,10 @@ class BubbleFifo(depth: Int, width: Int) extends Module {
   io.enq <> buffers(0).io.enq
   io.deq <> buffers(depth - 1).io.deq
 }
-
 /**
   * Test the design.
   */
-/* Chisel 2 tester
+/* Chisel 2 tester, see Chisel 3 version in chisel-examples
 class FifoTester(dut: BubbleFifo) extends Tester(dut) {
 
   // some defaults for all signals

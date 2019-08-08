@@ -6,22 +6,21 @@
  */
 package s4noc
 
-import Chisel._
+import chisel3._
 
 class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module {
 
   val s4noc = Module(new S4noc(nrNodes, txFifo, rxFifo, width))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
-    val data = Output(UInt(width = width))
+    val data = Output(UInt(width.W))
   })
 
-  val outReg = Vec(nrNodes, Reg(init = UInt(0, width = width)))
-
+  val outReg = Array.fill(nrNodes) { RegInit(0.U(width.W)) }
 
   for (i <- 0 until nrNodes) {
 
-    val cntReg = RegInit(UInt(i*7+5, width = width+8))
+    val cntReg = RegInit((i*7+5).U((width+8).W))
     cntReg := cntReg + 1.U
 
     // addresses are in words
@@ -43,7 +42,6 @@ class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extend
 }
 
 object S4nocTrafficGen extends App {
-    println("Generating the S4NoC hardware with a traffic generator")
-    chiselMain(Array("--backend", "v", "--targetDir", "generated"),
-      () => Module(new S4nocTrafficGen(args(0).toInt, 8, 8, 32)))
+  println("Generating the S4NoC hardware with a traffic generator")
+  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new S4nocTrafficGen(args(0).toInt, 8, 8, 32))
 }

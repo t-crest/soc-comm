@@ -10,16 +10,16 @@ package soc
 
 import Chisel._
 
-class Port(val addrWidth: Int) extends Bundle {
+class Port(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rd = Input(Bool())
-  val address = Input(UInt(width = addrWidth))
-  val wrData = Input(UInt(width = 32))
-  val rdData = Output(UInt(width = 32))
+  val address = Input(UInt(addrWidth.W))
+  val wrData = Input(UInt(32.W))
+  val rdData = Output(UInt(32.W))
   val rdy = Output(Bool())
 }
 
-class MultiPort(val nrPorts: Int, val addrWidth: Int) extends Bundle {
+class MultiPort(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {
   val ports = Vec(nrPorts, new Port(addrWidth))
 }
 

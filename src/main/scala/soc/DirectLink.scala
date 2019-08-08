@@ -14,7 +14,7 @@ import Chisel._
 class Interface extends Bundle {
   val ready = Output(Bool())
   val valid = Input(Bool())
-  val data = Input(UInt(width = 32))
+  val data = Input(UInt(32.W))
 }
 
 class SimpleBuffer extends Module {
@@ -24,7 +24,7 @@ class SimpleBuffer extends Module {
   })
 
   val full = RegInit(false.B)
-  val data = RegInit(UInt(0, width = 32))
+  val data = RegInit(0.U(32.W))
 
   io.in.ready := true.B
   io.out.valid := false.B

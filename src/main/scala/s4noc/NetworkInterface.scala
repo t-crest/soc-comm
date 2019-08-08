@@ -6,51 +6,30 @@
  */
 package s4noc
 
-import Chisel._
+import chisel3._
+import chisel3.util._
 
 class CpuPort(private val w: Int) extends Bundle {
-  val addr = UInt(width = 8).asInput
-  val rdData = UInt(width = w).asOutput
-  val wrData = UInt(width = w).asInput
-  val rd = Bool().asInput
-  val wr = Bool().asInput
-
-  // The following was not needed in Chisel 2, but now in Chisel 3
-  // the issue is the width parameter, what is the right Chisel 3 idiom for this?
-    /*
-  override def cloneType() = {
-    val res = new CpuPort(width)
-    res.asInstanceOf[this.type]
-  }
-
-     */
+  val addr = Input(UInt(8.W))
+  val rdData = Output(UInt(w.W))
+  val wrData = Input(UInt(w.W))
+  val rd = Input(Bool())
+  val wr = Input(Bool())
 }
 
 // This should be a generic for the FIFO
 class Entry(private val w: Int) extends Bundle {
   val data = UInt(w.W)
   val time = UInt(8.W)
-
-  /*
-  val data = Output(UInt(w.W))
-  val time = Input(UInt(8.W))
-   */
-  /*
-  override def cloneType() = {
-    val res = new Entry(width)
-    res.asInstanceOf[this.type]
-  }
-
-   */
 }
 
 
 
 class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, width: Int) extends Module {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val cpuPort = new CpuPort(width)
     val local = new Channel(dt)
-  }
+  })
 
   // TODO: too much repetition
   // Either provide the schedule as parameter
@@ -58,11 +37,11 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, wid
   // Why duplicating it? Does it matter?
   val len = Schedule.getSchedule(dim)._1.length
 
-  val regCnt = Reg(init = UInt(0, log2Up(len)))
-  regCnt := Mux(regCnt === UInt(len - 1), UInt(0), regCnt + UInt(1))
+  val regCnt = RegInit(0.U(log2Up(len).W))
+  regCnt := Mux(regCnt === (len - 1).U, 0.U, regCnt + 1.U)
   // TDM schedule starts one cycles later for read data delay of OneWayMemory
   // Maybe we can use that delay here as well for something good
-  val regDelay = RegNext(regCnt, init = UInt(0))
+  val regDelay = RegNext(regCnt, init = 0.U)
 
 
   val entryReg = Reg(new Entry(width))
@@ -72,11 +51,11 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, wid
   }
 
   val inFifo = Module(new BubbleFifo(rxFifo, width))
-  inFifo.io.enq.write := Bool(false)
+  inFifo.io.enq.write := false.B
   inFifo.io.enq.din.data := io.cpuPort.wrData
   inFifo.io.enq.din.time := io.cpuPort.addr
   when (io.cpuPort.wr && !inFifo.io.enq.full) {
-    inFifo.io.enq.write := Bool(true)
+    inFifo.io.enq.write := true.B
   }
 
   io.local.out.data := inFifo.io.deq.dout.data
@@ -91,26 +70,26 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, wid
   // for now same clock cycle
 
   val outFifo = Module(new BubbleFifo(txFifo, width))
-  outFifo.io.enq.write := Bool(false)
+  outFifo.io.enq.write := false.B
   outFifo.io.enq.din.data := io.local.in.data
   outFifo.io.enq.din.time := regDelay
   when (io.local.in.valid && !outFifo.io.enq.full) {
-    outFifo.io.enq.write := Bool(true)
+    outFifo.io.enq.write := true.B
   }
 
   io.cpuPort.rdData := outFifo.io.deq.dout.data
-  outFifo.io.deq.read := Bool(false)
-  val regTime = RegInit(UInt(0, 6))
+  outFifo.io.deq.read := false.B
+  val regTime = RegInit(0.U(8.W)) // FIXME: maybe it should be the same as in Entry
   when (io.cpuPort.rd) {
     val addr = io.cpuPort.addr
-    when (addr === UInt(0))  {
-      outFifo.io.deq.read := Bool(true)
-    } .elsewhen(addr === UInt(1)) {
+    when (addr === 0.U)  {
+      outFifo.io.deq.read := true.B
+    } .elsewhen(addr === 1.U) {
       io.cpuPort.rdData := regTime
-    } .elsewhen(addr === UInt(2)) {
-      io.cpuPort.rdData := Cat(UInt(0, 31), !inFifo.io.enq.full)
-    } .elsewhen(addr === UInt(3)) {
-      io.cpuPort.rdData := Cat(UInt(0, 31), !outFifo.io.deq.empty)
+    } .elsewhen(addr === 2.U) {
+      io.cpuPort.rdData := Cat(0.U(31.W), !inFifo.io.enq.full)
+    } .elsewhen(addr === 3.U) {
+      io.cpuPort.rdData := Cat(0.U(31.W), !outFifo.io.deq.empty)
     }
   }
 }
