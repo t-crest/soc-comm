@@ -10,9 +10,9 @@ package s4noc
 import chisel3._
 
 class S4noc(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val cpuPorts = Vec(n, new CpuPort(width))
-  }
+  })
 
   val dim = math.sqrt(n).toInt
   if (dim * dim != n) throw new Error("Number of cores must be quadratic")

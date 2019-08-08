@@ -8,7 +8,7 @@ package s4noc
 
 import Chisel._
 
-class CpuPort(val w: Int) extends Bundle {
+class CpuPort(private val w: Int) extends Bundle {
   val addr = UInt(width = 8).asInput
   val rdData = UInt(width = w).asOutput
   val wrData = UInt(width = w).asInput
@@ -27,14 +27,21 @@ class CpuPort(val w: Int) extends Bundle {
 }
 
 // This should be a generic for the FIFO
-class Entry(width: Int) extends Bundle {
-  val data = UInt(width = width).asOutput
-  val time = UInt(width = 8).asInput
+class Entry(private val w: Int) extends Bundle {
+  val data = UInt(w.W)
+  val time = UInt(8.W)
 
+  /*
+  val data = Output(UInt(w.W))
+  val time = Input(UInt(8.W))
+   */
+  /*
   override def cloneType() = {
     val res = new Entry(width)
     res.asInstanceOf[this.type]
   }
+
+   */
 }
 
 

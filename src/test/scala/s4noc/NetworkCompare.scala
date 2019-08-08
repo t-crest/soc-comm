@@ -18,9 +18,9 @@ import Const._
  * A manually connected 2x2 NoC for testing.
  */
 class NetworkOfFour() extends Module {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val local = Vec(4, new Channel(UInt(32.W)))
-  }
+  })
 
   val schedule = Schedule.getSchedule(2)
   val net = new Array[S4Router[UInt]](4)
@@ -52,10 +52,10 @@ class NetworkOfFour() extends Module {
 }
 
 class TwoNetworks() extends Module {
-  val io = new Bundle {
+  val io = IO(new Bundle {
     val toNocA = Vec(4, new Channel(UInt(32.W)))
     val toNocB = Vec(4, new Channel(UInt(32.W)))
-  }
+  })
 
   val na = Module(new NetworkOfFour())
   val nb = Module(new Network(2, UInt(32.W)))

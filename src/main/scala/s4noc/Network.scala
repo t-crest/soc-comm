@@ -21,9 +21,7 @@ class Network[T <: Data](n: Int, dt: T) extends Module {
 
   val net = new Array[S4Router[T]](n * n)
   for (i <- 0 until n * n) {
-    println("Hello " + dt.toString)
     net(i) = Module(new S4Router(schedule, dt))
-    println("generate")
     io.local(i).out := net(i).io.ports(LOCAL).out
     net(i).io.ports(LOCAL).in := io.local(i).in
   }
