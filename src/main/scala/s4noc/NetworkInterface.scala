@@ -85,7 +85,7 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, wid
     when (addr === 0.U)  {
       outFifo.io.deq.read := true.B
     } .elsewhen(addr === 1.U) {
-      io.cpuPort.rdData := regTime
+      io.cpuPort.rdData := regTime // FIXME: what is this??? This should come from the FIFO
     } .elsewhen(addr === 2.U) {
       io.cpuPort.rdData := Cat(0.U(31.W), !inFifo.io.enq.full)
     } .elsewhen(addr === 3.U) {

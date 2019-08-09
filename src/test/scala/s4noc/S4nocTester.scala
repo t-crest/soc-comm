@@ -18,16 +18,20 @@ import chisel3.iotesters.PeekPokeTester
     poke(dut.io.cpuPorts(3).rd, 1)
     poke(dut.io.cpuPorts(3).addr, 3)
     val status = peek(dut.io.cpuPorts(3).rdData)
+    println("status="+status.toString)
     var ret = 0
     step(1)
+    // FIXME: why is the return value earlier visible than status?
+    // if (true || status == 1) {
     if (status == 1) {
       poke(dut.io.cpuPorts(3).rd, 1)
       poke(dut.io.cpuPorts(3).addr, 0)
       ret = peek(dut.io.cpuPorts(3).rdData).toInt
+      println("ret="+ret.toString)
       step(1)
       poke(dut.io.cpuPorts(3).rd, 1)
       poke(dut.io.cpuPorts(3).addr, 1)
-      peek(dut.io.cpuPorts(3).rdData)
+      val from = peek(dut.io.cpuPorts(3).rdData)
       step(1)
     }
     ret
@@ -51,13 +55,5 @@ import chisel3.iotesters.PeekPokeTester
 object S4nocTester {
   def main(args: Array[String]): Unit = {
     iotesters.Driver.execute(Array[String](), () => new S4noc(4, 2, 2, 32)) { c => new S4nocTester(c) }
-    /*
-    chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
-      "--compile", "--vcd", "--targetDir", "generated"),
-      () => Module(new S4noc(4, 2, 2, 32))) {
-      c => new S4nocTester(c)
-    }
-
-     */
   }
 }
