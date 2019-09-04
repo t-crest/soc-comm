@@ -143,4 +143,8 @@ object NocTester {
     port.wr.poke(false.B)
     bufferFree
   }
+
+  def blockingWrite(port: CpuPort, addr: UInt, data: UInt, clock:Clock) = {
+    while (!write(port, addr, data, clock)) {}
+  }
 }
