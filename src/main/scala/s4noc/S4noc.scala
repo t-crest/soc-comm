@@ -12,6 +12,7 @@ import chisel3._
 class S4noc(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val io = IO(new Bundle {
     val cpuPorts = Vec(n, new CpuPort(width))
+    val cycCnt = Output(UInt(32.W))
   })
 
   val dim = math.sqrt(n).toInt
@@ -25,5 +26,9 @@ class S4noc(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
     ni.io.local.in := net.io.local(i).out
     io.cpuPorts(i) <> ni.io.cpuPort
   }
+
+  val cntReg = RegInit(0.U(32.W))
+  cntReg := cntReg + 1.U
+  io.cycCnt := cntReg
 }
 

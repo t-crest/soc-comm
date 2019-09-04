@@ -66,7 +66,6 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
           val ret = read(d.io.cpuPorts(3), d.clock)
           if (!done) done = ret._2 == 0xcafebabe
           println("thread read "+i+" "+ret)
-          d.clock.step(1)
         }
         assert(done)
       }
@@ -77,7 +76,7 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
       // waste some time to see the concurrency
       for (i <- 0 until 20) {
         d.clock.step(1)
-        println("Master "+i)
+        println("Master "+i + " " + d.io.cycCnt.peek.litValue)
       }
 
       th.join()
@@ -104,7 +103,7 @@ object NocTester {
     ret
   }
   /**
-    * Nonblocking read.
+    * Nonblocking read. Advances clock by one.
     */
   def read(port: CpuPort, clock: Clock): (Boolean, Int, Int) = {
 
@@ -120,15 +119,15 @@ object NocTester {
       from = port.rdData.peek.litValue.toInt
       port.addr.poke(0.U)
       data = port.rdData.peek.litValue.toInt
-      // We need a clock step to have the rd signal one for one clock cycle
-      clock.step(1)
-      port.rd.poke(false.B)
     }
+    // We need a clock step to have the rd signal one for one clock cycle
+    clock.step(1)
+    port.rd.poke(false.B)
     (dataAvail, data, from)
   }
 
   /**
-    * Nonblocking write.
+    * Nonblocking write. Advances clock by one.
     */
   def write(port: CpuPort, addr: UInt, data: UInt, clock:Clock): Boolean = {
 
@@ -137,11 +136,11 @@ object NocTester {
       port.wrData.poke(data)
       port.addr.poke(addr)
       port.wr.poke(true.B)
-      clock.step(1)
-      port.wrData.poke(0.U)
-      port.addr.poke(0.U)
-      port.wr.poke(false.B)
     }
+    clock.step(1)
+    port.wrData.poke(0.U)
+    port.addr.poke(0.U)
+    port.wr.poke(false.B)
     bufferFree
   }
 }
