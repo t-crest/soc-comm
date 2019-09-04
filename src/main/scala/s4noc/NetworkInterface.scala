@@ -9,6 +9,24 @@ package s4noc
 import chisel3._
 import chisel3.util._
 
+/**
+  * A simple processor interface. No handshake.
+  * Read timing is currently same clock cycle (combinational read).
+  * In Patmos the usage of the read data is delayed by one clock cycle in the OCP wrapper.
+  *
+  * NOTE: this combinational read may result in a combinational generation of the
+  * ready/valid interface, which should be avoided.
+  *
+  * Read data valid or write buffer empty need to be polled ar status register.
+  * Part of the write address determines the TDM slot and therefore the destination core.
+  * Read data is data plus time stamp, which determines the source core.
+  *
+  * Possible enhancements: we could add a ready signal to support blocking reads
+  * and writes depending on FIFO handshake. Is this worth it? Can always be built on
+  * top of states polling in software or in hardware.
+  *
+  * @param w Usually 32-bits for a 32-bit processor.
+  */
 class CpuPort(private val w: Int) extends Bundle {
   val addr = Input(UInt(8.W))
   val rdData = Output(UInt(w.W))
@@ -79,13 +97,12 @@ class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, wid
 
   io.cpuPort.rdData := outFifo.io.deq.dout.data
   outFifo.io.deq.read := false.B
-  val regTime = RegInit(0.U(8.W)) // FIXME: maybe it should be the same as in Entry
   when (io.cpuPort.rd) {
     val addr = io.cpuPort.addr
     when (addr === 0.U)  {
       outFifo.io.deq.read := true.B
     } .elsewhen(addr === 1.U) {
-      io.cpuPort.rdData := regTime // FIXME: what is this??? This should come from the FIFO
+      io.cpuPort.rdData := outFifo.io.deq.dout.time
     } .elsewhen(addr === 2.U) {
       io.cpuPort.rdData := Cat(0.U(31.W), !inFifo.io.enq.full)
     } .elsewhen(addr === 3.U) {

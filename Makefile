@@ -23,5 +23,9 @@ test-all:
 	sbt "test:runMain s4noc.NetworkTester"
 	sbt "test:runMain s4noc.NetworkCompare"
 
+# do the right thing, does not yet do it
+vcd:
+	sbt "testOnly chisel3.tests.BasicTest -- -DwriteVcd=1"
+
 clean:
 	git clean -fd
