@@ -27,7 +27,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
   behavior of "Bandwidth"
 
-  val CNT = 5
+  val CNT = 20
   val data = new Array[Int](CNT)
   val rnd = new scala.util.Random()
   for (i <- 0 until CNT) data(i) = rnd.nextInt()
@@ -45,7 +45,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
         var cont = true
         do {
           val ret = read(d.io.cpuPorts(3), d.clock)
-          println("cycle:" + d.io.cycCnt.peek.litValue + " read " + i + " " + ret)
+          println("cycle: " + d.io.cycCnt.peek.litValue + " read " + i + " " + ret)
           cont = !ret._1
 
           if (ret._1) assert(ret._2 == data(i))
@@ -64,7 +64,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
       val th = fork {
         for (i <- 0 until CNT) {
           val data = d.io.cycCnt.peek()
-          blockingWrite(d.io.cpuPorts(3), 0.U, data, d.clock)
+          blockingWrite(d.io.cpuPorts(0), 0.U, d.io.cycCnt.peek, d.clock)
         }
       }
 
@@ -72,10 +72,12 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
         var cont = true
         do {
           val ret = read(d.io.cpuPorts(3), d.clock)
-          println("cycle:" + d.io.cycCnt.peek.litValue + " read " + i + " " + ret)
-          cont = !ret._1
+          if (ret._1) {
+            val cyc = d.io.cycCnt.peek.litValue
+            println("cycle: " + cyc + " read " + i + " " + ret + " latency: " + (cyc - ret._2))
 
-          if (ret._1) assert(ret._2 == data(i))
+          }
+          cont = !ret._1
         } while (cont)
       }
 
