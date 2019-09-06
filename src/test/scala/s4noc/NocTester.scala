@@ -9,7 +9,7 @@ import NocTester._
 class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
   behavior of "Simple NoC Tester (just one packet)"
 
-  it should "receive one packet old style, verbose" in {
+  "S4NoC" should "receive one packet old style, verbose" in {
     test(new S4noc(4, 2, 2, 32)) { d =>
 
       def read3(): UInt = {
@@ -87,18 +87,20 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
 object NocTester {
 
-  def isDataAvail(port: CpuPort): Boolean = {
+  def isDataAvail(port: CpuPort, clock: Clock): Boolean = {
     port.rd.poke(true.B)
     port.addr.poke(3.U)
     val ret = port.rdData.peek.litValue == 1
+    clock.step()
     port.rd.poke(false.B)
     ret
   }
 
-  def isBufferFree(port: CpuPort): Boolean = {
+  def isBufferFree(port: CpuPort, clock: Clock): Boolean = {
     port.rd.poke(true.B)
     port.addr.poke(2.U)
     val ret = port.rdData.peek.litValue == 1
+    clock.step()
     port.rd.poke(false.B)
     ret
   }
@@ -107,7 +109,7 @@ object NocTester {
     */
   def read(port: CpuPort, clock: Clock): (Boolean, Int, Int) = {
 
-    val dataAvail = isDataAvail(port)
+    val dataAvail = isDataAvail(port, clock)
     var data = 0
     var from = 0
     // FIXME: why is the return value earlier visible than status?
@@ -116,6 +118,11 @@ object NocTester {
       port.rd.poke(true.B)
       port.addr.poke(1.U)
       // Read before data to not trigger the FIFO read, but we read both in the same clock cycle
+      // TODO: this is cheating! We cannot read out two different words in a single clock cycle.
+      // TODO: we even read 3 values in a single clock cycle: status, data, and from
+      // TODO: maybe merge from with data available
+      // TODO: or have a "raw" interface to all signals, independent of a processor interface
+      // TODO: the argument is to test the NI/NoC itself not the bus interface
       from = port.rdData.peek.litValue.toInt
       port.addr.poke(0.U)
       data = port.rdData.peek.litValue.toInt
@@ -131,7 +138,7 @@ object NocTester {
     */
   def write(port: CpuPort, addr: UInt, data: UInt, clock:Clock): Boolean = {
 
-    val bufferFree = isBufferFree(port)
+    val bufferFree = isBufferFree(port, clock)
     if (bufferFree) {
       port.wrData.poke(data)
       port.addr.poke(addr)

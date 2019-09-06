@@ -43,7 +43,7 @@ class Entry(private val w: Int) extends Bundle {
 
 
 
-class NetworkInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, width: Int) extends Module {
+class CpuInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPort(width)
     val local = new Channel(dt)
