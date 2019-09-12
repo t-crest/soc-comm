@@ -41,8 +41,6 @@ class Entry(private val w: Int) extends Bundle {
   val time = UInt(8.W)
 }
 
-
-
 class CpuInterface[T <: Data](dim: Int, txFifo: Int, rxFifo: Int, dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPort(width)
