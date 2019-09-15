@@ -59,28 +59,25 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
   it should "receive one packet, better coding, threaded" in {
     test(new S4noc(4, 2, 2, 32)) { d =>
-      // this is the reader thread (core 3)
-      val th = fork {
-        var done = false
-        for (i <- 0 until 14) {
-          val ret = read(d.io.cpuPorts(3), d.clock)
-          if (!done) done = ret._2 == 0xcafebabe
-          println("thread read "+i+" "+ret)
-        }
-        assert(done)
-      }
-
       // Master thread (core 0)
       // Write into time slot 0 to reach core 3
-      write(d.io.cpuPorts(0), 0.U, "hcafebabe".U, d.clock)
-      // waste some time to see the concurrency
-      for (i <- 0 until 20) {
-        d.clock.step(1)
-        println("Master "+i + " " + d.io.cycCnt.peek.litValue)
+      fork {
+        write(d.io.cpuPorts(0), 0.U, "hcafebabe".U, d.clock)
+        // waste some time to see the concurrency
+        for (i <- 0 until 20) {
+          d.clock.step(1)
+          println("Master "+i + " " + d.io.cycCnt.peek.litValue)
+        }
       }
 
-      th.join()
-
+      // this is the reader thread (core 3)
+      var done = false
+      for (i <- 0 until 14) {
+        val ret = read(d.io.cpuPorts(3), d.clock)
+        if (!done) done = ret._2 == 0xcafebabe
+        println("thread read "+i+" "+ret)
+      }
+      assert(done)
     }
   }
 }
