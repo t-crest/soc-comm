@@ -9,8 +9,8 @@
 package s4noc
 
 import chisel3._
-import chisel3.iotesters.PeekPokeTester
-//import Chisel._
+import chisel3.tester._
+import org.scalatest._
 
 import Const._
 
@@ -67,39 +67,29 @@ class TwoNetworks() extends Module {
   }
 }
 
+
 /**
  * Compare two 2x2 networks.
  */
-class NetworkCompare(dut: TwoNetworks) extends PeekPokeTester(dut) {
-//  class NetworkCompare(dut: TwoNetworks) extends Tester(dut) {
 
-  // Again, after 6 clock cycles there are just zeros on the output. why?
-  // for (i <- 0 until 8) {
-  for (i <- 0 until 6) {
-    for (j <- 0 until 4) {
-      poke(dut.io.toNocA(j).in.data, 0x10*(j+1) +i)
-      poke(dut.io.toNocB(j).in.data, 0x10*(j+1) +i)
-    }
-    step(1)
-    for (j <- 0 until 4) {
-      expect(dut.io.toNocA(j).out.data, peek(dut.io.toNocB(j).out.data))
-    }
-  }
-  expect(dut.io.toNocA(0).out.data, 0x24)
-  expect(dut.io.toNocB(0).out.data, 0x24)
-}
+class NetworkCompare extends FlatSpec with ChiselScalatestTester with Matchers {
+  behavior of "Compare two 2x2 networks"
 
-object NetworkCompare {
-  def main(args: Array[String]): Unit = {
-    iotesters.Driver.execute(Array[String](), () => new TwoNetworks()) { c => new NetworkCompare(c) }
-
-    /*
-    chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
-      "--compile", "--targetDir", "generated"),
-      () => Module(new TwoNetworks())) {
-        c => new NetworkCompare(c)
+  "NoCs" should "be identical" in {
+    test(new TwoNetworks()) { dut =>
+      for (i <- 0 until 6) {
+        for (j <- 0 until 4) {
+          dut.io.toNocA(j).in.data.poke((0x10*(j+1) +i).U)
+          dut.io.toNocB(j).in.data.poke((0x10*(j+1) +i).U)
+        }
+        dut.clock.step(1)
+        for (j <- 0 until 4) {
+          dut.io.toNocA(j).out.data.expect(dut.io.toNocB(j).out.data.peek())
+        }
       }
+      dut.io.toNocA(0).out.data.expect(0x24.U)
+      dut.io.toNocB(0).out.data.expect(0x24.U)
+    }
 
-     */
   }
 }
