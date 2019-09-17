@@ -7,15 +7,40 @@
 package s4noc
 
 import chisel3._
+import chisel3.tester._
+import org.scalatest._
+
+// shall go
 import chisel3.iotesters.PeekPokeTester
 
 /**
  * Test a 2x2 Network.
  */
 
-//class NetworkTester(dut: NetworkOfFour) extends Tester(dut) {
+class NetworkTester extends FlatSpec with ChiselScalatestTester with Matchers {
+  behavior of "2x2 Network"
 
-class NetworkTester(dut: NetworkOfFour) extends PeekPokeTester(dut) {
+  "the NoC" should "work" in {
+    test(new NetworkOfFour()) { dut =>
+      // after clock cycle 6 all outputs are 0, strange
+      // for (i <- 0 until 8) {
+      for (i <- 0 until 6) {
+        for (j <- 0 until 4) {
+          dut.io.local(j).in.data.poke((0x10 * (j + 1) + i).U)
+          dut.io.local(j).in.valid.poke(true.B)
+        }
+        dut.clock.step(1)
+        // don't know how to do the same printout as the iotesters.PeekPokeTester
+        // println(dut.io.local.peek.litValue.toString())
+      }
+      dut.io.local(0).out.data.expect(0x24.U)
+    }
+  }
+
+}
+
+// below should go when println for new tester is checked
+class NetworkTesterOrig(dut: NetworkOfFour) extends PeekPokeTester(dut) {
 
   // after clock cycle 6 all outputs are 0, strange
   // for (i <- 0 until 8) {
@@ -30,16 +55,6 @@ class NetworkTester(dut: NetworkOfFour) extends PeekPokeTester(dut) {
   expect(dut.io.local(0).out.data, 0x24)
 }
 
-object NetworkTester {
-  def main(args: Array[String]): Unit = {
-    iotesters.Driver.execute(Array[String](), () => new NetworkOfFour()) { c => new NetworkTester(c) }
-    /*
-    chiselMainTest(Array("--genHarness", "--test", "--backend", "c",
-      "--compile", "--targetDir", "generated"),
-      () => Module(new NetworkOfFour())) {
-        c => new NetworkTester(c)
-      }
-
-     */
-  }
+object NetworkTesterOrig extends App {
+    iotesters.Driver.execute(Array[String](), () => new NetworkOfFour()) { c => new NetworkTesterOrig(c) }
 }
