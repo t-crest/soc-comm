@@ -6,11 +6,12 @@
  */
 
 package s4noc
+import org.scalatest._
 
-object ScheduleTester {
+class ScheduleTester extends FlatSpec with Matchers {
+  behavior of "Schedule creation"
 
-  def main(args: Array[String]): Unit = {
-    println("Testing the schedule creation")
+  it should "pass" in {
     val sref = Schedule.gen2x2Schedule()
     println(ScheduleTable.FourNodes)
     val stest = Schedule.getSchedule(2)._1
@@ -21,7 +22,5 @@ object ScheduleTester {
         assert(slotref(j) == slottest(j))
       }
     }
-    println("Schedule test PASSED")
   }
-
 }
