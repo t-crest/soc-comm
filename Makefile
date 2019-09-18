@@ -17,6 +17,9 @@ test:
 test-all:
 	sbt test
 
+latency:
+	sbt "test:runMain s4noc.MeasureLatency" | grep result
+
 # do the right thing, does not yet do it
 vcd:
 	sbt "testOnly chisel3.tests.BasicTest -- -DwriteVcd=1"
