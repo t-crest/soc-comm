@@ -10,7 +10,7 @@ import chisel3._
 
 class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module {
 
-  val s4noc = Module(new S4noc(nrNodes, txFifo, rxFifo, width))
+  val s4noc = Module(new S4NoCIO(nrNodes, txFifo, rxFifo, width))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
     val data = Output(UInt(width.W))

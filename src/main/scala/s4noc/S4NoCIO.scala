@@ -9,7 +9,7 @@ package s4noc
 
 import chisel3._
 
-class S4noc(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
+class S4NoCIO(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val io = IO(new Bundle {
     val cpuPorts = Vec(n, new CpuPort(width))
     val cycCnt = Output(UInt(32.W))

@@ -33,7 +33,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
   for (i <- 0 until CNT) data(i) = rnd.nextInt()
 
   "S4NoC" should "not overrun the channel" in {
-    test(new S4noc(4, 2, 2, 32)) { d =>
+    test(new S4NoCIO(4, 2, 2, 32)) { d =>
 
       val th = fork {
         for (i <- 0 until CNT) {
@@ -59,7 +59,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
   }
 
   it should "measure the latency" in {
-    test(new S4noc(4, 2, 2, 32)) { d =>
+    test(new S4NoCIO(4, 2, 2, 32)) { d =>
 
       val th = fork {
         for (i <- 0 until CNT) {

@@ -7,7 +7,7 @@ import NocTester._
 
 object MeasureLatency extends App {
 
-  def singleFlow(dut: S4noc): Unit = {
+  def singleFlow(dut: S4NoCIO): Unit = {
 
     val cores = dut.dim * dut.dim
     println("result: Testing " + cores + " cores")
@@ -35,7 +35,7 @@ object MeasureLatency extends App {
 
   val CNT = 5
 
-  def multiFlow(dut: S4noc): Unit = {
+  def multiFlow(dut: S4NoCIO): Unit = {
 
     val cores = dut.dim * dut.dim
     val valid = Schedule.getSchedule(dut.dim)._2
@@ -89,19 +89,19 @@ object MeasureLatency extends App {
 
   }
 
-  RawTester.test(new S4noc(4, 2, 2, 32)) { multiFlow }
+  RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlow }
 
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4noc(4, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(4, i, i, 32)) { singleFlow }
   }
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4noc(9, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(9, i, i, 32)) { singleFlow }
   }
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4noc(16, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(16, i, i, 32)) { singleFlow }
   }
 
 }
