@@ -103,6 +103,7 @@ object NocTester {
   }
   /**
     * Nonblocking read. Advances clock by one.
+    * Cheats on reading multiple values in a single clock cycle.
     */
   def read(port: CpuPort, clock: Clock): (Boolean, Int, Int) = {
 
@@ -131,7 +132,7 @@ object NocTester {
   }
 
   /**
-    * Nonblocking write. Advances clock by one.
+    * Nonblocking write. Advances clock by two (checking buffer free).
     */
   def write(port: CpuPort, addr: UInt, data: UInt, clock:Clock): Boolean = {
 
