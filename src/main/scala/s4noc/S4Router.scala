@@ -60,11 +60,12 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   // TODO: test if this movement of the register past the schedule table works, better here a register
   // val currentSched = RegNext(sched(regCounter))
 
+  val resetVal = Wire(new SingleChannel(dt))
+  resetVal.data := 0.U
+  resetVal.valid := false.B
 
-  // We assume that on reset the valid signal is false.
-  // Better have it reset.
   for (j <- 0 until Const.NR_OF_PORTS) {
-    io.ports(j).out := RegNext(io.ports(currentSched(j)).in)
+    io.ports(j).out := RegNext(io.ports(currentSched(j)).in, init = resetVal)
   }
 }
 
