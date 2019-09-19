@@ -1,5 +1,5 @@
 /*
-  Top level of the S4NOC.
+  Top level of the S4NOC with a CPU interface.
 
   Author: Martin Schoeberl (martin@jopdesign.com)
   license see LICENSE
@@ -15,16 +15,12 @@ class S4NoCIO(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
     val cycCnt = Output(UInt(32.W))
   })
 
-  val dim = math.sqrt(n).toInt
-  if (dim * dim != n) throw new Error("Number of cores must be quadratic")
-
-  val net = Module(new Network(dim, UInt(width.W)))
+  val s4noc = Module(new S4NoC(n, txFifo, rxFifo, width))
 
   for (i <- 0 until n) {
-    val ni = Module(new CpuInterface(dim, txFifo, rxFifo, UInt(width.W), width))
-    net.io.local(i).in := ni.io.local.out
-    ni.io.local.in := net.io.local(i).out
-    io.cpuPorts(i) <> ni.io.cpuPort
+    val ci = Module(new CpuInterface(UInt(width.W), width))
+    s4noc.io.networkPort(i) <> ci.io.networkPort
+    io.cpuPorts(i) <> ci.io.cpuPort
   }
 
   val cntReg = RegInit(0.U(32.W))

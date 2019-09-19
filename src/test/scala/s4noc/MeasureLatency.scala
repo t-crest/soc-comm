@@ -9,7 +9,7 @@ object MeasureLatency extends App {
 
   def singleFlow(dut: S4NoCIO): Unit = {
 
-    val cores = dut.dim * dut.dim
+    val cores = dut.s4noc.dim * dut.s4noc.dim
     println("result: Testing " + cores + " cores")
     dut.io.cpuPorts(0).wrData.poke("hcafebabe".U)
     dut.io.cpuPorts(0).addr.poke(0.U)
@@ -37,8 +37,8 @@ object MeasureLatency extends App {
 
   def multiFlow(dut: S4NoCIO): Unit = {
 
-    val cores = dut.dim * dut.dim
-    val valid = Schedule.getSchedule(dut.dim)._2
+    val cores = dut.s4noc.dim * dut.s4noc.dim
+    val valid = Schedule.getSchedule(dut.s4noc.dim)._2
     valid.foreach(print)
     println()
 

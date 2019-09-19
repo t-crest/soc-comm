@@ -27,13 +27,13 @@ import chisel3.util._
  *
  */
 
-class WriterIO(size: Int) extends Bundle {
+class WriterIO(private val size: Int) extends Bundle {
   val write = Input(Bool())
   val full = Output(Bool())
   val din = Input(new Entry(size))
 }
 
-class ReaderIO(size: Int) extends Bundle {
+class ReaderIO(private val size: Int) extends Bundle {
   val read = Input(Bool())
   val empty = Output(Bool())
   val dout = Output(new Entry(size))
