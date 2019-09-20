@@ -7,7 +7,7 @@ import NocTester._
 
 object MeasureLatency extends App {
 
-  def singleFlow(dut: S4NoCIO): Unit = {
+  def singlePacketCpu(dut: S4NoCIO): Unit = {
 
     val cores = dut.s4noc.dim * dut.s4noc.dim
     println("result: Testing " + cores + " cores")
@@ -33,9 +33,9 @@ object MeasureLatency extends App {
     }
   }
 
-  val CNT = 5
+  val CNT = 20
 
-  def multiFlow(dut: S4NoCIO): Unit = {
+  def multiFlowCpu(dut: S4NoCIO): Unit = {
 
     val cores = dut.s4noc.dim * dut.s4noc.dim
     val valid = Schedule.getSchedule(dut.s4noc.dim)._2
@@ -85,23 +85,82 @@ object MeasureLatency extends App {
 
     // let the TB run for some cycles
     dut.clock.step(CNT * 10)
+  }
+
+  def send(port: NetworkPort, data: UInt, slot: UInt, clock: Clock): Boolean = {
+
+    val bufferFree = !port.tx.full.peek.litToBoolean
+    port.tx.din.data.poke(data)
+    port.tx.din.time.poke(slot)
+    if (bufferFree) {
+      port.tx.write.poke(true.B)
+    }
+    clock.step(1)
+    port.tx.write.poke(false.B)
+    bufferFree
+  }
+
+  def receive(port: NetworkPort, clock: Clock) = {
+    val dataAvailable = !port.rx.empty.peek.litToBoolean
+    var data = 0
+    var from = 0
+    if (dataAvailable) {
+      data = port.rx.dout.data.peek.litValue.toInt
+      from = port.rx.dout.time.peek.litValue.toInt
+      port.rx.read.poke(true.B)
+    }
+    clock.step(1)
+    port.rx.read.poke(false.B)
+    (dataAvailable, data, from)
+  }
+
+  def singleFlow(dut: S4NoC) = {
+
+    val cores = dut.dim * dut.dim
+    println(s"result: testing $cores cores")
+    val valid = Schedule.getSchedule(dut.dim)._2
+
+    fork {
+      for (cnt <- 0 until CNT) {
+        val data = dut.io.cycCnt.peek
+        while (!send(dut.io.networkPort(0), data, 0.U, dut.clock)) {}
+      }
+    }
+
+    for (cnt <- 0 until CNT) {
+      var loop = true
+      while(loop) {
+        val ret = receive(dut.io.networkPort(3), dut.clock)
+        loop = !ret._1
+        if (ret._1) {
+          val latency = dut.io.cycCnt.peek.litValue().toInt - ret._2
+          println(s"received $ret latency is $latency")
+        }
+      }
+    }
+
 
 
   }
 
-  RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlow }
+  /*
+  RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlowCpu }
 
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(4, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(4, i, i, 32)) { singleFlowCpu }
   }
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(9, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(9, i, i, 32)) { singleFlowCpu }
   }
   for (i <- 2 until 7) {
     println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(16, i, i, 32)) { singleFlow }
+    RawTester.test(new S4NoCIO(16, i, i, 32)) { singleFlowCpu }
   }
+
+   */
+
+  RawTester.test(new S4NoC(4,2,2,32)) { singleFlow }
 
 }

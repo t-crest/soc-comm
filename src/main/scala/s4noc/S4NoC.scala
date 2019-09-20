@@ -13,6 +13,7 @@ import chisel3._
 class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val io = IO(new Bundle {
     val networkPort = Vec(n, new NetworkPort(width))
+    val cycCnt = Output(UInt(32.W))
   })
 
   val dim = math.sqrt(n).toInt
@@ -26,6 +27,9 @@ class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
     io.networkPort(i) <> ni.io.networkPort
   }
 
+  val cntReg = RegInit(0.U(32.W))
+  cntReg := cntReg + 1.U
+  io.cycCnt := cntReg
 }
 
 object S4NoC extends App {
