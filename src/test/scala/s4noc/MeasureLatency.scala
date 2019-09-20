@@ -33,7 +33,7 @@ object MeasureLatency extends App {
     }
   }
 
-  val CNT = 20
+  val CNT = 50
 
   def multiFlowCpu(dut: S4NoCIO): Unit = {
 
@@ -116,9 +116,7 @@ object MeasureLatency extends App {
 
   def singleFlow(dut: S4NoC) = {
 
-    val cores = dut.dim * dut.dim
-    println(s"result: testing $cores cores")
-    val valid = Schedule.getSchedule(dut.dim)._2
+    println(s"result: testing one cores")
 
     fork {
       for (cnt <- 0 until CNT) {
@@ -134,15 +132,53 @@ object MeasureLatency extends App {
         loop = !ret._1
         if (ret._1) {
           val latency = dut.io.cycCnt.peek.litValue().toInt - ret._2
-          println(s"received $ret latency is $latency")
+          println(s"result: received $ret latency is $latency")
+        }
+      }
+    }
+  }
+  def multiFlow(dut: S4NoC) = {
+
+    val cores = dut.dim * dut.dim
+    println(s"result: testing $cores cores")
+    val valid = Schedule.getSchedule(dut.dim)._2
+
+    // the writer threads
+    for (i <- 0 until cores) {
+      fork {
+        // We will write as fast as possible, which is max one word per 2 cc (current FIFO).
+        // We may also have head of line blocking.
+        for (cnt <- 0 until CNT) {
+          for (slot <- 0 until valid.length) {
+            // println(s"core $i ${valid(slot)}")
+            if (valid(slot)) {
+              val data = ((i << 16) + dut.io.cycCnt.peek.litValue().toInt).U
+              while (!send(dut.io.networkPort(i), data, slot.U, dut.clock)) {}
+            }
+          }
         }
       }
     }
 
+    for (i <- 0 until cores) {
+      fork {
+        // Each core should get CNT packets
+        var cnt = 0
+        while (cnt < CNT) {
+          val packet = receive(dut.io.networkPort(i), dut.clock)
+          if (packet._1) {
+            val now = dut.io.cycCnt.peek.litValue().toInt
+            val ts = packet._2 & 0xffff
+            val sender = packet._2 >> 16
+            println(s"result: latency is ${now-ts} (sent at $ts from $sender to $i)")
+            cnt += 1
+          }
+        }
+      }
+    }
 
-
+    dut.clock.step(CNT*10)
   }
-
   /*
   RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlowCpu }
 
@@ -161,6 +197,14 @@ object MeasureLatency extends App {
 
    */
 
-  RawTester.test(new S4NoC(4,2,2,32)) { singleFlow }
+  // RawTester.test(new S4NoC(4,2,2,32)) { singleFlow }
+  println("result: 2 elements")
+  RawTester.test(new S4NoC(4,2,2,32)) { multiFlow }
+  println("result: 4 elements")
+  RawTester.test(new S4NoC(4,4,4,32)) { multiFlow }
+  println("result: 2 elements")
+  RawTester.test(new S4NoC(16,2,2,32)) { multiFlow }
+  println("result: 4 elements")
+  RawTester.test(new S4NoC(16,4,4,32)) { multiFlow }
 
 }
