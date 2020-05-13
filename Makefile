@@ -1,6 +1,10 @@
 
+init: ip-contributions
 
-all: doit test
+ip-contributions:
+	git clone https://github.com/freechipsproject/ip-contributions.git
+
+all: init doit test
 
 # Generate Verilog code
 doit:
@@ -26,3 +30,4 @@ vcd:
 
 clean:
 	git clean -fd
+	rm -rf ip-contributions

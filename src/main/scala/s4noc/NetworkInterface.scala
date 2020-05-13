@@ -9,6 +9,8 @@ package s4noc
 import chisel3._
 import chisel3.util._
 
+import chisel.lib.fifo._
+
 
 class NetworkPort(private val size: Int) extends Bundle {
   val tx = new WriterIO(size)
@@ -41,6 +43,9 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, w
 
   // in/out direction is from the network view
   // flipped here
+
+  // This is for now to just test compilation
+  val fifo = Module(new DoubleBufferFifo(new Entry(10), 2))
 
   val txFifo = Module(new BubbleFifo(txDepth, width))
   io.networkPort.tx <> txFifo.io.enq

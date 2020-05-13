@@ -13,10 +13,18 @@ The S4NOC has a slightly different interface (no rdy needed).
 
 We may consider to move to AXI.
 
+## Dependency
+
+This project depends on ```ip-contributions```. Initialize it with:
+
+```
+make init
+```
+
 ## Setup
 
 The hardware is described in [Chisel](https://chisel.eecs.berkeley.edu/)
-and needs just a Java runtime and `sbt` installed. All other needed packages
+and needs just a Java JDK (version 8) and `sbt` installed. All other needed packages
 will be automatically downloaded by `sbt`.
 
 
@@ -72,3 +80,15 @@ The generated Verilog file can be found in ```generated/S4nocTrafficGen.v```
 and can be synthesized to provide resource numbers and maximum
 clocking frequency. An example project for Quartus can be found in this
 [quartus](quartus) subfolder.
+
+## TODO
+
+ * Move all tests to ScalaTest, drop iotester dependency, and fix README.md
+ * Find out how to use external source dependency for FIFOs
+ * Refactor to use generic FIFOs
+ * Have the core # to slot # mapping in HW (it should be cheap)
+ * Get the Chisel 2 NoC running
+
+### Next Paper
+
+ * Build a standard NoC router for best effort
