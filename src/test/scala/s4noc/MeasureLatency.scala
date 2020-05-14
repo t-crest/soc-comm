@@ -89,28 +89,28 @@ object MeasureLatency extends App {
 
   def send(port: NetworkPort, data: UInt, slot: UInt, clock: Clock): Boolean = {
 
-    val bufferFree = !port.tx.full.peek.litToBoolean
-    port.tx.din.data.poke(data)
-    port.tx.din.time.poke(slot)
+    val bufferFree = port.tx.ready.peek.litToBoolean
+    port.tx.bits.data.poke(data)
+    port.tx.bits.time.poke(slot)
     if (bufferFree) {
-      port.tx.write.poke(true.B)
+      port.tx.valid.poke(true.B)
     }
     clock.step(1)
-    port.tx.write.poke(false.B)
+    port.tx.valid.poke(false.B)
     bufferFree
   }
 
   def receive(port: NetworkPort, clock: Clock) = {
-    val dataAvailable = !port.rx.empty.peek.litToBoolean
+    val dataAvailable = port.rx.valid.peek.litToBoolean
     var data = 0
     var from = 0
     if (dataAvailable) {
-      data = port.rx.dout.data.peek.litValue.toInt
-      from = port.rx.dout.time.peek.litValue.toInt
-      port.rx.read.poke(true.B)
+      data = port.rx.bits.data.peek.litValue.toInt
+      from = port.rx.bits.time.peek.litValue.toInt
+      port.rx.ready.poke(true.B)
     }
     clock.step(1)
-    port.rx.read.poke(false.B)
+    port.rx.ready.poke(false.B)
     (dataAvailable, data, from)
   }
 

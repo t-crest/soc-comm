@@ -42,11 +42,11 @@ class CpuInterface[T <: Data](dt: T, width: Int) extends Module {
     val networkPort = Flipped(new NetworkPort(width))
   })
 
-  io.networkPort.tx.write := false.B
-  io.networkPort.tx.din.data := io.cpuPort.wrData
-  io.networkPort.tx.din.time := io.cpuPort.addr
-  when (io.cpuPort.wr && !io.networkPort.tx.full) {
-    io.networkPort.tx.write := true.B
+  io.networkPort.tx.valid := false.B
+  io.networkPort.tx.bits.data := io.cpuPort.wrData
+  io.networkPort.tx.bits.time := io.cpuPort.addr
+  when (io.cpuPort.wr && io.networkPort.tx.ready) {
+    io.networkPort.tx.valid := true.B
   }
 
   // TODO: rd timing is the same clock cycle, do we want this?
@@ -55,19 +55,19 @@ class CpuInterface[T <: Data](dt: T, width: Int) extends Module {
 
   // for now same clock cycle
 
-  io.cpuPort.rdData := io.networkPort.rx.dout.data
+  io.cpuPort.rdData := io.networkPort.rx.bits.data
 
-  io.networkPort.rx.read := false.B
+  io.networkPort.rx.ready := false.B
   when (io.cpuPort.rd) {
     val addr = io.cpuPort.addr
     when (addr === 0.U)  {
-      io.networkPort.rx.read := true.B
+      io.networkPort.rx.ready := true.B
     } .elsewhen(addr === 1.U) {
-      io.cpuPort.rdData := io.networkPort.rx.dout.time
+      io.cpuPort.rdData := io.networkPort.rx.bits.time
     } .elsewhen(addr === 2.U) {
-      io.cpuPort.rdData := Cat(0.U(31.W), !io.networkPort.tx.full)
+      io.cpuPort.rdData := Cat(0.U(31.W), io.networkPort.tx.ready)
     } .elsewhen(addr === 3.U) {
-      io.cpuPort.rdData := Cat(0.U(31.W), !io.networkPort.rx.empty)
+      io.cpuPort.rdData := Cat(0.U(31.W), io.networkPort.rx.valid)
     }
   }
 }

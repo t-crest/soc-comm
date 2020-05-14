@@ -13,19 +13,25 @@ import chisel.lib.fifo._
 
 
 class NetworkPort(private val size: Int) extends Bundle {
-  val tx = new WriterIO(size)
-  val rx = new ReaderIO(size)
+  val tx = Flipped(new DecoupledIO(new Entry(size)))
+  val rx = new DecoupledIO(new Entry(size))
 }
 
-// This should be a generic for the FIFO
+// This should be a generic data for the FIFO
 class Entry(private val w: Int) extends Bundle {
   val data = UInt(w.W)
   val time = UInt(8.W)
+
+  // TODO: why is this apply not working?
+  // Why is the return value Unit?
+  def apply(w: Int): Unit = {
+    new Entry(w)
+  }
 }
 
-class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, width: Int) extends Module {
+class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, size: Int) extends Module {
   val io = IO(new Bundle {
-    val networkPort = new NetworkPort(width)
+    val networkPort = new NetworkPort(size)
     val local = Flipped(new Channel(dt))
   })
 
@@ -43,25 +49,24 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, w
 
   // in/out direction is from the network view
   // flipped here
-
-  // This is for now to just test compilation
-  val fifo = Module(new DoubleBufferFifo(new Entry(10), 2))
-
-  val txFifo = Module(new BubbleFifo(txDepth, width))
+  val txFifo = Module(new BubbleFifo(new Entry(size), txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
-  io.local.in.data := txFifo.io.deq.dout.data
-  val doDeq = !txFifo.io.deq.empty && regDelay === txFifo.io.deq.dout.time
+  io.local.in.data := txFifo.io.deq.bits.data
+  val doDeq = txFifo.io.deq.valid && regDelay === txFifo.io.deq.bits.time
   io.local.in.valid := doDeq
-  txFifo.io.deq.read := doDeq
+  // TODO: this is a combinational ready. We do not want this
+  // Solution: generate ready just from right timing
+  txFifo.io.deq.ready := doDeq
 
-  val rxFifo = Module(new BubbleFifo(rxDepth, width))
+  val rxFifo = Module(new BubbleFifo(new Entry(size), rxDepth))
   io.networkPort.rx <> rxFifo.io.deq
 
-  rxFifo.io.enq.write := false.B
-  rxFifo.io.enq.din.data := io.local.out.data
-  rxFifo.io.enq.din.time := regDelay
-  when (io.local.out.valid && !rxFifo.io.enq.full) {
-    rxFifo.io.enq.write := true.B
+  rxFifo.io.enq.valid := false.B
+  rxFifo.io.enq.bits.data := io.local.out.data
+  rxFifo.io.enq.bits.time := regDelay
+  // TODO: again a combinational ready/valid
+  when (io.local.out.valid && rxFifo.io.enq.ready) {
+    rxFifo.io.enq.valid := true.B
   }
 }

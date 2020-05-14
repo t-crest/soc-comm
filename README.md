@@ -84,10 +84,10 @@ clocking frequency. An example project for Quartus can be found in this
 ## TODO
 
  * Move all tests to ScalaTest, drop iotester dependency, and fix README.md
- * Find out how to use external source dependency for FIFOs
- * Refactor to use generic FIFOs
  * Have the core # to slot # mapping in HW (it should be cheap)
  * Get the Chisel 2 NoC running
+ * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
+ * Provide blocking in the CPU interface if not data available or TF full
 
 ### Next Paper
 
