@@ -12,7 +12,7 @@ import chisel3._
 
 class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val io = IO(new Bundle {
-    val networkPort = Vec(n, new NetworkPort(width))
+    val networkPort = Vec(n, new NetworkPort(UInt(width.W)))
     val cycCnt = Output(UInt(32.W))
   })
 
@@ -22,7 +22,7 @@ class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val net = Module(new Network(dim, UInt(width.W)))
 
   for (i <- 0 until n) {
-    val ni = Module(new NetworkInterface(dim, txFifo, rxFifo, UInt(width.W), width))
+    val ni = Module(new NetworkInterface(dim, txFifo, rxFifo, UInt(width.W)))
     net.io.local(i) <> ni.io.local
     io.networkPort(i) <> ni.io.networkPort
   }

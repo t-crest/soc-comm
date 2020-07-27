@@ -12,26 +12,27 @@ import chisel3.util._
 import chisel.lib.fifo._
 
 
-class NetworkPort(private val size: Int) extends Bundle {
-  val tx = Flipped(new DecoupledIO(new Entry(size)))
-  val rx = new DecoupledIO(new Entry(size))
+class NetworkPort[T <: Data](private val dt: T) extends Bundle {
+  val tx = Flipped(new DecoupledIO(new Entry(dt)))
+  val rx = new DecoupledIO(new Entry(dt))
 }
 
 // This should be a generic data for the FIFO
-class Entry(private val w: Int) extends Bundle {
-  val data = UInt(w.W)
+class Entry[T <: Data](private val dt: T) extends Bundle {
+  val data = dt.cloneType
   val time = UInt(8.W)
 
   // TODO: why is this apply not working?
   // Why is the return value Unit?
-  def apply(w: Int): Unit = {
-    new Entry(w)
+  // It is Entry, now...
+  def apply(dt: T) = {
+    new Entry(dt)
   }
 }
 
-class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, size: Int) extends Module {
+class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) extends Module {
   val io = IO(new Bundle {
-    val networkPort = new NetworkPort(size)
+    val networkPort = new NetworkPort(dt)
     val local = Flipped(new Channel(dt))
   })
 
@@ -49,7 +50,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, s
 
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new BubbleFifo(new Entry(size), txDepth))
+  val txFifo = Module(new BubbleFifo(new Entry(dt), txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
   io.local.in.data := txFifo.io.deq.bits.data
@@ -59,7 +60,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T, s
   // Solution: generate ready just from right timing
   txFifo.io.deq.ready := doDeq
 
-  val rxFifo = Module(new BubbleFifo(new Entry(size), rxDepth))
+  val rxFifo = Module(new BubbleFifo(new Entry(dt), rxDepth))
   io.networkPort.rx <> rxFifo.io.deq
 
   rxFifo.io.enq.valid := false.B

@@ -5,8 +5,10 @@ import chisel3.tester._
 
 import NocTester._
 
+
 object MeasureLatency extends App {
 
+  /*
   def singlePacketCpu(dut: S4NoCIO): Unit = {
 
     val cores = dut.s4noc.dim * dut.s4noc.dim
@@ -87,10 +89,21 @@ object MeasureLatency extends App {
     dut.clock.step(CNT * 10)
   }
 
-  def send(port: NetworkPort, data: UInt, slot: UInt, clock: Clock): Boolean = {
+  def send[T](port: NetworkPort[T], data: T, slot: UInt, clock: Clock): Boolean = {
 
     val bufferFree = port.tx.ready.peek.litToBoolean
-    port.tx.bits.data.poke(data)
+    /*
+    val e = new Entry(data)
+
+    // TODO: don't know yet how this works
+    val x = e.one
+    e.getDt
+    val y = e.getDt
+    //e.data = 123.asInstanceOf[e.data.type]
+    port.tx.bits.poke(e)
+    // port.tx.bits.data.poke(e.data)
+
+     */
     port.tx.bits.time.poke(slot)
     if (bufferFree) {
       port.tx.valid.poke(true.B)
@@ -100,7 +113,7 @@ object MeasureLatency extends App {
     bufferFree
   }
 
-  def receive(port: NetworkPort, clock: Clock) = {
+  def receive[T](port: NetworkPort[T], clock: Clock) = {
     val dataAvailable = port.rx.valid.peek.litToBoolean
     var data = 0
     var from = 0
@@ -179,23 +192,6 @@ object MeasureLatency extends App {
 
     dut.clock.step(CNT*10)
   }
-  /*
-  RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlowCpu }
-
-  for (i <- 2 until 7) {
-    println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(4, i, i, 32)) { singleFlowCpu }
-  }
-  for (i <- 2 until 7) {
-    println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(9, i, i, 32)) { singleFlowCpu }
-  }
-  for (i <- 2 until 7) {
-    println(s"result: Using bubble FIFOs with $i elements")
-    RawTester.test(new S4NoCIO(16, i, i, 32)) { singleFlowCpu }
-  }
-
-   */
 
   // RawTester.test(new S4NoC(4,2,2,32)) { singleFlow }
   println("result: 2 elements")
@@ -206,5 +202,27 @@ object MeasureLatency extends App {
   RawTester.test(new S4NoC(16,2,2,32)) { multiFlow }
   println("result: 4 elements")
   RawTester.test(new S4NoC(16,4,4,32)) { multiFlow }
+
+   */
+
+    /*
+    RawTester.test(new S4NoCIO(4, 2, 2, 32)) { multiFlowCpu }
+
+    for (i <- 2 until 7) {
+      println(s"result: Using bubble FIFOs with $i elements")
+      RawTester.test(new S4NoCIO(4, i, i, 32)) { singleFlowCpu }
+    }
+    for (i <- 2 until 7) {
+      println(s"result: Using bubble FIFOs with $i elements")
+      RawTester.test(new S4NoCIO(9, i, i, 32)) { singleFlowCpu }
+    }
+    for (i <- 2 until 7) {
+      println(s"result: Using bubble FIFOs with $i elements")
+      RawTester.test(new S4NoCIO(16, i, i, 32)) { singleFlowCpu }
+    }
+
+     */
+
+
 
 }

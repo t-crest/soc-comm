@@ -39,7 +39,7 @@ class CpuPort(private val w: Int) extends Bundle {
 class CpuInterface[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPort(width)
-    val networkPort = Flipped(new NetworkPort(width))
+    val networkPort = Flipped(new NetworkPort(dt))
   })
 
   io.networkPort.tx.valid := false.B
