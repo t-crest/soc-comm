@@ -17,10 +17,11 @@ class GenExample extends FlatSpec with ChiselScalatestTester with Matchers {
   class M[T <: Data](dt: T) extends Module {
     val io = IO(new Bundle {
       val in = Input(new Elem(dt))
-      val out = Output(UInt(8.W))
+      val out = Output(new Elem(dt))
     })
 
-    io.out := io.in.data
+    io.out.data := io.in.data
+    io.out.time := 2.U
   }
 
   it should "work" in {
@@ -37,7 +38,7 @@ class GenExample extends FlatSpec with ChiselScalatestTester with Matchers {
 
 
       c.clock.step(1)
-      c.io.out.expect(1.U)
+      c.io.out.data.expect(1.U)
     }
   }
 }
