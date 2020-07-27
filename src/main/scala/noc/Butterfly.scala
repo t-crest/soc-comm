@@ -32,13 +32,22 @@ class ButterflyRouter extends Module {
   val inReg = new Array[Data](4)
   val outReg = new Array[Data](4)
 
+  val muxes = Array.fill(4)(Wire(Vec(4, new ButterChannel)))
+
   val resetVal = Wire((new ButterChannel()))
   resetVal.typ := Const.N
   resetVal.data := 0.U
 
   for (i <- 0 until 4) {
-    inReg(i) = RegNext(io.inPort.port(i), init = resetVal)
-    outReg(i) = RegNext(inReg(i), init = resetVal)
+    inReg(i) = RegNext(io.inPort.port(i), resetVal)
+  }
+
+  for (i <- 0 until 4) {
+    for (j <- 0 until 4) {
+      muxes(i)(j) := inReg(j)
+    }
+    val sel = i.U
+    outReg(i) = RegNext(muxes(i)(sel), resetVal)
     io.outPort.port(i) := outReg(i)
   }
 }
@@ -59,6 +68,8 @@ class Butterfly extends Module {
     io.inPorts(i) <> stage1(i).io.inPort
     io.outPorts(i) <> stage3(i).io.outPort
   }
+
+
 
   for (i <- 0 until 4) {
     for (j <- 0 until 4) {
