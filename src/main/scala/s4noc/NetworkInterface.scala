@@ -44,7 +44,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
 
   val regCnt = RegInit(0.U(log2Up(len).W))
   regCnt := Mux(regCnt === (len - 1).U, 0.U, regCnt + 1.U)
-  // TDM schedule starts one cycles later for read data delay of OneWayMemory
+  // TDM schedule starts one cycle later for read data delay of OneWayMemory
   // Maybe we can use that delay here as well for something good
   val regDelay = RegNext(regCnt, init = 0.U)
 
