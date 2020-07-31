@@ -13,19 +13,18 @@ import chisel.lib.fifo._
 
 
 class NetworkPort[T <: Data](private val dt: T) extends Bundle {
-  val tx = Flipped(new DecoupledIO(new Entry(dt)))
-  val rx = new DecoupledIO(new Entry(dt))
+  val tx = Flipped(new DecoupledIO(Entry(dt)))
+  val rx = new DecoupledIO(Entry(dt))
 }
 
 // This should be a generic data for the FIFO
 class Entry[T <: Data](private val dt: T) extends Bundle {
   val data = dt.cloneType
   val time = UInt(8.W)
+}
 
-  // TODO: why is this apply not working?
-  // Why is the return value Unit?
-  // It is Entry, now...
-  def apply(dt: T) = {
+object Entry {
+  def apply[T <: Data](dt: T) = {
     new Entry(dt)
   }
 }
@@ -50,12 +49,12 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
 
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new BubbleFifo(new Entry(dt), txDepth))
+  val txFifo = Module(new BubbleFifo(Entry(dt), txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
   // local buffer to avoid combinational ready/valid
   val txFullReg = RegInit(false.B)
-  val txDataReg = Reg(new Entry(dt))
+  val txDataReg = Reg(Entry(dt))
 
   when(!txFullReg && txFifo.io.deq.valid) {
     txDataReg := txFifo.io.deq.bits
@@ -67,12 +66,12 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
   io.local.in.valid := doSend
   when (doSend) { txFullReg := false.B }
 
-  val rxFifo = Module(new BubbleFifo(new Entry(dt), rxDepth))
+  val rxFifo = Module(new BubbleFifo(Entry(dt), rxDepth))
   io.networkPort.rx <> rxFifo.io.deq
 
   // local buffer to avoid combinational ready/valid
   val rxFullReg = RegInit(false.B)
-  val rxDataReg = Reg(new Entry(dt))
+  val rxDataReg = Reg(Entry(dt))
 
   when (!rxFullReg && io.local.out.valid) {
     rxDataReg.data := io.local.out.data
