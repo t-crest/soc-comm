@@ -46,28 +46,43 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
   regCnt := Mux(regCnt === (len - 1).U, 0.U, regCnt + 1.U)
   // TDM schedule starts one cycle later for read data delay of OneWayMemory
   // Maybe we can use that delay here as well for something good
-  val regDelay = RegNext(regCnt, init = 0.U)
+  val regTimeSlot = RegNext(regCnt, init = 0.U)
 
   // in/out direction is from the network view
   // flipped here
   val txFifo = Module(new BubbleFifo(new Entry(dt), txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
-  io.local.in.data := txFifo.io.deq.bits.data
-  val doDeq = txFifo.io.deq.valid && regDelay === txFifo.io.deq.bits.time
-  io.local.in.valid := doDeq
-  // TODO: this is a combinational ready. We do not want this
-  // Solution: generate ready just from right timing
-  txFifo.io.deq.ready := doDeq
+  // local buffer to avoid combinational ready/valid
+  val txFullReg = RegInit(false.B)
+  val txDataReg = Reg(new Entry(dt))
+
+  when(!txFullReg && txFifo.io.deq.valid) {
+    txDataReg := txFifo.io.deq.bits
+    txFullReg := true.B
+  }
+  txFifo.io.deq.ready := !txFullReg
+  io.local.in.data := txDataReg.data
+  val doSend = txFullReg && regTimeSlot === txDataReg.time
+  io.local.in.valid := doSend
+  when (doSend) { txFullReg := false.B }
 
   val rxFifo = Module(new BubbleFifo(new Entry(dt), rxDepth))
   io.networkPort.rx <> rxFifo.io.deq
 
-  rxFifo.io.enq.valid := false.B
-  rxFifo.io.enq.bits.data := io.local.out.data
-  rxFifo.io.enq.bits.time := regDelay
-  // TODO: again a combinational ready/valid
-  when (io.local.out.valid && rxFifo.io.enq.ready) {
-    rxFifo.io.enq.valid := true.B
+  // local buffer to avoid combinational ready/valid
+  val rxFullReg = RegInit(false.B)
+  val rxDataReg = Reg(new Entry(dt))
+
+  when (!rxFullReg && io.local.out.valid) {
+    rxDataReg.data := io.local.out.data
+    rxDataReg.time := regTimeSlot
+    rxFullReg := true.B
+  }
+
+  rxFifo.io.enq.valid := rxFullReg
+  rxFifo.io.enq.bits := rxDataReg
+  when (rxFullReg && rxFifo.io.enq.ready) {
+    rxFullReg := false.B
   }
 }
