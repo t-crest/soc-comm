@@ -58,12 +58,24 @@ class Schedule(val n: Int) {
     }
   }
 
+  def nextFrom(i: Int) = {
+    i match {
+      case NORTH => SOUTH
+      case EAST => WEST
+      case SOUTH => NORTH
+      case WEST => EAST
+      case _ => throw new Error("wrong argument")
+    }
+  }
+
+  // The array contains the MUX setting for each output port
+
   val split = s.split('|')
   val len = split.reduceLeft((a, b) => if (a.length > b.length) a else b).length
   val schedule = new Array[Array[Int]](len)
   val valid = new Array[Boolean](len)
   for (i <- 0 until len) {
-    schedule(i) = new Array[Int](NR_OF_PORTS)
+    schedule(i) = Array.fill[Int](NR_OF_PORTS)(-1)
   }
   for (i <- 0 until split.length) {
     var from = 'l'
@@ -75,6 +87,7 @@ class Schedule(val n: Int) {
       }
     }
   }
+  // valid is for the one-way memory
   var line = 0
   for (i <- 0 until len - 1) {
     // Need to think through this once more to check if correct
@@ -83,22 +96,65 @@ class Schedule(val n: Int) {
       if (valid(i)) line += 1
     }
   }
-  println("Schedule is " + schedule.length + " clock cycles")
+  println("Schedule for " + n * n + " nodes is " + schedule.length + " clock cycles")
 
-
-  def timeToDest(core: Int, slot : Int) = {
-
+  override def toString: String = {
+    var s = ""
+    schedule.foreach(a => {
+      s += "( "
+      a.foreach(v => {
+        s += v + " "
+      })
+      s += ")\n"
+    })
+    s
   }
 
-  def coreToTime(src: Int, dest: Int) = {
+  def move(core: Int, direction: Int): Int = {
 
+    var row = core / n
+    var col = core % n
+
+    direction match {
+      case NORTH => row = (row - 1 + n) % n
+      case EAST => col = (col + 1) % n
+      case SOUTH => row = (row + 1) % n
+      case WEST => col = (col - 1 + n) % n
+    }
+
+    row * n + col
+  }
+
+  def timeToDest(core: Int, slot : Int): (Int , Int) = {
+
+    var dest = core
+    var step = schedule(slot).indexOf(LOCAL)
+    var count = 0
+
+    if (step == -1) return (-1, 0)
+    while (step != LOCAL) {
+      dest = move(dest, step)
+      count += 1
+      step = schedule(slot + count).indexOf(nextFrom(step))
+    }
+    (dest, count + 1)
+  }
+
+  def coreToTimeSlot(src: Int, dest: Int) = {
+    var time = -1
+    for (i <- 0 until schedule.length) {
+      if (timeToDest(src, i)._1 == dest) {
+        time = i
+      }
+    }
+    time
   }
 }
 
 
 object Schedule {
 
-  var sched = new Schedule(4)
+  var sched = new Schedule(2)
 
   def apply(n: Int) = {
     if (sched.n != n) {
@@ -134,6 +190,15 @@ ne
       schedule(i) = oneSlot
     }
     schedule
+  }
+
+  def main(args: Array[String]): Unit = {
+
+    val s = Schedule(2)
+    println(s)
+    for (i <- 0 until s.schedule.length) {
+      println(s.timeToDest(3,i))
+    }
   }
 
 }
