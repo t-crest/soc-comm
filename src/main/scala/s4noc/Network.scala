@@ -17,7 +17,7 @@ class Network[T <: Data](n: Int, dt: T) extends Module {
     val local = Vec(n * n, new Channel(dt))
   })
 
-  val schedule = Schedule.getSchedule(n)._1
+  val schedule = Schedule(n).schedule
 
   val net = new Array[S4Router[T]](n * n)
   for (i <- 0 until n * n) {

@@ -35,11 +35,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
     val local = Flipped(new Channel(dt))
   })
 
-  // TODO: too much repetition
-  // Either provide the schedule as parameter
-  // or simply read out the TDM counter from the router.
-  // Why duplicating it? But does it matter?
-  val len = Schedule.getSchedule(dim)._1.length
+  val len = Schedule(dim).schedule.length
 
   val regCnt = RegInit(0.U(log2Up(len).W))
   regCnt := Mux(regCnt === (len - 1).U, 0.U, regCnt + 1.U)

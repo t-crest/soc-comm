@@ -20,7 +20,7 @@ class RouterTester extends FlatSpec with ChiselScalatestTester with Matchers {
   behavior of "Router"
 
   it should "give known values" in {
-    test(new S4Router(Schedule.getSchedule(2)._1, UInt(16.W))) { c =>
+    test(new S4Router(Schedule(2).schedule, UInt(16.W))) { c =>
       for (i <- 0 until 5) {
         c.io.ports(0).in.data.poke((0x10 + i).U)
         c.io.ports(1).in.data.poke((0x20 + i).U)

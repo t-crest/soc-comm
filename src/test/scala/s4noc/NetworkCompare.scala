@@ -22,10 +22,10 @@ class NetworkOfFour() extends Module {
     val local = Vec(4, new Channel(UInt(32.W)))
   })
 
-  val schedule = Schedule.getSchedule(2)
+  val schedule = Schedule(2)
   val net = new Array[S4Router[UInt]](4)
   for (i <- 0 until 4) {
-    net(i) = Module(new S4Router(schedule._1, UInt(32.W)))
+    net(i) = Module(new S4Router(schedule.schedule, UInt(32.W)))
     io.local(i).out := net(i).io.ports(LOCAL).out
     net(i).io.ports(LOCAL).in := io.local(i).in
   }

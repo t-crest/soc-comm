@@ -14,7 +14,7 @@ class ScheduleTester extends FlatSpec with Matchers {
   it should "pass" in {
     val sref = Schedule.gen2x2Schedule()
     println(ScheduleTable.FourNodes)
-    val stest = Schedule.getSchedule(2)._1
+    val stest = Schedule(2).schedule
     for (i <- 0 until sref.length) {
       val slotref = sref(i)
       val slottest = stest(i)

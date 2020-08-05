@@ -19,73 +19,92 @@ package s4noc
 import Const._
 import scala.util.Random
 
+// TODO: have functions for time to dest and dest to time
+
+class Schedule(val n: Int) {
+
+  val s = n match {
+    case 2 => ScheduleTable.FourNodes
+    case 3 => ScheduleTable.NineNodes
+    case 4 => ScheduleTable.SixTeenNodes
+    case 5 => ScheduleTable.TwentyFiveNodes
+    case 6 => ScheduleTable.ThirtySixNodes
+    case 7 => ScheduleTable.FourtyNineNodes
+    case 8 => ScheduleTable.SixtyFourNodes
+    case 9 => ScheduleTable.EightyOneNodes
+    case 10 => ScheduleTable.OneHundredNodes
+    case _ => throw new Error("Currently only 2x2 up to 10x10 NoCs supported, you requested: "+n+"x"+n)
+  }
+
+  def port(c: Char) = {
+    c match {
+      case 'n' => NORTH
+      case 'e' => EAST
+      case 's' => SOUTH
+      case 'w' => WEST
+      case 'l' => LOCAL
+      case ' ' => 0
+    }
+  }
+
+  def nextFrom(c: Char) = {
+    c match {
+      case 'n' => 's'
+      case 'e' => 'w'
+      case 's' => 'n'
+      case 'w' => 'e'
+      case 'l' => 'x' // no next for the last
+      case ' ' => 'l' // stick to l on empty/waiting slots
+    }
+  }
+
+  val split = s.split('|')
+  val len = split.reduceLeft((a, b) => if (a.length > b.length) a else b).length
+  val schedule = new Array[Array[Int]](len)
+  val valid = new Array[Boolean](len)
+  for (i <- 0 until len) {
+    schedule(i) = new Array[Int](NR_OF_PORTS)
+  }
+  for (i <- 0 until split.length) {
+    var from = 'l'
+    for (j <- 0 until split(i).length) {
+      val to = split(i)(j)
+      if (to != ' ') {
+        schedule(j)(port(to)) = port(from)
+        from = nextFrom(to)
+      }
+    }
+  }
+  var line = 0
+  for (i <- 0 until len - 1) {
+    // Need to think through this once more to check if correct
+    if (line < split.length) {
+      valid(i) = split(line)(i) != ' '
+      if (valid(i)) line += 1
+    }
+  }
+  println("Schedule is " + schedule.length + " clock cycles")
+
+
+  def timeToDest(core: Int, slot : Int) = {
+
+  }
+
+  def coreToTime(src: Int, dest: Int) = {
+
+  }
+}
+
 
 object Schedule {
 
-  def getSchedule(n: Int) = {
+  var sched = new Schedule(4)
 
-    val s = n match {
-      case 2 => ScheduleTable.FourNodes
-      case 3 => ScheduleTable.NineNodes
-      case 4 => ScheduleTable.SixTeenNodes
-      case 5 => ScheduleTable.TwentyFiveNodes
-      case 6 => ScheduleTable.ThirtySixNodes
-      case 7 => ScheduleTable.FourtyNineNodes
-      case 8 => ScheduleTable.SixtyFourNodes
-      case 9 => ScheduleTable.EightyOneNodes
-      case 10 => ScheduleTable.OneHundredNodes
-      case _ => throw new Error("Currently only 2x2 up to 10x10 NoCs supported, you requested: "+n+"x"+n)
+  def apply(n: Int) = {
+    if (sched.n != n) {
+      sched = new Schedule(n)
     }
-
-    def port(c: Char) = {
-      c match {
-        case 'n' => NORTH
-        case 'e' => EAST
-        case 's' => SOUTH
-        case 'w' => WEST
-        case 'l' => LOCAL
-        case ' ' => 0
-      }
-    }
-
-    def nextFrom(c: Char) = {
-      c match {
-        case 'n' => 's'
-        case 'e' => 'w'
-        case 's' => 'n'
-        case 'w' => 'e'
-        case 'l' => 'x' // no next for the last
-        case ' ' => 'l' // stick to l on empty/waiting slots
-      }
-    }
-
-    val split = s.split('|')
-    val len = split.reduceLeft((a, b) => if (a.length > b.length) a else b).length
-    val schedule = new Array[Array[Int]](len)
-    val valid = new Array[Boolean](len)
-    for (i <- 0 until len) {
-      schedule(i) = new Array[Int](NR_OF_PORTS)
-    }
-    for (i <- 0 until split.length) {
-      var from = 'l'
-      for (j <- 0 until split(i).length) {
-        val to = split(i)(j)
-        if (to != ' ') {
-          schedule(j)(port(to)) = port(from)
-          from = nextFrom(to)
-        }
-      }
-    }
-    var line = 0
-    for (i <- 0 until len - 1) {
-      // Need to think through this once more to check if correct
-      if (line < split.length) {
-        valid(i) = split(line)(i) != ' '
-        if (valid(i)) line += 1
-      }
-    }
-    println("Schedule is " + schedule.length + " clock cycles")
-    (schedule, valid)
+    sched
   }
 
   /* A 2x2 schedule is as follows:
@@ -115,10 +134,6 @@ ne
       schedule(i) = oneSlot
     }
     schedule
-  }
-
-  def main(args: Array[String]): Unit = {
-    print(getSchedule(2))
   }
 
 }
