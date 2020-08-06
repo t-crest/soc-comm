@@ -154,13 +154,17 @@ class Schedule(val n: Int) {
 
 object Schedule {
 
-  var sched = new Schedule(2)
+  private var schedInst = new Schedule(2)
 
   def apply(n: Int) = {
-    if (sched.n != n) {
-      sched = new Schedule(n)
+    if (schedInst.n != n) {
+      schedInst = new Schedule(n)
     }
-    sched
+    schedInst
+  }
+
+  def getSchedule() = {
+    schedInst
   }
 
   /* A 2x2 schedule is as follows:
