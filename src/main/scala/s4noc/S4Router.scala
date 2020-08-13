@@ -69,7 +69,9 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
 
   for (j <- 0 until Const.NR_OF_PORTS) {
     io.ports(j).out := RegNext(io.ports(currentSched(j)).in, init = resetVal)
+    // printf(" p: %d %d", j.U, io.ports(j).out.data.asUInt())
   }
+  // printf("\n")
 }
 
 object S4Router extends App {
