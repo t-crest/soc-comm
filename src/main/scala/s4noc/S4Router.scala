@@ -21,6 +21,7 @@ object Const {
   val SOUTH = 2
   val WEST = 3
   val LOCAL = 4
+  val INVALID = 5
   val NR_OF_PORTS = 5
 }
 
@@ -52,7 +53,7 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   for (i <- 0 until schedule.length) {
     for (j <- 0 until Const.NR_OF_PORTS) {
       val s = schedule(i)(j)
-      val v = if (s == -1) 0 else s
+      val v = if (s == -1) Const.INVALID else s
       sched(i)(j) := v.U(3.W)
     }
   }
@@ -68,7 +69,7 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   resetVal.valid := false.B
 
   for (j <- 0 until Const.NR_OF_PORTS) {
-    io.ports(j).out := RegNext(io.ports(currentSched(j)).in, init = resetVal)
+    io.ports(j).out := RegNext(Mux(currentSched(j) === Const.INVALID.U, resetVal, io.ports(currentSched(j)).in), init = resetVal)
     // printf(" p: %d %d", j.U, io.ports(j).out.data.asUInt())
   }
   // printf("\n")

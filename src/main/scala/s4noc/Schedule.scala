@@ -156,15 +156,14 @@ object Schedule {
 
   private var schedInst = new Schedule(2)
 
-  def apply(n: Int) = {
-    if (schedInst.n != n) {
-      schedInst = new Schedule(n)
-    }
-    schedInst
-  }
-
-  def getSchedule() = {
-    schedInst
+   def apply(n: Int) = {
+     // for sbt parallel testing synchronize access to this singleton
+     this.synchronized {
+       if (schedInst.n != n) {
+         schedInst = new Schedule(n)
+       }
+       schedInst
+     }
   }
 
   /* A 2x2 schedule is as follows:
