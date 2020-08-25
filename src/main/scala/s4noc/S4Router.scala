@@ -64,15 +64,10 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   // TODO: test if this movement of the register past the schedule table works, better here a register
   // val currentSched = RegNext(sched(regCounter))
 
-  val resetVal = Wire(new SingleChannel(dt))
-  resetVal.data := 0.U
-  resetVal.valid := false.B
-
   for (j <- 0 until Const.NR_OF_PORTS) {
-    io.ports(j).out := RegNext(Mux(currentSched(j) === Const.INVALID.U, resetVal, io.ports(currentSched(j)).in), init = resetVal)
-    // printf(" p: %d %d", j.U, io.ports(j).out.data.asUInt())
+    io.ports(j).out.data := RegNext(io.ports(currentSched(j)).in.data)
+    io.ports(j).out.valid := RegNext(Mux(currentSched(j) === Const.INVALID.U, false.B, io.ports(currentSched(j)).in.valid), init = false.B)
   }
-  // printf("\n")
 }
 
 object S4Router extends App {
