@@ -2,20 +2,20 @@
 
 Collection of different communication methods for chip mulitprocessors.
 
-This repo shall include all the work we have done in T-CREST as a
+This repo shall include all the work we have done in [T-CREST](https://github.com/t-crest) as a
 standalone repo to make the work more useful.
 
 Currently we plan to use a simple rd/wr/address/data/rdy interface, which maps
 dirctly to the Patmos OCPcore interface (A command is acked in the next
 clock cycle or later, IO devices need to be ready to accept a command).
 
-The S4NOC has a slightly different interface (no rdy needed).
+The S4NOC has currently a slightly different interface (no rdy needed).
 
 We may consider to move to AXI.
 
 ## Dependency
 
-This project depends on ```ip-contributions```. Initialize it with:
+This project depends on [ip-contributions](https://github.com/freechipsproject/ip-contributions). Initialize it with:
 
 ```
 make init
@@ -50,44 +50,36 @@ For the Chisel based tests compiler with gcc like interface is needed.
 ### S4NOC
 
 The network interface and the S4NOC are written in Chisel and the
-source can be found at: `patmos/hardware/src/main/scala/s4noc`.
+source can be found in [s4noc](src/main/scala/s4noc)
 
-The tests can run from within folder `patmos/hardware`, e.g.:
+The tests can run from the current folder with a plain
 
-	sbt "test:runMain s4noc.ScheduleTester"
-	sbt "test:runMain s4noc.RouterTester"
-	sbt "test:runMain s4noc.NetworkTester"
-	sbt "test:runMain s4noc.NetworkCompare"
-	sbt "test:runMain s4noc.S4nocTester"
-
-or from your favorite Scala IDE (e.g., InelliJ or Eclipse) or from this folder with
-
-```bash
-make test-all
-make test
+```
+sbt test
 ```
 
-A standalone version of the S4NoC with simple traffic generators can be built
-with:
 
-```bash
+or from your favorite Scala IDE (e.g., InelliJ or Eclipse).
+
+To generate the Verilog code with a traffic generator execute
+
+```
 sbt "runMain s4noc.S4nocTrafficGen n"
 ```
 
-where n is the number of cores (e.g., 4, 9, or 16 (maximum is 100)).
+where `n` is the number of cores.
 
 The generated Verilog file can be found in ```generated/S4nocTrafficGen.v```
 and can be synthesized to provide resource numbers and maximum
-clocking frequency. An example project for Quartus can be found in this
-[quartus](quartus) subfolder.
+clocking frequency.
 
 ## TODO
 
- * Move all tests to ScalaTest, drop iotester dependency, and fix README.md
+ * drop iotester dependency
  * Have the core # to slot # mapping in HW (it should be cheap)
  * Get the Chisel 2 NoC running
  * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
- * Provide blocking in the CPU interface if not data available or TF full
+ * Provide blocking in the CPU interface if not data available or TX FIFO full
 
 ### Next Paper
 
