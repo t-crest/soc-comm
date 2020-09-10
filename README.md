@@ -77,9 +77,11 @@ clocking frequency.  An Intel Qartus project is available in [quartus](quartus).
 
  * drop iotester dependency
  * Have the core # to slot # mapping in HW (it should be cheap)
- * Get the Chisel 2 NoC running
+ * Play with FIFO buffer variations
+ * Do traffic generators like in the Dally book
  * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
  * Provide blocking in the CPU interface if not data available or TX FIFO full
+ * Get the Chisel 2 NoC running
 
 ### Next Paper
 

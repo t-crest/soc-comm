@@ -84,7 +84,7 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
 object NocTester {
 
-  def isDataAvail(port: CpuPort, clock: Clock): Boolean = {
+  def isDataAvail(port: CpuPortComb, clock: Clock): Boolean = {
     port.rd.poke(true.B)
     port.addr.poke(3.U)
     val ret = port.rdData.peek.litValue == 1
@@ -93,7 +93,7 @@ object NocTester {
     ret
   }
 
-  def isBufferFree(port: CpuPort, clock: Clock): Boolean = {
+  def isBufferFree(port: CpuPortComb, clock: Clock): Boolean = {
     port.rd.poke(true.B)
     port.addr.poke(2.U)
     val ret = port.rdData.peek.litValue == 1
@@ -105,7 +105,7 @@ object NocTester {
     * Nonblocking read. Advances clock by one.
     * Cheats on reading multiple values in a single clock cycle.
     */
-  def read(port: CpuPort, clock: Clock): (Boolean, Int, Int) = {
+  def read(port: CpuPortComb, clock: Clock): (Boolean, Int, Int) = {
 
     val dataAvail = isDataAvail(port, clock)
     var data = 0
@@ -134,7 +134,7 @@ object NocTester {
   /**
     * Nonblocking write. Advances clock by two (checking buffer free).
     */
-  def write(port: CpuPort, addr: UInt, data: UInt, clock:Clock): Boolean = {
+  def write(port: CpuPortComb, addr: UInt, data: UInt, clock:Clock): Boolean = {
 
     val bufferFree = isBufferFree(port, clock)
     if (bufferFree) {
@@ -149,7 +149,7 @@ object NocTester {
     bufferFree
   }
 
-  def blockingWrite(port: CpuPort, addr: UInt, data: UInt, clock:Clock) = {
+  def blockingWrite(port: CpuPortComb, addr: UInt, data: UInt, clock:Clock) = {
     while (!write(port, addr, data, clock)) {}
   }
 }

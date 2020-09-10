@@ -10,7 +10,7 @@ package soc
 
 import Chisel._
 
-class Port(private val addrWidth: Int) extends Bundle {
+class IOPort(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rd = Input(Bool())
   val address = Input(UInt(addrWidth.W))
@@ -20,7 +20,7 @@ class Port(private val addrWidth: Int) extends Bundle {
 }
 
 class MultiPort(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {
-  val ports = Vec(nrPorts, new Port(addrWidth))
+  val ports = Vec(nrPorts, new IOPort(addrWidth))
 }
 
 abstract class MultiCoreDevice(nrCores: Int, addrWidth: Int) extends Module {

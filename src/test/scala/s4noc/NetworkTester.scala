@@ -1,7 +1,7 @@
 package s4noc
 
 import chisel3._
-import chisel3.tester._
+import chiseltest._
 import org.scalatest._
 
 import chiseltest.experimental.TestOptionBuilder._

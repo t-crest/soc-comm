@@ -17,7 +17,7 @@ import chisel3.util._
   * NOTE: this combinational read may result in a combinational generation of the
   * ready/valid interface, which should be avoided.
   *
-  * Read data valid or write buffer empty need to be polled ar status register.
+  * Read data valid or write buffer empty need to be polled as a status register.
   * Part of the write address determines the TDM slot and therefore the destination core.
   * Read data is data plus time stamp, which determines the source core.
   *
@@ -28,7 +28,7 @@ import chisel3.util._
   * @param w Usually 32-bits for a 32-bit processor.
   */
 
-class CpuPort(private val w: Int) extends Bundle {
+class CpuPortComb(private val w: Int) extends Bundle {
   val addr = Input(UInt(8.W))
   val rdData = Output(UInt(w.W))
   val wrData = Input(UInt(w.W))
@@ -36,9 +36,9 @@ class CpuPort(private val w: Int) extends Bundle {
   val wr = Input(Bool())
 }
 
-class CpuInterface[T <: Data](dt: T, width: Int) extends Module {
+class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
-    val cpuPort = new CpuPort(width)
+    val cpuPort = new CpuPortComb(width)
     val networkPort = Flipped(new NetworkPort(dt))
   })
 
