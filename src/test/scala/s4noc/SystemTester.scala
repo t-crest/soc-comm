@@ -1,7 +1,7 @@
 package s4noc
 
 import chisel3._
-import chisel3.tester._
+import chiseltest._
 import org.scalatest._
 
 import NocTester._
@@ -14,7 +14,7 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
   // this does not work, it "must be inside Builder context"
   // val noc = new S4noc(4, 2, 2, 32)
 
-  behavior of "The S4NOC:"
+  behavior of "Dummy"
 
   /*
   it should "just work" in {
@@ -25,14 +25,14 @@ class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
    */
 
-  behavior of "Single Channel"
+  behavior of "S4NoC"
 
   val CNT = 500
   val data = new Array[Int](CNT)
   val rnd = new scala.util.Random()
   for (i <- 0 until CNT) data(i) = rnd.nextInt()
 
-  "S4NoC" should "not overrun the channel" in {
+  it should "not overrun the channel" in {
     test(new S4NoCIO(4, 2, 2, 32)) { d =>
 
       val th = fork {

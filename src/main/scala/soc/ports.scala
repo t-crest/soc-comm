@@ -8,8 +8,14 @@
 
 package soc
 
-import Chisel._
+import chisel3._
 
+/**
+  * A simple IO interface.
+  * rdy is used for acknowledgement in the following cycle (like OCP core in Patmos).
+  *
+  * @param addrWidth width of the address part
+  */
 class IOPort(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rd = Input(Bool())

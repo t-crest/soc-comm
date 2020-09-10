@@ -1,7 +1,7 @@
 package noc
 
 import chisel3._
-import chisel3.tester._
+import chiseltest._
 import org.scalatest._
 
 class ButterflyTester extends FlatSpec with ChiselScalatestTester with Matchers {

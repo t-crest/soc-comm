@@ -3,7 +3,7 @@ package empty
 import org.scalatest._
 
 import chisel3._
-import chisel3.tester._
+import chiseltest._
 
 class AddNewTester extends FlatSpec with ChiselScalatestTester with Matchers {
   behavior of "Adder with Testers2"
