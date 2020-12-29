@@ -18,7 +18,9 @@ libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.2.2"
 // this is only to make ip-contributions happy
 libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.3.0"
 
-Compile / unmanagedSourceDirectories += baseDirectory.value / "ip-contributions"
+libraryDependencies += "io.github.schoeberl" % "ip-contributions" % "1.0.0"
+
+// Compile / unmanagedSourceDirectories += baseDirectory.value / "ip-contributions"
 
 // sadly the below does not work :-(
 

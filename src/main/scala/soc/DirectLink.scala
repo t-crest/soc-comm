@@ -51,7 +51,10 @@ class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
   val buffers = (0 until nrCores).map(i => (0 until 4).map(j => Module(new SimpleBuffer())))
   buffers(0)(2).io.in.data := 0.U
 
-  io.ports(0).rdData := 42.U
+  for (i <- 0 until 4) {
+    io.ports(i).rdData := 42.U
+    io.ports(i).rdy := false.B
+  }
 }
 
 object DirectLink extends App {

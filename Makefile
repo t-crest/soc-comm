@@ -1,10 +1,5 @@
 
-init: ip-contributions
-
-ip-contributions:
-	git clone https://github.com/freechipsproject/ip-contributions.git
-
-all: init doit test
+all: doit test
 
 # Generate Verilog code
 doit:
