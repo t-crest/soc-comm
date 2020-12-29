@@ -11,15 +11,19 @@ clock cycle or later, IO devices need to be ready to accept a command).
 
 The S4NOC has currently a slightly different interface (no rdy needed).
 
-We may consider to move to AXI.
+We may consider moving to AXI.
 
+## Usage
+
+This project is published iwth Maven Central. Add following line to your ```build.sbt```
+
+```
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.0"
+```
 ## Dependency
 
-This project depends on [ip-contributions](https://github.com/freechipsproject/ip-contributions). Initialize it with:
-
-```
-make init
-```
+This project depends on [ip-contributions](https://github.com/freechipsproject/ip-contributions),
+which is resolved in ```build.sbt``` 
 
 ## Setup
 
