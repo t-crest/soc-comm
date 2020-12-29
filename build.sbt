@@ -20,12 +20,12 @@ libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.3.0"
 name := "soc-comm"
 
 // library version
-version := "0.1.0"
+version := "0.1.1"
 
 // groupId, SCM, license information
-organization := "io.github.chiselverify"
-homepage := Some(url("https://github.com/chiselverify/chiselverify"))
-scmInfo := Some(ScmInfo(url("https://github.com/chiselverify/chiselverify"), "git@github.com: chiselverify/chiselverify.git"))
+organization := "io.github.t-crest"
+homepage := Some(url("https://github.com/t-crest/soc-comm"))
+scmInfo := Some(ScmInfo(url("https://github.com/t-crest/soc-comm"), "https://github.com/t-crest/soc-comm.git"))
 developers := List(Developer("schoeberl", "schoeberl", "martin@jopdesign.com", url("https://github.com/schoeberl")))
 licenses += ("BSD-2-Clause", url("https://opensource.org/licenses/BSD-2-Clause"))
 publishMavenStyle := true

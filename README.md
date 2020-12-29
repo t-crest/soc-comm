@@ -18,7 +18,7 @@ We may consider moving to AXI.
 This project is published iwth Maven Central. Add following line to your ```build.sbt```
 
 ```
-libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.0"
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.1"
 ```
 ## Dependency
 
