@@ -1,6 +1,6 @@
 scalaVersion := "2.12.8"
 
-scalacOptions := Seq("-Xsource:2.11")
+scalacOptions := Seq("-deprecation", "-Xsource:2.11")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
@@ -8,13 +8,13 @@ resolvers ++= Seq(
 )
 
 
-libraryDependencies += "edu.berkeley.cs" %% "chisel-iotesters" % "1.4.2"
-libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.2.2"
+libraryDependencies += "edu.berkeley.cs" %% "chisel-iotesters" % "1.5.1"
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.1"
 
 // For FIFO buffers
 libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.4.0"
 // this is only to make ip-contributions happy
-libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.3.0"
+libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.4.1"
 
 // library name
 name := "soc-comm"

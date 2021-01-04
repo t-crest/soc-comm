@@ -12,7 +12,7 @@ import soc._
   * TODO: maybe this is generic and belongs into soc?
   * TODO: maybe NetworkPort should then have a different name?
   */
-class CpuInterfacte extends Module {
+class CpuInterface extends Module {
   val io = IO(new Bundle {
     val cpuPort = new IOPort(4)
     val networkPort = Flipped(new NetworkPort(UInt(32.W)))
@@ -81,15 +81,6 @@ class CpuInterfacte extends Module {
 
 object CpuInterface extends App {
 
-  /*
-  (new chisel3.stage.ChiselStage).emitVerilog(new CpuInterfacte())
-   */
+  (new chisel3.stage.ChiselStage).emitVerilog(new CpuInterface(), Array("--target-dir", "generated"))
 
-  /*
-  (new chisel3.stage.ChiselStage).execute(Array("-X", "Verilog", "--target-dir", "generated"),
-    Seq(chisel3.stage.ChiselGeneratorAnnotation(() => new CpuInterfacte())))
-*/
-
-  chisel3.Driver.execute(Array("--target-dir", "generated"),
-    () => new CpuInterfacte())
 }

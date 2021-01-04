@@ -29,6 +29,6 @@ class DualArbiter[T <: Data](gen: T) extends Module {
 }
 
 object DualArbiter extends App {
-  chisel3.Driver.execute(Array[String](), () => new DualArbiter(UInt(8.W)))
+  (new chisel3.stage.ChiselStage).emitVerilog(new DualArbiter(UInt(8.W)), Array("--target-dir", "generated"))
 }
 

@@ -25,4 +25,3 @@ vcd:
 
 clean:
 	git clean -fd
-	rm -rf ip-contributions

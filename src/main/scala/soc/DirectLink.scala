@@ -58,7 +58,5 @@ class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
 }
 
 object DirectLink extends App {
-
-  // chiselMain(Array(), () => Module(new DirectLink(4)))
-  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new DirectLink(4))
+  (new chisel3.stage.ChiselStage).emitVerilog(new DirectLink(4), Array("--target-dir", "generated"))
 }

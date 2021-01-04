@@ -10,7 +10,7 @@ class CpuInterfaceTester extends FlatSpec with ChiselScalatestTester with Matche
   behavior of "The CpuInterface"
 
   it should "handle write timing" in {
-    test(new CpuInterfacte).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
+    test(new CpuInterface).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
       d => {
 
         def step() = d.clock.step()

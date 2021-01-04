@@ -43,5 +43,5 @@ class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extend
 
 object S4nocTrafficGen extends App {
   println("Generating the S4NoC hardware with a traffic generator")
-  chisel3.Driver.execute(Array("--target-dir", "generated"), () => new S4nocTrafficGen(args(0).toInt, 8, 8, 32))
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4nocTrafficGen(args(0).toInt, 8, 8, 32), Array("--target-dir", "generated"))
 }

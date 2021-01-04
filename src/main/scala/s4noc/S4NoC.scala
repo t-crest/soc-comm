@@ -33,8 +33,6 @@ class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
 }
 
 object S4NoC extends App {
-
-  chisel3.Driver.execute(Array("--target-dir", "generated"),
-    () => new S4NoC(4, 2, 2, 32))
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4NoC(4, 2, 2, 32), Array("--target-dir", "generated"))
 }
 

@@ -82,13 +82,5 @@ class Butterfly extends Module {
 }
 
 object Butterfly extends App {
-
-  /*
-  (new ChiselStage).execute(
-    Array("-X", "verilog"),
-    Seq(ChiselGeneratorAnnotation(() => new Butterfly)))
-
-   */
-
-  (new chisel3.stage.ChiselStage).emitVerilog(new Butterfly())
+  (new chisel3.stage.ChiselStage).emitVerilog(new Butterfly(), Array("--target-dir", "generated"))
 }

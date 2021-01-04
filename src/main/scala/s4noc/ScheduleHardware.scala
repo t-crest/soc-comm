@@ -37,7 +37,5 @@ class ScheduleHardware[T <: Data](schedule: Array[Array[Int]], dt: T) extends Mo
 }
 
 object ScheduleHardware extends App {
-
-  chisel3.Driver.execute(Array("--target-dir", "generated"),
-    () => new ScheduleHardware(Schedule(args(0).toInt).schedule, UInt(32.W)))
+  (new chisel3.stage.ChiselStage).emitVerilog(new ScheduleHardware(Schedule(args(0).toInt).schedule, UInt(32.W)), Array("--target-dir", "generated"))
 }

@@ -71,7 +71,5 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
 }
 
 object S4Router extends App {
-
-  chisel3.Driver.execute(Array("--target-dir", "generated"),
-    () => new S4Router(Schedule.genRandomSchedule(7), UInt(32.W)))
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4Router(Schedule.genRandomSchedule(7), UInt(32.W)), Array("--target-dir", "generated"))
 }
