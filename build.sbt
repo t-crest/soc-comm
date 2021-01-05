@@ -1,6 +1,6 @@
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.12"
 
-scalacOptions := Seq("-deprecation", "-Xsource:2.11")
+scalacOptions := Seq("-Xsource:2.11", "-deprecation")
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
