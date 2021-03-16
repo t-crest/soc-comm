@@ -8,6 +8,7 @@ package s4noc
 
 import chisel3._
 import chisel3.util._
+import soc.ReadyValidChannel
 
 /**
   * A simple processor interface. No handshake.
@@ -39,7 +40,7 @@ class CpuPortComb(private val w: Int) extends Bundle {
 class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPortComb(width)
-    val networkPort = Flipped(new NetworkPort(dt))
+    val networkPort = Flipped(new ReadyValidChannel(dt))
   })
 
   io.networkPort.tx.valid := false.B

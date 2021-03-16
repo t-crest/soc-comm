@@ -1,9 +1,7 @@
-package s4noc
+package soc
 
 import chisel3._
 import chisel3.util._
-
-import soc._
 
 /**
   * CPU interface to two ready/valid channels.
@@ -15,7 +13,7 @@ import soc._
 class CpuInterface extends Module {
   val io = IO(new Bundle {
     val cpuPort = new IOPort(4)
-    val networkPort = Flipped(new NetworkPort(UInt(32.W)))
+    val networkPort = Flipped(new ReadyValidChannel(UInt(32.W)))
   })
 
   val cp = io.cpuPort

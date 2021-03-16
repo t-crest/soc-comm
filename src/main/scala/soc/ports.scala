@@ -11,8 +11,8 @@ package soc
 import chisel3._
 
 /**
-  * A simple IO interface.
-  * rdy is used for acknowledgement in the following cycle (like OCP core in Patmos).
+  * A simple IO interface, as seen from the slave.
+  * rdy is used for acknowledgement in the following cycle (like OCPio in Patmos).
   *
   * @param addrWidth width of the address part
   */

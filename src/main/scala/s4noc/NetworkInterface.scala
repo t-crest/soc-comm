@@ -8,14 +8,11 @@ package s4noc
 
 import chisel3._
 import chisel3.util._
-
 import chisel.lib.fifo._
+import soc.ReadyValidChannel
 
 
-class NetworkPort[T <: Data](private val dt: T) extends Bundle {
-  val tx = Flipped(new DecoupledIO(Entry(dt)))
-  val rx = new DecoupledIO(Entry(dt))
-}
+
 
 // This should be a generic data for the FIFO
 class Entry[T <: Data](private val dt: T) extends Bundle {
@@ -31,7 +28,7 @@ object Entry {
 
 class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) extends Module {
   val io = IO(new Bundle {
-    val networkPort = new NetworkPort(dt)
+    val networkPort = new ReadyValidChannel(dt)
     val local = Flipped(new Channel(dt))
   })
 
