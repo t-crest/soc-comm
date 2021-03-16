@@ -57,4 +57,17 @@ class CpuInterfaceTester extends FlatSpec with ChiselScalatestTester with Matche
       }
     }
   }
+
+  it should "work on a FIFO queue" in {
+    test(new DirectLink) {
+      d => {
+        val a = d.io.a
+        val b = d.io.b
+
+        d.clock.step()
+        // baby step test to test the test
+        a.rdy.expect(false.B)
+      }
+    }
+  }
 }

@@ -79,9 +79,12 @@ clocking frequency.  An Intel Qartus project is available in [quartus](quartus).
 
 ## TODO
 
+ * Do a simple multicore device (no communication,
+   just a register and core number) and integrate it with T-CREST
+   * A multicore "Hello World"
  * drop iotester dependency
- * Have the core # to slot # mapping in HW (it should be cheap)
- * Play with FIFO buffer variations
+ * s4noc: Have the core # to slot # mapping in HW (it should be cheap)
+ * s4noc: Play with FIFO buffer variations
  * Do traffic generators like in the Dally book
  * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
  * Provide blocking in the CPU interface if not data available or TX FIFO full

@@ -11,6 +11,8 @@ import Chisel._
 
 // We should use DecoupledIO and the Queue from Chisel
 
+// TODO: this is old, incomplete stuff. We should simply remove it
+
 class Interface extends Bundle {
   val ready = Output(Bool())
   val valid = Input(Bool())
