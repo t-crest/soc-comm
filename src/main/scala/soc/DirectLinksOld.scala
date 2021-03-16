@@ -45,7 +45,7 @@ class SimpleBuffer extends Module {
   io.out.data := data
 }
 
-class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
+class DirectLinksOld(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
 
   // val connections = (0 until nrCores).map(i => (0 until 4).map(j => new Queue(new Decoupled(UInt(width=32), 1))
   val buffers = (0 until nrCores).map(i => (0 until 4).map(j => Module(new SimpleBuffer())))
@@ -57,6 +57,6 @@ class DirectLink(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
   }
 }
 
-object DirectLink extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new DirectLink(4), Array("--target-dir", "generated"))
+object DirectLinksOld extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new DirectLinksOld(4), Array("--target-dir", "generated"))
 }

@@ -12,7 +12,8 @@ import chisel3._
 
 /**
   * A simple IO interface, as seen from the slave.
-  * rdy is used for acknowledgement in the following cycle (like OCPio in Patmos).
+  * rdy is used for acknowledgement in the following clock cycle, or later. (like OCPio in Patmos).
+  * Can be used to stall the CPU.
   *
   * @param addrWidth width of the address part
   */

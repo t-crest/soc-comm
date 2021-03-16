@@ -7,8 +7,7 @@ import chisel3.util._
   * CPU interface to two ready/valid channels.
   *
   *
-  * TODO: maybe this is generic and belongs into soc?
-  * TODO: maybe NetworkPort should then have a different name?
+  * TODO: maybe networkPort should then have a different name?
   */
 class CpuInterface extends Module {
   val io = IO(new Bundle {
