@@ -10,8 +10,9 @@ import s4noc.Entry
   *
   * TODO: maybe networkPort should then have a different name?
   * TODO: this uses the S4NOC entry, this is not a generic CPU interface!
+  * TODO: this is not complete, e.g. read is missing, not tested. Finish first the generic one.
   */
-class CpuInterface extends Module {
+class CpuInterfaceS4NOC extends Module {
   val io = IO(new Bundle {
     val cpuPort = new IOPort(4)
     val networkPort = new ReadyValidChannel(Entry(UInt(32.W)))
@@ -78,8 +79,8 @@ class CpuInterface extends Module {
 }
 
 
-object CpuInterface extends App {
+object CpuInterfaceS4NOC extends App {
 
-  (new chisel3.stage.ChiselStage).emitVerilog(new CpuInterface(), Array("--target-dir", "generated"))
+  (new chisel3.stage.ChiselStage).emitVerilog(new CpuInterfaceS4NOC(), Array("--target-dir", "generated"))
 
 }

@@ -8,8 +8,8 @@ class DirectLink extends Module {
     val b = new IOPort(4)
   })
 
-  val ifa = Module(new CpuInterface)
-  val ifb = Module(new CpuInterface)
+  val ifa = Module(new CpuInterfaceS4NOC)
+  val ifb = Module(new CpuInterfaceS4NOC)
 
   ifa.io.cpuPort <> io.a
   ifb.io.cpuPort <> io.b
