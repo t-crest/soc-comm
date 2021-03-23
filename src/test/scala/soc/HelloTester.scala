@@ -74,9 +74,58 @@ class HelloTester extends FlatSpec with ChiselScalatestTester with Matchers {
         cp.rdy.expect(false.B)
 
 
-
       }
     }
   }
 
+  it should "Work as multi-core" in {
+    test(new MultiCoreHello(3)).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
+      d => {
+
+        def step() = d.clock.step()
+
+        val cp = d.io.ports
+
+        def setDefault() = {
+          for (i <- 0 until 3) {
+            cp(i).address.poke(0.U)
+            cp(i).wrData.poke(0.U)
+            cp(i).wr.poke(false.B)
+            cp(i).rd.poke(false.B)
+          }
+        }
+
+        cp(0).rdy.expect(false.B)
+        // set some default values
+        setDefault()
+
+        step()
+        cp(0).wr.poke(true.B)
+        cp(0).wrData.poke(123.U)
+        cp(1).wr.poke(true.B)
+        cp(1).wrData.poke(456.U)
+        cp(2).wr.poke(true.B)
+        cp(2).wrData.poke(789.U)
+        step()
+        setDefault()
+        cp(0).rd.poke(true.B)
+        cp(1).rd.poke(true.B)
+        cp(2).rd.poke(true.B)
+        step()
+        cp(0).rdData.expect(123.U)
+        cp(1).rdData.expect(456.U)
+        cp(2).rdData.expect(789.U)
+        cp(0).address.poke(1.U)
+        cp(1).address.poke(1.U)
+        cp(2).address.poke(1.U)
+        step()
+        cp(0).rdData.expect(0.U)
+        cp(1).rdData.expect(1.U)
+        cp(2).rdData.expect(2.U)
+
+
+
+      }
+    }
+  }
 }
