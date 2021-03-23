@@ -2,17 +2,19 @@ package soc
 
 import chisel3._
 import chisel3.util._
+import s4noc.Entry
 
 /**
   * CPU interface to two ready/valid channels.
   *
   *
   * TODO: maybe networkPort should then have a different name?
+  * TODO: this uses the S4NOC entry, this is not a generic CPU interface!
   */
 class CpuInterface extends Module {
   val io = IO(new Bundle {
     val cpuPort = new IOPort(4)
-    val networkPort = Flipped(new ReadyValidChannel(UInt(32.W)))
+    val networkPort = Flipped(new ReadyValidChannel(Entry(UInt(32.W))))
   })
 
   val cp = io.cpuPort

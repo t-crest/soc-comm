@@ -13,7 +13,7 @@ import soc.ReadyValidChannel
 
 class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
   val io = IO(new Bundle {
-    val networkPort = Vec(n, new ReadyValidChannel(UInt(width.W)))
+    val networkPort = Vec(n, new ReadyValidChannel(Entry(UInt(width.W))))
     val cycCnt = Output(UInt(32.W))
   })
 

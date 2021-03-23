@@ -2,12 +2,14 @@
 
 Collection of different communication methods for chip mulitprocessors.
 
-This repo shall include all the work we have done in [T-CREST](https://github.com/t-crest) as a
-standalone repo to make the work more useful.
+This repo shall include all the multicore communication we have done in
+[T-CREST](https://github.com/t-crest) as a standalone repo to make the
+work more useful.
 
 Currently we plan to use a simple rd/wr/address/data/rdy interface, which maps
 dirctly to the Patmos OCPcore interface (A command is acked in the next
-clock cycle or later, IO devices need to be ready to accept a command).
+clock cycle or later, IO devices need to be ready to accept a command
+during the ack cycle).
 
 The S4NOC has currently a slightly different interface (no rdy needed).
 

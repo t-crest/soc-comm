@@ -28,7 +28,7 @@ object Entry {
 
 class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) extends Module {
   val io = IO(new Bundle {
-    val networkPort = new ReadyValidChannel(dt)
+    val networkPort = new ReadyValidChannel(Entry(dt))
     val local = Flipped(new Channel(dt))
   })
 
