@@ -14,7 +14,7 @@ import s4noc.Entry
 class CpuInterface extends Module {
   val io = IO(new Bundle {
     val cpuPort = new IOPort(4)
-    val networkPort = Flipped(new ReadyValidChannel(Entry(UInt(32.W))))
+    val networkPort = new ReadyValidChannel(Entry(UInt(32.W)))
   })
 
   val cp = io.cpuPort

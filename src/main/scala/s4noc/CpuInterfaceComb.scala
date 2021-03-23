@@ -40,7 +40,7 @@ class CpuPortComb(private val w: Int) extends Bundle {
 class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPortComb(width)
-    val networkPort = Flipped(new ReadyValidChannel(Entry(dt)))
+    val networkPort = new ReadyValidChannel(Entry(dt))
   })
 
   io.networkPort.tx.valid := false.B
