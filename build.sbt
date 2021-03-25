@@ -20,7 +20,7 @@ libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.4.1"
 name := "soc-comm"
 
 // library version
-version := "0.1.1"
+version := "0.1.2"
 
 // groupId, SCM, license information
 organization := "io.github.t-crest"
