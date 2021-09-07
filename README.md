@@ -40,16 +40,9 @@ as your package management tool, with:
 brew install sbt
 ```
 
-On a Debian based Linux machine, such as Ubuntu, you can install `sbt` with:
-```
-echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-  --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
-sudo apt-get update
-sudo apt-get install sbt
-```
+On a Linux machine, install `sbt` according to the instructions from [sbt download](https://www.scala-sbt.org/download.html)
 
-For the Chisel based tests compiler with gcc like interface is needed.
+For the Chisel based tests a compiler with gcc like interface is needed.
 
 ## Projects
 
