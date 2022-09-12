@@ -6,11 +6,11 @@
  */
 
 package s4noc
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import Const._
 
-class ScheduleTester extends FlatSpec with Matchers {
+class ScheduleTester extends AnyFlatSpec {
   behavior of "Schedule creation"
 
   it should "pass" in {

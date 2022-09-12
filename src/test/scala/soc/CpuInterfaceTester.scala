@@ -3,14 +3,13 @@ package soc
 
 import chisel3._
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CpuInterfaceTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterface"
 
   it should "handle write timing" in {
-    test(new CpuInterfaceS4NOC).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
+    test(new CpuInterfaceS4NOC).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
 
         def step() = d.clock.step()

@@ -17,10 +17,10 @@ We may consider moving to AXI.
 
 ## Usage
 
-This project is published iwth Maven Central. Add following line to your ```build.sbt```
+This project is published with Maven Central. Add following line to your ```build.sbt```
 
 ```
-libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.1"
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.2"
 ```
 ## Dependency
 

@@ -22,7 +22,7 @@ class Interface extends Bundle {
 class SimpleBuffer extends Module {
   val io = IO(new Bundle {
     val in = new Interface()
-    val out = new Interface().flip()
+    val out = Flipped(new Interface())
   })
 
   val full = RegInit(false.B)

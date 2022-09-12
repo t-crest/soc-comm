@@ -10,7 +10,8 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+
 
 import Const._
 
@@ -72,7 +73,7 @@ class TwoNetworks() extends Module {
  * Compare two 2x2 networks.
  */
 
-class NetworkCompare extends FlatSpec with ChiselScalatestTester with Matchers {
+class NetworkCompare extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Compare two 2x2 networks"
 
   "NoCs" should "be identical" in {

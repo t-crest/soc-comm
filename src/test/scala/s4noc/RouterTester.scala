@@ -8,21 +8,19 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-import chiseltest.experimental.TestOptionBuilder._
-import chiseltest.internal.WriteVcdAnnotation
 
 /**
  * Test the router by printing out the value at each clock cycle
  * and checking some known end values.
  */
 
-class RouterTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class RouterTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Router"
 
   it should "give known values" in {
-    test(new S4Router(Schedule(2).schedule, UInt(16.W))).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) { c =>
+    test(new S4Router(Schedule(2).schedule, UInt(16.W))).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
       c.clock.step() // Schedule starts one clock cycle later
       for (i <- 0 until 8) {
         c.io.ports(0).in.data.poke((0x10 + i).U)
@@ -37,7 +35,7 @@ class RouterTester extends FlatSpec with ChiselScalatestTester with Matchers {
         c.io.ports(3).in.valid.poke(true.B)
         c.io.ports(4).in.valid.poke(true.B)
         c.clock.step(1)
-        println(f"${c.io.ports(0).out.data.peek.litValue().toInt}%02x ${c.io.ports(0).out.valid.peek.litValue()}")
+        println(f"${c.io.ports(0).out.data.peek.litValue.toInt}%02x ${c.io.ports(0).out.valid.peek.litValue}")
       }
       // TODO: these are NOT manually verified, but from the printout
       c.io.ports(0).out.data.expect(0x57.U)

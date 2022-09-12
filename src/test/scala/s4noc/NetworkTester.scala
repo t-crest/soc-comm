@@ -2,16 +2,14 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-import chiseltest.experimental.TestOptionBuilder._
-import chiseltest.internal.WriteVcdAnnotation
 
 /**
  * Test a 2x2 Network.
  */
 
-class NetworkTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class NetworkTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "2x2 Network"
 
   "the NoC" should "work" in {
@@ -42,7 +40,7 @@ class NetworkTester extends FlatSpec with ChiselScalatestTester with Matchers {
 
       println(s"Testing network of $n x $n")
 
-      // test(new Network(n, UInt(32.W))).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) { dut =>
+      // test(new Network(n, UInt(32.W))).withAnnotations(Seq(WriteVcdAnnotation))) { dut =>
 
       test(new Network(n, UInt(32.W))) { dut =>
 

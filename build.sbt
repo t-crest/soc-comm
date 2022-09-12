@@ -1,20 +1,19 @@
-scalaVersion := "2.12.12"
+scalaVersion := "2.12.13"
 
-scalacOptions := Seq("-Xsource:2.11", "-deprecation")
-
-resolvers ++= Seq(
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.sonatypeRepo("releases")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-language:reflectiveCalls",
 )
 
-
-libraryDependencies += "edu.berkeley.cs" %% "chisel-iotesters" % "1.5.1"
-libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.3.1"
+val chiselVersion = "3.5.3"
+addCompilerPlugin("edu.berkeley.cs" %% "chisel3-plugin" % chiselVersion cross CrossVersion.full)
+libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.3"
 
 // For FIFO buffers
-libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.4.0"
-// this is only to make ip-contributions happy
-libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.4.1"
+libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.0"
 
 // library name
 name := "soc-comm"

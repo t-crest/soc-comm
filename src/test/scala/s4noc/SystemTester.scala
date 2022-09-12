@@ -2,14 +2,14 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import NocTester._
 
 /**
   * Do some performance tests.
   */
-class SystemTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class SystemTester extends AnyFlatSpec with ChiselScalatestTester {
 
   // this does not work, it "must be inside Builder context"
   // val noc = new S4noc(4, 2, 2, 32)

@@ -2,11 +2,11 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import NocTester._
 
-class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class NocTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Simple NoC Tester (just one packet)"
 
   "S4NoC" should "receive one packet old style, verbose" in {
@@ -19,7 +19,7 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
         // e.g., forget to use litValue using the Scala compare resulted in always false
         // litValue is no an intuitive function to "get a Scala usable value"
         // Is there a way to compare Chisel type values for equality?
-        val status = d.io.cpuPorts(3).rdData.peek().litValue()
+        val status = d.io.cpuPorts(3).rdData.peek().litValue
         var ret = 0.U
         d.clock.step(1)
         // FIXME: why is the return value earlier visible than status?
@@ -51,7 +51,7 @@ class NocTester extends FlatSpec with ChiselScalatestTester with Matchers {
         // the following looks like the way to do and compiles, but does not make sense
         // It is always false
         // if (!done) done = ret == "hcafebabe".U
-        if (!done) done = ret.litValue() == "hcafebabe".U.litValue()
+        if (!done) done = ret.litValue == "hcafebabe".U.litValue
       }
       assert(done)
     }

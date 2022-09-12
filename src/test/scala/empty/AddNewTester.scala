@@ -1,11 +1,11 @@
 package empty
 
-import org.scalatest._
-
 import chisel3._
 import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class AddNewTester extends FlatSpec with ChiselScalatestTester with Matchers {
+
+class AddNewTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Adder with Testers2"
 
   it should "test addition" in {

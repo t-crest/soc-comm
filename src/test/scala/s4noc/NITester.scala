@@ -2,10 +2,10 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 // import chisel3.experimental.BundleLiterals._
 
-class NITester extends FlatSpec with ChiselScalatestTester with Matchers {
+class NITester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "NI"
 
   it should "work" in {
@@ -21,7 +21,7 @@ class NITester extends FlatSpec with ChiselScalatestTester with Matchers {
       for (i <- 1 until 30) {
         dut.clock.step()
         dut.io.networkPort.tx.valid.poke(false.B)
-        if (dut.io.local.in.data.peek.litValue() == 1) pass = true
+        if (dut.io.local.in.data.peek.litValue == 1) pass = true
        }
       assert(pass)
     }

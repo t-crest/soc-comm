@@ -2,10 +2,11 @@ package arbiter
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 
-class ArbiterTest extends FlatSpec with ChiselScalatestTester {
+
+class ArbiterTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Arbiter"
 
   "DualArbiter" should "fail" in {

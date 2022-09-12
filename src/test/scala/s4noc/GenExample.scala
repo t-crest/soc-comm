@@ -4,10 +4,10 @@ package s4noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import chisel3.experimental.BundleLiterals._
 
-class GenExample extends FlatSpec with ChiselScalatestTester with Matchers {
+class GenExample extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "GenExample"
 
   class Elem[T <: Data](private val dt: T) extends Bundle {

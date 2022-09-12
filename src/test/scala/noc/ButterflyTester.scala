@@ -2,9 +2,9 @@ package noc
 
 import chisel3._
 import chiseltest._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class ButterflyTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class ButterflyTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Router"
 
   it should "do something on direct connected router" in {
@@ -12,7 +12,7 @@ class ButterflyTester extends FlatSpec with ChiselScalatestTester with Matchers 
       c.io.inPorts(3).port(0).data.poke(7.U)
       for (i <- 0 until 10) {
         c.clock.step(1)
-        println(c.io.outPorts(0).port(3).data.peek.litValue())
+        println(c.io.outPorts(0).port(3).data.peek.litValue)
       }
       c.io.outPorts(0).port(3).data.expect(7.U)
     }

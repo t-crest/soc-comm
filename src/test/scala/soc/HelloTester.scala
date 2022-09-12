@@ -3,14 +3,13 @@ package soc
 
 import chisel3._
 import chiseltest._
-import chiseltest.experimental.TestOptionBuilder._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
-class HelloTester extends FlatSpec with ChiselScalatestTester with Matchers {
+class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The HelloDevice"
 
   it should "have single cycle timing" in {
-    test(new HelloDevice(3)).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
+    test(new HelloDevice(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
 
         def step() = d.clock.step()
@@ -79,7 +78,7 @@ class HelloTester extends FlatSpec with ChiselScalatestTester with Matchers {
   }
 
   it should "Work as multi-core" in {
-    test(new MultiCoreHello(3)).withAnnotations(Seq(chiseltest.internal.WriteVcdAnnotation)) {
+    test(new MultiCoreHello(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
 
         def step() = d.clock.step()
