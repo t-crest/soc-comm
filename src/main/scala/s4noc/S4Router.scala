@@ -25,22 +25,22 @@ object Const {
   val NR_OF_PORTS = 5
 }
 
-class SingleChannel[T <: Data](private val dt: T) extends Bundle {
+class SingleChannelIO[T <: Data](private val dt: T) extends Bundle {
   val data = dt.cloneType
   val valid = Bool()
 }
 
-class Channel[T <: Data](private val dt: T) extends Bundle {
-  val out = Output(new SingleChannel(dt))
-  val in = Input(new SingleChannel(dt))
+class ChannelIO[T <: Data](private val dt: T) extends Bundle {
+  val out = Output(new SingleChannelIO(dt))
+  val in = Input(new SingleChannelIO(dt))
 }
 
-class RouterPorts[T <: Data](private val dt: T) extends Bundle {
-  val ports = Vec(Const.NR_OF_PORTS, new Channel(dt))
+class RouterIO[T <: Data](private val dt: T) extends Bundle {
+  val ports = Vec(Const.NR_OF_PORTS, new ChannelIO(dt))
 }
 
 class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
-  val io = IO(new RouterPorts(dt))
+  val io = IO(new RouterIO(dt))
 
   val regCounter = RegInit(0.U(log2Up(schedule.length).W))
   val end = regCounter === (schedule.length - 1).U

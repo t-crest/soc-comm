@@ -13,7 +13,7 @@ during the ack cycle).
 
 The S4NOC has currently a slightly different interface (no rdy needed).
 
-We may consider moving to AXI.
+We may consider moving to AXI. Or better provide a bridge, as AXI is not so super nice.
 
 ## Usage
 
@@ -30,7 +30,7 @@ which is resolved in ```build.sbt```
 ## Setup
 
 The hardware is described in [Chisel](https://chisel.eecs.berkeley.edu/)
-and needs just a Java JDK (version 8) and `sbt` installed. All other needed packages
+and needs just a Java JDK (version 8 or 11) and `sbt` installed. All other needed packages
 will be automatically downloaded by `sbt`.
 
 
@@ -77,13 +77,14 @@ clocking frequency. An Intel Qartus project is available in [quartus](quartus).
  * Do a simple multicore device (no communication,
    just a register and core number) and integrate it with T-CREST
    * A multicore "Hello World"
- * drop iotester dependency
  * s4noc: Have the core # to slot # mapping in HW (it should be cheap)
  * s4noc: Play with FIFO buffer variations
  * Do traffic generators like in the Dally book
  * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
+   * And document it here 
  * Provide blocking in the CPU interface if not data available or TX FIFO full
- * Get the Chisel 2 NoC running
+ * Get the Chisel 2 NoC running (What did I mean here?)
+ * Get one-way memory back in here
 
 ### Next Paper
 

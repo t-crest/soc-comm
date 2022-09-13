@@ -13,7 +13,7 @@ import chisel3._
   */
 class S4NoCTop(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val cpuPorts = Vec(conf.n, new CpuPortComb(conf.width))
+    val cpuPorts = Vec(conf.n, new CpuPortCombIO(conf.width))
     val cycCnt = Output(UInt(32.W))
   })
 

@@ -4,8 +4,8 @@ import chisel3._
 
 class DirectLink extends Module {
   val io = IO(new Bundle{
-    val a = new IOPort(4)
-    val b = new IOPort(4)
+    val a = new CpuPortIO(4)
+    val b = new CpuPortIO(4)
   })
 
   val ifa = Module(new CpuInterfaceS4NOC)

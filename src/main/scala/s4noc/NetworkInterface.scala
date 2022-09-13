@@ -9,7 +9,7 @@ package s4noc
 import chisel3._
 import chisel3.util._
 import chisel.lib.fifo._
-import soc.ReadyValidChannel
+import soc.ReadyValidChannelsIO
 
 
 
@@ -28,8 +28,8 @@ object Entry {
 
 class NetworkInterface[T <: Data](conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
-    val networkPort = Flipped(new ReadyValidChannel(Entry(dt)))
-    val local = Flipped(new Channel(dt))
+    val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))
+    val local = Flipped(new ChannelIO(dt))
   })
 
   val len = Schedule(conf.dim).schedule.length

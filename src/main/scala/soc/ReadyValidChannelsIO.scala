@@ -8,7 +8,7 @@ import chisel3._
   * @param dt
   * @tparam T
   */
-class ReadyValidChannel[T <: Data](private val dt: T) extends Bundle {
+class ReadyValidChannelsIO[T <: Data](private val dt: T) extends Bundle {
   val tx = new DecoupledIO(dt)
   val rx = Flipped(new DecoupledIO(dt))
 }

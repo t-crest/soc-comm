@@ -17,7 +17,7 @@ import chisel3._
   *
   * @param addrWidth width of the address part
   */
-class IOPort(private val addrWidth: Int) extends Bundle {
+class CpuPortIO(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rd = Input(Bool())
   val address = Input(UInt(addrWidth.W))
@@ -26,10 +26,10 @@ class IOPort(private val addrWidth: Int) extends Bundle {
   val rdy = Output(Bool())
 }
 
-class MultiPort(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {
-  val ports = Vec(nrPorts, new IOPort(addrWidth))
+class MultiPortIO(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {
+  val ports = Vec(nrPorts, new CpuPortIO(addrWidth))
 }
 
 abstract class MultiCoreDevice(nrCores: Int, addrWidth: Int) extends Module {
-  val io = IO(new MultiPort(nrCores, addrWidth))
+  val io = IO(new MultiPortIO(nrCores, addrWidth))
 }

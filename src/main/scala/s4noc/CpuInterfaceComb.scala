@@ -8,7 +8,7 @@ package s4noc
 
 import chisel3._
 import chisel3.util._
-import soc.ReadyValidChannel
+import soc.ReadyValidChannelsIO
 
 /**
   * A simple processor interface. No handshake.
@@ -29,7 +29,7 @@ import soc.ReadyValidChannel
   * @param w Usually 32-bits for a 32-bit processor.
   */
 
-class CpuPortComb(private val w: Int) extends Bundle {
+class CpuPortCombIO(private val w: Int) extends Bundle {
   val addr = Input(UInt(8.W))
   val rdData = Output(UInt(w.W))
   val wrData = Input(UInt(w.W))
@@ -39,8 +39,8 @@ class CpuPortComb(private val w: Int) extends Bundle {
 
 class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
-    val cpuPort = new CpuPortComb(width)
-    val networkPort = new ReadyValidChannel(Entry(dt))
+    val cpuPort = new CpuPortCombIO(width)
+    val networkPort = new ReadyValidChannelsIO(Entry(dt))
   })
 
   io.networkPort.tx.valid := false.B

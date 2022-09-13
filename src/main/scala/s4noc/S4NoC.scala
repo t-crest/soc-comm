@@ -9,11 +9,11 @@
 package s4noc
 
 import chisel3._
-import soc.ReadyValidChannel
+import soc.ReadyValidChannelsIO
 
 class S4NoC(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val networkPort = Vec(conf.n, Flipped(new ReadyValidChannel(Entry(UInt(conf.width.W)))))
+    val networkPort = Vec(conf.n, Flipped(new ReadyValidChannelsIO(Entry(UInt(conf.width.W)))))
     val cycCnt = Output(UInt(32.W))
   })
 
