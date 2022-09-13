@@ -1,15 +1,17 @@
-/*
-  Top level of the S4NOC with a CPU interface.
-
-  Author: Martin Schoeberl (martin@jopdesign.com)
-  license see LICENSE
- */
-
 package s4noc
 
 import chisel3._
 
-class S4NoCIO(conf: Config) extends Module  {
+
+/**
+  * Top level of the S4NOC with a CPU interface.
+  * But uses the combinational version
+  *
+  * Author: Martin Schoeberl (martin@jopdesign.com)
+  * license see LICENSE
+  * @param conf
+  */
+class S4NoCTop(conf: Config) extends Module  {
   val io = IO(new Bundle {
     val cpuPorts = Vec(conf.n, new CpuPortComb(conf.width))
     val cycCnt = Output(UInt(32.W))
