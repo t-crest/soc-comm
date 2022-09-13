@@ -11,21 +11,6 @@ import chisel3.util._
 import chisel.lib.fifo._
 import soc.ReadyValidChannelsIO
 
-
-
-
-// This should be a generic data for the FIFO
-class Entry[T <: Data](private val dt: T) extends Bundle {
-  val data = dt.cloneType
-  val time = UInt(8.W)
-}
-
-object Entry {
-  def apply[T <: Data](dt: T) = {
-    new Entry(dt)
-  }
-}
-
 class NetworkInterface[T <: Data](conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
     val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))

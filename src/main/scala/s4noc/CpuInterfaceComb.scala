@@ -29,14 +29,6 @@ import soc.ReadyValidChannelsIO
   * @param w Usually 32-bits for a 32-bit processor.
   */
 
-class CpuPortCombIO(private val w: Int) extends Bundle {
-  val addr = Input(UInt(8.W))
-  val rdData = Output(UInt(w.W))
-  val wrData = Input(UInt(w.W))
-  val rd = Input(Bool())
-  val wr = Input(Bool())
-}
-
 class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new CpuPortCombIO(width)

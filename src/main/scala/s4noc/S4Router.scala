@@ -12,32 +12,6 @@ package s4noc
 import chisel3._
 import chisel3.util._
 
-/**
- * Channel directions
- */
-object Const {
-  val NORTH = 0
-  val EAST = 1
-  val SOUTH = 2
-  val WEST = 3
-  val LOCAL = 4
-  val INVALID = 5
-  val NR_OF_PORTS = 5
-}
-
-class SingleChannelIO[T <: Data](private val dt: T) extends Bundle {
-  val data = dt.cloneType
-  val valid = Bool()
-}
-
-class ChannelIO[T <: Data](private val dt: T) extends Bundle {
-  val out = Output(new SingleChannelIO(dt))
-  val in = Input(new SingleChannelIO(dt))
-}
-
-class RouterIO[T <: Data](private val dt: T) extends Bundle {
-  val ports = Vec(Const.NR_OF_PORTS, new ChannelIO(dt))
-}
 
 class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   val io = IO(new RouterIO(dt))
