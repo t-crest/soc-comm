@@ -11,19 +11,17 @@ package s4noc
 import chisel3._
 import soc.ReadyValidChannel
 
-class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
+class S4NoC(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val networkPort = Vec(n, Flipped(new ReadyValidChannel(Entry(UInt(width.W)))))
+    val networkPort = Vec(conf.n, Flipped(new ReadyValidChannel(Entry(UInt(conf.width.W)))))
     val cycCnt = Output(UInt(32.W))
   })
 
-  val dim = math.sqrt(n).toInt
-  if (dim * dim != n) throw new Error("Number of cores must be quadratic")
 
-  val net = Module(new Network(dim, UInt(width.W)))
+  val net = Module(new Network(conf.dim, UInt(conf.width.W)))
 
-  for (i <- 0 until n) {
-    val ni = Module(new NetworkInterface(dim, txFifo, rxFifo, UInt(width.W)))
+  for (i <- 0 until conf.n) {
+    val ni = Module(new NetworkInterface(conf, UInt(conf.width.W)))
     net.io.local(i) <> ni.io.local
     io.networkPort(i) <> ni.io.networkPort
   }
@@ -34,6 +32,7 @@ class S4NoC(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
 }
 
 object S4NoC extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new S4NoC(4, 2, 2, 32), Array("--target-dir", "generated"))
+  val conf = Config(4, 2, 2, 32)
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4NoC(conf), Array("--target-dir", "generated"))
 }
 

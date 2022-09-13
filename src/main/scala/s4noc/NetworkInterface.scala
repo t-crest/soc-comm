@@ -26,13 +26,13 @@ object Entry {
   }
 }
 
-class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) extends Module {
+class NetworkInterface[T <: Data](conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
     val networkPort = Flipped(new ReadyValidChannel(Entry(dt)))
     val local = Flipped(new Channel(dt))
   })
 
-  val len = Schedule(dim).schedule.length
+  val len = Schedule(conf.dim).schedule.length
 
   val regCnt = RegInit(0.U(log2Up(len).W))
   regCnt := Mux(regCnt === (len - 1).U, 0.U, regCnt + 1.U)
@@ -42,7 +42,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
 
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new BubbleFifo(Entry(dt), txDepth))
+  val txFifo = Module(new BubbleFifo(Entry(dt), conf.txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
   // local buffer to avoid combinational ready/valid
@@ -59,7 +59,7 @@ class NetworkInterface[T <: Data](dim: Int, txDepth: Int, rxDepth: Int, dt: T) e
   io.local.in.valid := doSend
   when (doSend) { txFullReg := false.B }
 
-  val rxFifo = Module(new BubbleFifo(Entry(dt), rxDepth))
+  val rxFifo = Module(new BubbleFifo(Entry(dt), conf.rxDepth))
   io.networkPort.rx <> rxFifo.io.deq
 
   // local buffer to avoid combinational ready/valid

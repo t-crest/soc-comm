@@ -9,16 +9,16 @@ package s4noc
 
 import chisel3._
 
-class S4NoCIO(n: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module  {
+class S4NoCIO(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val cpuPorts = Vec(n, new CpuPortComb(width))
+    val cpuPorts = Vec(conf.n, new CpuPortComb(conf.width))
     val cycCnt = Output(UInt(32.W))
   })
 
-  val s4noc = Module(new S4NoC(n, txFifo, rxFifo, width))
+  val s4noc = Module(new S4NoC(conf))
 
-  for (i <- 0 until n) {
-    val ci = Module(new CpuInterfaceComb(UInt(width.W), width))
+  for (i <- 0 until conf.n) {
+    val ci = Module(new CpuInterfaceComb(UInt(conf.width.W), conf.width))
     s4noc.io.networkPort(i) <> ci.io.networkPort
     io.cpuPorts(i) <> ci.io.cpuPort
   }

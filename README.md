@@ -70,7 +70,7 @@ where `n` is the number of cores.
 
 The generated Verilog file can be found in ```generated/S4nocTrafficGen.v```
 and can be synthesized to provide resource numbers and maximum
-clocking frequency.  An Intel Qartus project is available in [quartus](quartus).
+clocking frequency. An Intel Qartus project is available in [quartus](quartus).
 
 ## TODO
 

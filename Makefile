@@ -7,8 +7,6 @@ doit:
 	sbt "runMain soc.DirectLink"
 
 # Run the tests
-add-test:
-	sbt "test:runMain empty.AddTester"
 
 test:
 	sbt "testOnly s4noc.NocTester"

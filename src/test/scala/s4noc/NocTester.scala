@@ -10,7 +10,7 @@ class NocTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Simple NoC Tester (just one packet)"
 
   "S4NoC" should "receive one packet old style, verbose" in {
-    test(new S4NoCIO(4, 2, 2, 32)) { d =>
+    test(new S4NoCIO(Config(4, 2, 2))) { d =>
 
       def read3(): UInt = {
         d.io.cpuPorts(3).rd.poke(true.B)
@@ -58,7 +58,7 @@ class NocTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "receive one packet, better coding, threaded" in {
-    test(new S4NoCIO(4, 2, 2, 32)) { d =>
+    test(new S4NoCIO(Config(4, 2, 2))) { d =>
       // Master thread (core 0)
       // Write into time slot 0 to reach core 3
       fork {

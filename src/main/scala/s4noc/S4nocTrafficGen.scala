@@ -8,24 +8,24 @@ package s4noc
 
 import chisel3._
 
-class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extends Module {
+class S4nocTrafficGen(conf: Config) extends Module {
 
-  val s4noc = Module(new S4NoCIO(nrNodes, txFifo, rxFifo, width))
+  val s4noc = Module(new S4NoCIO(conf))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
-    val data = Output(UInt(width.W))
+    val data = Output(UInt(conf.width.W))
   })
 
-  val outReg = Array.fill(nrNodes) { RegInit(0.U(width.W)) }
+  val outReg = Array.fill(conf.n) { RegInit(0.U(conf.width.W)) }
 
-  for (i <- 0 until nrNodes) {
+  for (i <- 0 until conf.n) {
 
-    val cntReg = RegInit((i*7+5).U((width+8).W))
+    val cntReg = RegInit((i*7+5).U((conf.width+8).W))
     cntReg := cntReg + 1.U
 
     // addresses are in words
     s4noc.io.cpuPorts(i).addr := cntReg(7, 2)
-    s4noc.io.cpuPorts(i).wrData := cntReg(width+7, 8)
+    s4noc.io.cpuPorts(i).wrData := cntReg(conf.width+7, 8)
     s4noc.io.cpuPorts(i).wr := cntReg(0)
     s4noc.io.cpuPorts(i).rd := cntReg(1)
     // Have some registers before or reduce
@@ -38,10 +38,10 @@ class S4nocTrafficGen(nrNodes: Int, txFifo: Int, rxFifo: Int, width: Int) extend
 
   // Have some registers before hitting the output pins
   // io.data := RegNext(RegNext(RegNext(RegNext((outReg.reduce((x, y) => x | y))))))
-  io.data := RegNext(outReg(nrNodes-1))
+  io.data := RegNext(outReg(conf.n-1))
 }
 
 object S4nocTrafficGen extends App {
   println("Generating the S4NoC hardware with a traffic generator")
-  (new chisel3.stage.ChiselStage).emitVerilog(new S4nocTrafficGen(args(0).toInt, 8, 8, 32), Array("--target-dir", "generated"))
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4nocTrafficGen(Config(args(0).toInt, 8, 8, 32)), Array("--target-dir", "generated"))
 }
