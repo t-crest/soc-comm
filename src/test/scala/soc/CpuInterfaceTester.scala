@@ -17,7 +17,7 @@ class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
         val cpu = d.io.cpuPort
         val noc = d.io.networkPort
         step()
-        cpu.rdy.expect(false.B)
+        cpu.ack.expect(false.B)
 
         // maybe set some default values
 
@@ -29,7 +29,7 @@ class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
         step()
         noc.tx.bits.data.expect(0x0123.U)
         noc.tx.bits.time.expect(3.U)
-        cpu.rdy.expect(true.B)
+        cpu.ack.expect(true.B)
         // delayed ready
         cpu.wr.poke(false.B)
         cpu.address.poke(0.U)
@@ -43,15 +43,15 @@ class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
         cpu.wr.poke(false.B)
         cpu.address.poke(0.U)
         cpu.wrData.poke(0x0.U)
-        cpu.rdy.expect(false.B)
+        cpu.ack.expect(false.B)
         step()
-        cpu.rdy.expect(false.B)
+        cpu.ack.expect(false.B)
         step()
         noc.tx.ready.poke(true.B)
         noc.tx.bits.data.expect(0x0456.U)
         noc.tx.bits.time.expect(1.U)
         step()
-        cpu.rdy.expect(true.B)
+        cpu.ack.expect(true.B)
         step()
       }
     }
@@ -65,7 +65,7 @@ class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
 
         d.clock.step()
         // baby step test to test the test
-        a.rdy.expect(false.B)
+        a.ack.expect(false.B)
       }
     }
   }

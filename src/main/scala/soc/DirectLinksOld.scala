@@ -55,7 +55,7 @@ class DirectLinksOld(nrCores: Int) extends MultiCoreDevice(nrCores, 4*2) {
 
   for (i <- 0 until 4) {
     io.ports(i).rdData := 42.U
-    io.ports(i).rdy := false.B
+    io.ports(i).ack := false.B
   }
 }
 

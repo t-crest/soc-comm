@@ -25,7 +25,7 @@ class CpuInterfaceRV extends Module {
   val rdyReg = RegInit(false.B)
   val dataReg = Reg(UInt(32.W))
 
-  cp.rdy := rdyReg
+  cp.ack := rdyReg
 
   // some default values
   cp.rdData := 0.U

@@ -30,7 +30,7 @@ class CpuInterfaceS4NOC extends Module {
   val dataReg = Reg(UInt(32.W))
   val addrReg = Reg(UInt(8.W))
 
-  cp.rdy := rdyReg
+  cp.ack := rdyReg
 
   // some default values to make it compile
   cp.rdData := 0.U

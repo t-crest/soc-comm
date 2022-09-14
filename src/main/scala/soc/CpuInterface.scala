@@ -23,7 +23,7 @@ class CpuInterface(addrWidth: Int) extends Module {
 
   // TODO: do we need to store the read address in a register?
 
-  cp.rdy := rdyReg
+  cp.ack := rdyReg
 
   // some default values
   cp.rdData := 0.U
