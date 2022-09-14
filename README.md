@@ -48,7 +48,48 @@ For the Chisel based tests a compiler with gcc like interface is needed.
 
 ### CPU Interface
 
+For this project we define s simple pipelined IO interface,
+consisting of following signals:
 
+```aidl
+class CpuPortIO(private val addrWidth: Int) extends Bundle {
+  val wr = Input(Bool())
+  val rd = Input(Bool())
+  val address = Input(UInt(addrWidth.W))
+  val wrData = Input(UInt(32.W))
+  val rdData = Output(UInt(32.W))
+  val ack = Output(Bool())
+}
+```
+
+A read or write command are signaled by an asserted ```rd``` or ```wr```.
+The address and write data (if a write) need to be valid during
+the command. Commands are only valid a single cycle.
+Each command needs to be acknowledged by an active ```ack```,
+earliest one cycle after the command. It can also insert wait
+states by delaying ```ack```. Read data is available with the ```ack```
+signal for one clock cycle.
+
+![handshake](handshake.svg)
+
+The figure shows such a bus protocol that does not need
+a combinational reaction of the peripheral device.
+It is pipelined handshaking, as we propose it in this project.
+The request from the processor  is only a single cycle long.
+The address bus and the read signal does not need to be driven
+till the acknowledgment. The ```ack``` signal comes earliest
+one clock cycle after the ```rd``` command, in clock cycle 3.
+The first read sequence has one cycle latency in this example.
+the same latency as the former example.
+However, as the request needs to be valid only one clock cycle,
+we can pipeline requests.
+Read of addresses ```A2``` and ```A3``` can be requested back to back,
+allowing a throughput of 1 data word per clock cycle.
+
+The Patmos processor uses an OCP version with exact this
+protocol for accessing IO devices (OCPcore). Memory is connected via a burst interface.
+The Patmos Handbook gives a detailed description of the
+used OCP interfaces.
 
 ### S4NOC
 
