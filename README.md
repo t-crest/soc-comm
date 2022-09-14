@@ -51,7 +51,7 @@ For the Chisel based tests a compiler with gcc like interface is needed.
 For this project we define s simple pipelined IO interface,
 consisting of following signals:
 
-```aidl
+```scala
 class CpuPortIO(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rd = Input(Bool())
