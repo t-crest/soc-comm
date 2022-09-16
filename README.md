@@ -48,7 +48,7 @@ For the Chisel based tests a compiler with gcc like interface is needed.
 
 ### CPU Interface
 
-For this project we define s simple pipelined IO interface,
+For this project we define a simple pipelined IO interface,
 consisting of following signals:
 
 ```scala
@@ -63,8 +63,8 @@ class CpuPortIO(private val addrWidth: Int) extends Bundle {
 ```
 
 A read or write command are signaled by an asserted ```rd``` or ```wr```.
-The address and write data (if a write) need to be valid during
-the command. Commands are only valid a single cycle.
+The address and write data (if it is a write) need to be valid during
+the command. Commands are only valid for a single cycle.
 Each command needs to be acknowledged by an active ```ack```,
 earliest one cycle after the command. It can also insert wait
 states by delaying ```ack```. Read data is available with the ```ack```

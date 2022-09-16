@@ -125,6 +125,10 @@ class Schedule(val n: Int) {
     row * n + col
   }
 
+  /**
+    * Given a source core and a slot, it returns who the destination is
+    * and how long it takes to reach it
+    */
   def timeToDest(core: Int, slot : Int): (Int , Int) = {
 
     var dest = core
@@ -140,6 +144,9 @@ class Schedule(val n: Int) {
     (dest, count + 1)
   }
 
+  /**
+    * Return the time slot to be used from src to reach a dest
+    */
   def coreToTimeSlot(src: Int, dest: Int) = {
     var time = -1
     for (i <- 0 until schedule.length) {
