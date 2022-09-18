@@ -3,10 +3,9 @@ package s4noc
 import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import s4noc.NocTester._
+import scala.collection.mutable._
 
 class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
-  behavior of "NoC Performance Test"
 
   "S4NoC" should "be fast ;-)" in {
     test(new Network(2, UInt(32.W))) { d =>
@@ -23,6 +22,9 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
           println(s"  use slot $slot to reach code $j")
         }
       }
+
+      val t = new TrafficGen(2)
+
     }
   }
 }
