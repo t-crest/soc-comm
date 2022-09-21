@@ -31,7 +31,8 @@ class TrafficGen(n: Int) {
 
   var countCycles = 0
   var inserted = 0
-  var injectionRate = 0.5 * n
+  var injectionRate = 0.2 * n
+  var dropped = 0
 
   // This would be a direct call back into the Chisel tester
   // def tick(inject: (Int, Int) => Unit): Unit = {
@@ -51,7 +52,9 @@ class TrafficGen(n: Int) {
       var count = 0
       while (s.contains(one)) {
         one = r.nextInt(n)
-        if (count > n) throw new Exception("Livelock in getOne()")
+        // Maybe just drop that one?
+        // if (count > 100 * n) throw new Exception("Livelock in getOne()")
+        if (count > 100 * n) return -1
         count += 1
       }
       s += one
@@ -63,8 +66,12 @@ class TrafficGen(n: Int) {
       val from = getOne(fromSet)
       var to = getOne(toSet)
       if (to == from) to = getOne(toSet)
-      println(s"$countCycles $inserted: $from -> $to")
-      insert(from, to, (from << 24) | (to << 16) | countCycles)
+      // println(s"$countCycles $inserted: $from -> $to")
+      if (to != -1 && from != -1) {
+        insert(from, to, (from << 24) | (to << 16) | countCycles)
+      } else {
+        dropped += 1
+      }
     }
 
     countCycles += 1
