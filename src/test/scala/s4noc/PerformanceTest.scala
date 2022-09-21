@@ -93,10 +93,12 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         (cnt, sum.toDouble/cnt, min, max)
       }
 
-      for (rate <- 1 until 70) {
+      for (rate <- 1 until 100 by 10) { // 70 is max
         t.injectionRate = rate.toDouble / 100
         t.dropped = 0
         val (cnt, avg, min, max) = runIt(1000)
+        // drain the NoC
+        d.clock.step(100)
         // TODO: sanity check of cnt, nr of cores, and injection rate
         // println(s"injection rate: ${t.injectionRate} cnt: $cnt dropped: ${t.dropped} avg: $avg, min: $min, max: $max")
         println(s"(${t.injectionRate}, $avg)")

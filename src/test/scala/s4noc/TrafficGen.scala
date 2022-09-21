@@ -61,6 +61,7 @@ class TrafficGen(n: Int) {
       one
     }
 
+    /*
     while (inserted.toDouble / (countCycles + 1) < injectionRate) {
       inserted += 1
       val from = getOne(fromSet)
@@ -71,6 +72,19 @@ class TrafficGen(n: Int) {
         insert(from, to, (from << 24) | (to << 16) | countCycles)
       } else {
         dropped += 1
+      }
+    }
+     */
+    for (from <- 0 until n) {
+      val rnd = r.nextDouble()
+      // Shall we look at the current rate?
+      // val currentInjectionRate = inserted.toDouble / (countCycles + 1)
+      if (rnd < injectionRate) {
+        var to = r.nextInt(n)
+        while (to == from) {
+          to = r.nextInt(n)
+        }
+        insert(from, to, (from << 24) | (to << 16) | countCycles)
       }
     }
 
