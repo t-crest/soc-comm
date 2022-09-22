@@ -32,7 +32,6 @@ class TrafficGen(n: Int) {
   var countCycles = 0
   var inserted = 0
   var injectionRate = 0.2 * n
-  var dropped = 0
 
   // This would be a direct call back into the Chisel tester
   // def tick(inject: (Int, Int) => Unit): Unit = {
@@ -77,9 +76,8 @@ class TrafficGen(n: Int) {
      */
     for (from <- 0 until n) {
       val rnd = r.nextDouble()
-      // Shall we look at the current rate?
-      // val currentInjectionRate = inserted.toDouble / (countCycles + 1)
       if (rnd < injectionRate) {
+        inserted += 1
         var to = r.nextInt(n)
         while (to == from) {
           to = r.nextInt(n)
