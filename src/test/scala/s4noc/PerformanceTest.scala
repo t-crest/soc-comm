@@ -35,20 +35,18 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  "S4NoC" should "with ideal queues" in {
-    test(new Network(n, UInt(32.W))) { d =>
+  val sched = Schedule(n)
+  // printScheduleInfo(sched)
+  val t = new TrafficGen(n * n)
+  var slotCnt = 0
 
+  "S4NoC" should "work with ideal queues" in {
+    test(new Network(n, UInt(32.W))) { d =>
       var countCycles = 0
       def tick() = {
         d.clock.step()
         countCycles += 1
       }
-
-      val sched = Schedule(n)
-      // printScheduleInfo(sched)
-      val t = new TrafficGen(n * n)
-      var slotCnt = 0
-
       def runIt(count: Int) = {
 
         var injected = 0 // into the NoC
@@ -70,7 +68,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
               val data = t.getValue(core, dest)
               // printInfo(data)
               if (data != -1) {
-                local.in.data.poke(data)
+                local.in.data.poke(data.U)
                 local.in.valid.poke(true.B)
                 injected += 1
               }
@@ -97,7 +95,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
       println(s"${n * n} cores with ideal queues")
       val count = 2000
-      for (rate <- 1 until 91 by 5) { // ?? is max
+      for (rate <- 102 until 102 by 5) { // ?? is max
         t.injectionRate = rate.toDouble / 100
         t.inserted = 0
         val (injected, received, avg, min, max) = runIt(count)
@@ -108,8 +106,82 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
         // println(s"($effectiveInjectionRate, $avg)")
       }
-
     }
   }
+
+  "S4NoC" should "work with bubble queues" in {
+    test(new S4NoC(Config(n * n, 2, 2, 32))) { d =>
+
+      var countCycles = 0
+      def tick() = {
+        d.clock.step()
+        countCycles += 1
+      }
+
+      def runIt(count: Int) = {
+
+        var injected = 0 // into the NoC
+        var received = 0 // from the NoC
+        var min = 10000
+        var max = 0
+        var sum = 0
+
+        for (i <- 0 until count) {
+          // println(s"clock cycle #: $countCycles")
+          t.tick()
+          for (core <- 0 until n * n) {
+            val ni = d.io.networkPort(core)
+            // send
+            ni.tx.valid.poke(false.B)
+            val dest = sched.timeToDest(core, slotCnt)._1
+            // println(s"$slotCnt: core $core can send to $dest")
+            if (dest != -1) {
+              val data = t.getValue(core, dest)
+              // printInfo(data)
+              if (data != -1) {
+                ni.tx.bits.data.poke(data.U)
+                ni.tx.bits.time.poke(0.U)
+                ni.tx.valid.poke(true.B)
+                injected += 1
+              }
+            }
+            // receive
+            // TODO: sanity check for correct routing
+            if (ni.rx.valid.peekBoolean()) {
+              // val recv = ni.rx.bits.peekInt().toInt
+              val recv = 0 // TODO: get it right
+              val latency = countCycles - (recv & 0x0ffff)
+              if (latency < min) min = latency
+              if (latency > max) max = latency
+              received += 1
+              sum += latency
+              // println(s"Received with latency of $latency")
+              // printInfo(recv)
+            }
+          }
+
+
+          tick()
+          slotCnt = (slotCnt + 1) % sched.len
+        }
+        (injected, received, sum.toDouble/received, min, max)
+      }
+
+      println(s"${n * n} cores with bubble queues")
+      val count = 2000
+      for (rate <- 1 until 102 by 5) { // ?? is max
+        t.injectionRate = rate.toDouble / 100
+        t.inserted = 0
+        val (injected, received, avg, min, max) = runIt(count)
+        val effectiveInjectionRate = injected.toDouble / count / (n * n)
+        // drain the NoC
+        d.clock.step(100)
+        // TODO: sanity check of received, nr of cores, and injection rate
+        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        // println(s"($effectiveInjectionRate, $avg)")
+      }
+    }
+  }
+
 }
 
