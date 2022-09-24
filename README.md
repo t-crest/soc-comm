@@ -117,18 +117,22 @@ The generated Verilog file can be found in ```generated/S4nocTrafficGen.v```
 and can be synthesized to provide resource numbers and maximum
 clocking frequency. An Intel Qartus project is available in [quartus](quartus).
 
+#### TODO (S4NOC)
+
+ * Test the NoC
+ * Have the core # to slot # mapping in HW (it should be cheap)
+   * Then change the (FIFO) buffers to include the destination instead of the time slot
+ * Play with FIFO buffer variations
+
 ## TODO
 
  * Do a simple multicore device (no communication,
    just a register and core number) and integrate it with T-CREST
    * A multicore "Hello World"
- * s4noc: Have the core # to slot # mapping in HW (it should be cheap)
- * s4noc: Play with FIFO buffer variations
  * Do traffic generators like in the Dally book
  * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
    * And document it here 
  * Provide blocking in the CPU interface if not data available or TX FIFO full
- * Get the Chisel 2 NoC running (What did I mean here?)
  * Get one-way memory back in here
 
 ### Next Paper

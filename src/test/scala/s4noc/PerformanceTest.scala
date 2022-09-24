@@ -54,6 +54,8 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         var min = 10000
         var max = 0
         var sum = 0
+        t.inserted = 0
+        t.reset()
 
         for (i <- 0 until count) {
           // println(s"clock cycle #: $countCycles")
@@ -95,16 +97,15 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
       println(s"${n * n} cores with ideal queues")
       val count = 2000
-      for (rate <- 102 until 102 by 5) { // ?? is max
+      for (rate <- 1 until 1 by 5) { // ?? is max
         t.injectionRate = rate.toDouble / 100
-        t.inserted = 0
         val (injected, received, avg, min, max) = runIt(count)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
         // drain the NoC
         d.clock.step(100)
         // TODO: sanity check of received, nr of cores, and injection rate
-        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
-        // println(s"($effectiveInjectionRate, $avg)")
+        // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        println(s"($effectiveInjectionRate, $avg)")
       }
     }
   }
@@ -125,7 +126,10 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         var min = 10000
         var max = 0
         var sum = 0
+        t.inserted = 0
+        t.reset()
 
+        var destCnt = 0
         for (i <- 0 until count) {
           // println(s"clock cycle #: $countCycles")
           t.tick()
@@ -133,23 +137,22 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
             val ni = d.io.networkPort(core)
             // send
             ni.tx.valid.poke(false.B)
-            val dest = sched.timeToDest(core, slotCnt)._1
-            // println(s"$slotCnt: core $core can send to $dest")
-            if (dest != -1) {
-              val data = t.getValue(core, dest)
+            if (ni.tx.ready.peekBoolean()) {
+              val (data, dest) = t.getValueFromSingle(core)
+              val time = sched.coreToTimeSlot(core, dest)
               // printInfo(data)
               if (data != -1) {
                 ni.tx.bits.data.poke(data.U)
-                ni.tx.bits.time.poke(0.U)
+                ni.tx.bits.time.poke(time.U)
                 ni.tx.valid.poke(true.B)
                 injected += 1
               }
             }
             // receive
+            ni.rx.ready.poke(true.B)
             // TODO: sanity check for correct routing
             if (ni.rx.valid.peekBoolean()) {
-              // val recv = ni.rx.bits.peekInt().toInt
-              val recv = 0 // TODO: get it right
+              val recv = ni.rx.bits.data.peek.litValue.toInt
               val latency = countCycles - (recv & 0x0ffff)
               if (latency < min) min = latency
               if (latency > max) max = latency
@@ -163,22 +166,22 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
           tick()
           slotCnt = (slotCnt + 1) % sched.len
+          destCnt = (destCnt + 1) % (n * n)
         }
         (injected, received, sum.toDouble/received, min, max)
       }
 
       println(s"${n * n} cores with bubble queues")
       val count = 2000
-      for (rate <- 1 until 102 by 5) { // ?? is max
+      for (rate <- 1 until 20 by 1) { // ?? is max
         t.injectionRate = rate.toDouble / 100
-        t.inserted = 0
         val (injected, received, avg, min, max) = runIt(count)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
         // drain the NoC
         d.clock.step(100)
         // TODO: sanity check of received, nr of cores, and injection rate
-        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
-        // println(s"($effectiveInjectionRate, $avg)")
+        // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        println(s"($effectiveInjectionRate, $avg)")
       }
     }
   }

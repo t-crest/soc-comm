@@ -9,19 +9,26 @@ import scala.util.Random
   */
 class TrafficGen(n: Int) {
 
-  val queues = Array.ofDim[mutable.Queue[Int]](n, n)
-  for (i <- 0 until n) {
-    for (j <- 0 until n) {
-      queues(i)(j) = new mutable.Queue[Int]()
+  val queuesSplit = Array.ofDim[mutable.Queue[Int]](n, n)
+  val queues = Array.ofDim[mutable.Queue[(Int, Int)]](n)
+
+  def reset()  = {
+    for (i <- 0 until n) {
+      for (j <- 0 until n) {
+        queuesSplit(i)(j) = new mutable.Queue[Int]()
+      }
+      queues(i) = new mutable.Queue[(Int, Int)]()
     }
   }
 
+
   def insert(from: Int, to: Int, data: Int): Unit = {
-    queues(from)(to).enqueue(data)
+    queuesSplit(from)(to).enqueue(data)
+    queues(from).enqueue((data, to))
   }
 
   def getValue(from: Int, to: Int): Int = {
-    val q = queues(from)(to)
+    val q = queuesSplit(from)(to)
     if (q.isEmpty) {
       -1
     } else {
@@ -29,6 +36,17 @@ class TrafficGen(n: Int) {
     }
   }
 
+  def getValueFromSingle(from: Int): (Int, Int) = {
+    val q = queues(from)
+    if (q.isEmpty) {
+      (-1, 0)
+    } else {
+      q.dequeue()
+    }
+  }
+
+  reset()
+  // should be part of reset
   var countCycles = 0
   var inserted = 0
   var injectionRate = 0.2 * n
