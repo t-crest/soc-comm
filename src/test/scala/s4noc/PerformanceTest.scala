@@ -111,7 +111,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   "S4NoC" should "work with bubble queues" in {
-    test(new S4NoC(Config(n * n, 2, 2, 32))) { d =>
+    test(new S4NoC(Config(n * n, 4, 4, 32))).withAnnotations(Seq(VerilatorBackendAnnotation)) { d =>
 
       var countCycles = 0
       def tick() = {
@@ -171,9 +171,10 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         (injected, received, sum.toDouble/received, min, max)
       }
 
-      println(s"${n * n} cores with bubble queues")
+      println(s"${n * n} cores with different queues")
       val count = 2000
-      for (rate <- 1 until 20 by 1) { // ?? is max
+      for (rate <- 1 until 31 by 5) { // ?? is max
+        t.reset()
         t.injectionRate = rate.toDouble / 100
         val (injected, received, avg, min, max) = runIt(count)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
@@ -185,6 +186,5 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
   }
-
 }
 

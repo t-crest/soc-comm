@@ -21,7 +21,7 @@ class S4NoC(conf: Config) extends Module  {
   val net = Module(new Network(conf.dim, UInt(conf.width.W)))
 
   for (i <- 0 until conf.n) {
-    val ni = Module(new NetworkInterface(conf, UInt(conf.width.W)))
+    val ni = Module(new NetworkInterface(i, conf, UInt(conf.width.W)))
     net.io.local(i) <> ni.io.local
     io.networkPort(i) <> ni.io.networkPort
   }

@@ -9,7 +9,7 @@ class NITester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "NI"
 
   it should "work" in {
-    test(new NetworkInterface(Config(4, 2, 2, 16), UInt(16.W))) { dut =>
+    test(new NetworkInterface(0, Config(4, 2, 2, 16), UInt(16.W))) { dut =>
 
       // dut.io.networkPort.tx.bits.poke(chiselTypeOf(dut.io.networkPort.tx.bits).Lit(_.data -> 1.U, _.time -> 2.U))
       dut.io.networkPort.tx.bits.data.poke(1.U)
