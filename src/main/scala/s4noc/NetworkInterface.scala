@@ -25,7 +25,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val translationTable = VecInit(Seq.fill(len)(0.U(8.W)))
   val validSlot = VecInit(Seq.fill(len)(false.B))
   for (i <- 0 until len) {
-    val dest = sched.timeToDest(0, i)._1
+    val dest = sched.timeToDest(id, i).dest
     if (dest != -1) {
       translationTable(i) := dest.U
       validSlot(i) := true.B

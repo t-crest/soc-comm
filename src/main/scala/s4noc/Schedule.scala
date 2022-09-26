@@ -19,7 +19,7 @@ package s4noc
 import Const._
 import scala.util.Random
 
-// TODO: have functions for time to dest and dest to time
+case class Destination(dest: Int, pathLength: Int)
 
 class Schedule(val n: Int) {
 
@@ -129,19 +129,19 @@ class Schedule(val n: Int) {
     * Given a source core and a slot, it returns who the destination is
     * and how long it takes to reach it
     */
-  def timeToDest(core: Int, slot : Int): (Int , Int) = {
+  def timeToDest(core: Int, slot : Int): Destination = {
 
     var dest = core
     var step = schedule(slot).indexOf(LOCAL)
     var count = 0
 
-    if (step == -1) return (-1, 0)
+    if (step == -1) return Destination(-1, 0)
     while (step != LOCAL) {
       dest = move(dest, step)
       count += 1
       step = schedule(slot + count).indexOf(nextFrom(step))
     }
-    (dest, count + 1)
+    Destination(dest, count + 1)
   }
 
   /**
@@ -150,7 +150,7 @@ class Schedule(val n: Int) {
   def coreToTimeSlot(src: Int, dest: Int) = {
     var time = -1
     for (i <- 0 until schedule.length) {
-      if (timeToDest(src, i)._1 == dest) {
+      if (timeToDest(src, i).dest == dest) {
         time = i
       }
     }

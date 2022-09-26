@@ -49,16 +49,16 @@ class ScheduleTester extends AnyFlatSpec {
   it should "schedule correctly" in {
     val s = Schedule(2)
 
-    assert(s.timeToDest(0,0) == (3, 3))
-    assert(s.timeToDest(0,1) == (-1, 0))
-    assert(s.timeToDest(0,2) == (2, 2))
-    assert(s.timeToDest(0,3) == (1, 2))
-    assert(s.timeToDest(0,4) == (-1, 0))
-    assert(s.timeToDest(3,0) == (0, 3))
-    assert(s.timeToDest(3,1) == (-1, 0))
-    assert(s.timeToDest(3,2) == (1, 2))
-    assert(s.timeToDest(3,3) == (2, 2))
-    assert(s.timeToDest(3,4) == (-1, 0))
+    assert(s.timeToDest(0,0) == Destination(3, 3))
+    assert(s.timeToDest(0,1) == Destination(-1, 0))
+    assert(s.timeToDest(0,2) == Destination(2, 2))
+    assert(s.timeToDest(0,3) == Destination(1, 2))
+    assert(s.timeToDest(0,4) == Destination(-1, 0))
+    assert(s.timeToDest(3,0) == Destination(0, 3))
+    assert(s.timeToDest(3,1) == Destination(-1, 0))
+    assert(s.timeToDest(3,2) == Destination(1, 2))
+    assert(s.timeToDest(3,3) == Destination(2, 2))
+    assert(s.timeToDest(3,4) == Destination(-1, 0))
   }
 
   it should "find the time slot from src and dst" in {

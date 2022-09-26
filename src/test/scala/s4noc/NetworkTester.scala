@@ -62,7 +62,7 @@ class NetworkTester extends AnyFlatSpec with ChiselScalatestTester {
           val port = dut.io.local(core).in
           for (i <- 0 until TESTS) {
 
-            val dest = sched.timeToDest(core, cnt % tdmLength)._1
+            val dest = sched.timeToDest(core, cnt % tdmLength).dest
             port.valid.poke((dest != -1).B)
             val data = ((cnt << 16) + (core << 8) + dest)
             port.data.poke(data.U)

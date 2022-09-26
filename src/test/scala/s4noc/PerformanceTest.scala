@@ -14,7 +14,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
     for (i <- 0 until n * n) {
       println(s"From core $i")
       for (j <- 0 until sched.schedule.length) {
-        val dest = sched.timeToDest(i, j)._1
+        val dest = sched.timeToDest(i, j).dest
         println(s"  at timeslot $j core $i reaches $dest")
       }
       for (j <- 0 until n * n) {
@@ -64,7 +64,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
             val local = d.io.local(core)
             // send
             local.in.valid.poke(false.B)
-            val dest = sched.timeToDest(core, slotCnt)._1
+            val dest = sched.timeToDest(core, slotCnt).dest
             // println(s"$slotCnt: core $core can send to $dest")
             if (dest != -1) {
               val data = t.getValue(core, dest)
