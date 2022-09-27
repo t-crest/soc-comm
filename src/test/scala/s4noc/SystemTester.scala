@@ -33,7 +33,7 @@ class SystemTester extends AnyFlatSpec with ChiselScalatestTester {
   for (i <- 0 until CNT) data(i) = rnd.nextInt()
 
   it should "not overrun the channel" in {
-    test(new S4NoCTop(Config(4, 2, 2))) { d =>
+    test(new S4NoCTop(Config(4, 2, 0, 2, 32))) { d =>
 
       val th = fork {
         for (i <- 0 until CNT) {
@@ -59,7 +59,7 @@ class SystemTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "measure the latency" in {
-    test(new S4NoCTop(Config(4, 2, 2))) { d =>
+    test(new S4NoCTop(Config(4, 2, 0, 2, 32))) { d =>
 
       val th = fork {
         for (i <- 0 until CNT) {

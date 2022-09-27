@@ -43,5 +43,5 @@ class S4nocTrafficGen(conf: Config) extends Module {
 
 object S4nocTrafficGen extends App {
   println("Generating the S4NoC hardware with a traffic generator")
-  (new chisel3.stage.ChiselStage).emitVerilog(new S4nocTrafficGen(Config(args(0).toInt, 8, 8, 32)), Array("--target-dir", "generated"))
+  (new chisel3.stage.ChiselStage).emitVerilog(new S4nocTrafficGen(Config(args(0).toInt, 8, 8, 8, 32)), Array("--target-dir", "generated"))
 }

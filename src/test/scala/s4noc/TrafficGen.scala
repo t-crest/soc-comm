@@ -12,7 +12,13 @@ class TrafficGen(n: Int) {
   val queuesSplit = Array.ofDim[mutable.Queue[Int]](n, n)
   val queues = Array.ofDim[mutable.Queue[(Int, Int)]](n)
 
+  var injectionRate = 0.2 * n
+  val r = new Random(0)
+  private var countCycles = 0
+  var inserted = 0
+
   def reset()  = {
+    inserted = 0
     for (i <- 0 until n) {
       for (j <- 0 until n) {
         queuesSplit(i)(j) = new mutable.Queue[Int]()
@@ -46,10 +52,6 @@ class TrafficGen(n: Int) {
   }
 
   reset()
-  // should be part of reset
-  var countCycles = 0
-  var inserted = 0
-  var injectionRate = 0.2 * n
 
   // This would be a direct call back into the Chisel tester
   // def tick(inject: (Int, Int) => Unit): Unit = {
@@ -57,12 +59,11 @@ class TrafficGen(n: Int) {
   /**
     * Execute this once per clock cycle and call back for packet injection
     */
-  def tick(): Unit = {
+  def tick(doInsert: Boolean): Unit = {
     // remember which source and destination was taken in a cycle
     // no doubles
     val fromSet = mutable.Set[Int]()
     val toSet = mutable.Set[Int]()
-    val r = new Random()
 
     def getOne(s: mutable.Set[Int]): Int = {
       var one = r.nextInt(n)
@@ -92,15 +93,17 @@ class TrafficGen(n: Int) {
       }
     }
      */
-    for (from <- 0 until n) {
-      val rnd = r.nextDouble()
-      if (rnd < injectionRate) {
-        inserted += 1
-        var to = r.nextInt(n)
-        while (to == from) {
-          to = r.nextInt(n)
+    if (doInsert) {
+      for (from <- 0 until n) {
+        val rnd = r.nextDouble()
+        if (rnd < injectionRate) {
+          inserted += 1
+          var to = r.nextInt(n)
+          while (to == from) {
+            to = r.nextInt(n)
+          }
+          insert(from, to, (from << 24) | (to << 16) | countCycles)
         }
-        insert(from, to, (from << 24) | (to << 16) | countCycles)
       }
     }
 
@@ -114,7 +117,7 @@ object TrafficGen extends App {
   val t = new TrafficGen(n)
 
   for (i <- 0 until 10) {
-    t.tick()
+    t.tick(true)
     for (i <- 0 until n) {
       for (j <- 0 until n) {
         val data = t.getValue(i, j)

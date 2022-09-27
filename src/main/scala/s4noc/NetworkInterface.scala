@@ -41,7 +41,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // TX
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new MemFifo(Entry(dt), conf.txDepth))
+  val txFifo = Module(new BubbleFifo(Entry(dt), conf.txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
   // local buffer to avoid combinational ready/valid
@@ -54,7 +54,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   }
   txFifo.io.deq.ready := !txFullReg
 
-  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(Entry(dt), 64)))
+  val splitBuffers = (0 until conf.n).map(_ => Module(new BubbleFifo(Entry(dt), conf.splitDepth)))
   for (i <- 0 until conf.n) {
     splitBuffers(i).io.enq.bits := txDataReg
   }

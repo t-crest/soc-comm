@@ -47,19 +47,18 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         d.clock.step()
         countCycles += 1
       }
-      def runIt(count: Int) = {
+      def runIt(count: Int, drain: Int) = {
 
         var injected = 0 // into the NoC
         var received = 0 // from the NoC
         var min = 10000
         var max = 0
         var sum = 0
-        t.inserted = 0
         t.reset()
 
-        for (i <- 0 until count) {
+        for (i <- 0 until (count + drain)) {
           // println(s"clock cycle #: $countCycles")
-          t.tick()
+          t.tick(i < count)
           for (core <- 0 until n * n) {
             val local = d.io.local(core)
             // send
@@ -97,21 +96,22 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
       println(s"${n * n} cores with ideal queues")
       val count = 2000
+      val drain = 300
       for (rate <- 1 until 1 by 5) { // ?? is max
         t.injectionRate = rate.toDouble / 100
-        val (injected, received, avg, min, max) = runIt(count)
+        val (injected, received, avg, min, max) = runIt(count, drain)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
         // drain the NoC
-        d.clock.step(100)
+        d.clock.step(900)
         // TODO: sanity check of received, nr of cores, and injection rate
-        // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
         println(s"($effectiveInjectionRate, $avg)")
       }
     }
   }
 
   "S4NoC" should "work with bubble queues" in {
-    test(new S4NoC(Config(n * n, 64, 4, 32))).withAnnotations(Seq(VerilatorBackendAnnotation)) { d =>
+    test(new S4NoC(Config(n * n, 2, 1, 1000, 32))).withAnnotations(Seq(VerilatorBackendAnnotation)) { d =>
 
       var countCycles = 0
       def tick() = {
@@ -119,7 +119,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         countCycles += 1
       }
 
-      def runIt(count: Int) = {
+      def runIt(count: Int, drain: Int) = {
 
         var injected = 0 // into the NoC
         var received = 0 // from the NoC
@@ -130,9 +130,9 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
         t.reset()
 
         var destCnt = 0
-        for (i <- 0 until count) {
+        for (i <- 0 until (count + drain)) {
           // println(s"clock cycle #: $countCycles")
-          t.tick()
+          t.tick(i < count) // only generate new traffic until drain cycles
           for (core <- 0 until n * n) {
             val ni = d.io.networkPort(core)
             // send
@@ -173,15 +173,15 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
       println(s"${n * n} cores with different queues")
       val count = 10000
+      val drain = 1000
+      d.clock.setTimeout(2000)
       for (rate <- 1 until 31 by 5) { // ?? is max
         t.reset()
         t.injectionRate = rate.toDouble / 100
-        val (injected, received, avg, min, max) = runIt(count)
+        val (injected, received, avg, min, max) = runIt(count, drain)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
-        // drain the NoC
-        d.clock.step(100)
         // TODO: sanity check of received, nr of cores, and injection rate
-        // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
         println(s"($effectiveInjectionRate, $avg)")
       }
     }
