@@ -173,7 +173,7 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
 
       println(s"${n * n} cores with different queues")
       val count = 10000
-      for (rate <- 21 until 31 by 5) { // ?? is max
+      for (rate <- 1 until 31 by 5) { // ?? is max
         t.reset()
         t.injectionRate = rate.toDouble / 100
         val (injected, received, avg, min, max) = runIt(count)

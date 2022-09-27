@@ -54,7 +54,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   }
   txFifo.io.deq.ready := !txFullReg
 
-  val splitBuffers = (0 until conf.n).map(_ => Module(new BubbleFifo(Entry(dt), 8)))
+  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(Entry(dt), 64)))
   for (i <- 0 until conf.n) {
     splitBuffers(i).io.enq.bits := txDataReg
   }

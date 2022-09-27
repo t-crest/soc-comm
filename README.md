@@ -124,6 +124,13 @@ clocking frequency. An Intel Qartus project is available in [quartus](quartus).
    * Then change the (FIFO) buffers to include the destination instead of the time slot
  * Play with FIFO buffer variations
 
+To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``` with
+```
+-J-XX:+HeapDumpOnOutOfMemoryError
+-J-XX:HeapDumpPath=.
+-J-Xmx4G
+```
+
 ## TODO
 
  * Do a simple multicore device (no communication,
