@@ -44,19 +44,12 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val txFifo = Module(new BubbleFifo(Entry(dt), conf.txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
-  // local buffer to avoid combinational ready/valid
-  val txFullReg = RegInit(false.B)
-  val txDataReg = Reg(Entry(dt))
+  val toCore = translationTable(txFifo.io.deq.bits.time)
 
-  when(!txFullReg && txFifo.io.deq.valid) {
-    txDataReg := txFifo.io.deq.bits
-    txFullReg := true.B
-  }
-  txFifo.io.deq.ready := !txFullReg
-
+  // TODO: the split buffers do not need to be Entry, just data is enough
   val splitBuffers = (0 until conf.n).map(_ => Module(new BubbleFifo(Entry(dt), conf.splitDepth)))
   for (i <- 0 until conf.n) {
-    splitBuffers(i).io.enq.bits := txDataReg
+    splitBuffers(i).io.enq.bits := txFifo.io.deq.bits
   }
 
   // there must be a more elegant solution
@@ -74,11 +67,11 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     deqDataVec(i) := splitBuffers(i).io.deq.bits
     splitBuffers(i).io.deq.ready := deqReadyVec(i)
   }
-
-  when (txFullReg) {
-    when (enqReadyVec(translationTable(txDataReg.time))) {
-      enqValidVec(translationTable(txDataReg.time)) := true.B
-      txFullReg := false.B
+  // the following is a combinational ready from a split buffer ready
+  txFifo.io.deq.ready := enqReadyVec(toCore)
+  when (txFifo.io.deq.valid) {
+    when (enqReadyVec(toCore)) {
+      enqValidVec(toCore) := true.B
     }
   }
 
