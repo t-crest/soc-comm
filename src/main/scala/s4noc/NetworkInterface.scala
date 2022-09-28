@@ -67,7 +67,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     deqDataVec(i) := splitBuffers(i).io.deq.bits
     splitBuffers(i).io.deq.ready := deqReadyVec(i)
   }
-  // the following is a combinational ready from a split buffer ready
+  // the following is a combinational valid/ready path from a split buffer
   txFifo.io.deq.ready := enqReadyVec(toCore)
   when (txFifo.io.deq.valid) {
     when (enqReadyVec(toCore)) {
@@ -85,21 +85,10 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
 
   // RX
   val rxFifo = Module(new MemFifo(Entry(dt), conf.rxDepth))
+  // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
+  rxFifo.io.enq.valid := io.local.out.valid
+  rxFifo.io.enq.bits.data := io.local.out.data
+  rxFifo.io.enq.bits.time := timeSlotReg
+
   io.networkPort.rx <> rxFifo.io.deq
-
-  // local buffer to avoid combinational ready/valid
-  val rxFullReg = RegInit(false.B)
-  val rxDataReg = Reg(Entry(dt))
-
-  when (!rxFullReg && io.local.out.valid) {
-    rxDataReg.data := io.local.out.data
-    rxDataReg.time := timeSlotReg
-    rxFullReg := true.B
-  }
-
-  rxFifo.io.enq.valid := rxFullReg
-  rxFifo.io.enq.bits := rxDataReg
-  when (rxFullReg && rxFifo.io.enq.ready) {
-    rxFullReg := false.B
-  }
 }
