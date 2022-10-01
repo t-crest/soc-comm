@@ -1,3 +1,5 @@
+![build status](https://github.com/schoeberl/chisel-book/actions/workflows/scala.yml/badge.svg)
+
 # Multicore Communication
 
 Collection of different communication methods for chip mulitprocessors.
