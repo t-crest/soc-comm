@@ -128,6 +128,7 @@ sbt "test:runMain s4noc.PerformanceTest"
 #### TODO (S4NOC)
 
  * Test the NoC (is the receiver the right one?)
+   * The ideal queues is failing, the real thing is OK
  * Find a way to configure
  * NI should not use split buffers when size is 0
  * Find a way to receive all inserted packets, this might improve the numbers

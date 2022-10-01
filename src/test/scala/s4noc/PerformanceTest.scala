@@ -80,7 +80,7 @@ object PerformanceTest extends App {
             val recv = local.out.data.peekInt().toInt
             val latency = countCycles - (recv & 0x0ffff)
             val to = (recv >> 16) & 0x0ff
-            // assert(to == core)
+            // assert(to == core, s"$to should be $core")
             if (latency < min) min = latency
             if (latency > max) max = latency
             received += 1
@@ -99,7 +99,7 @@ object PerformanceTest extends App {
     println(s"${n * n} cores with ideal queues")
     val count = 10000
     val drain = 20
-    for (rate <- 1 until 1 by 10) { // ?? is max
+    for (rate <- 1 until 11 by 10) { // ?? is max
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(count, drain)
       val effectiveInjectionRate = injected.toDouble / count / (n * n)
@@ -150,7 +150,6 @@ object PerformanceTest extends App {
           }
           // receive
           ni.rx.ready.poke(true.B)
-          // TODO: sanity check for correct routing
           if (ni.rx.valid.peekBoolean()) {
             val recv = ni.rx.bits.data.peek.litValue.toInt
             val to = (recv >> 16) & 0x0ff
