@@ -119,6 +119,12 @@ The generated Verilog file can be found in ```generated/S4nocTrafficGen.v```
 and can be synthesized to provide resource numbers and maximum
 clocking frequency. An Intel Qartus project is available in [quartus](quartus).
 
+The performance test is run as an application within the test folder:
+
+```
+sbt "test:runMain s4noc.PerformanceTest"
+```
+
 #### TODO (S4NOC)
 
  * Test the NoC (is the receiver the right one?)
