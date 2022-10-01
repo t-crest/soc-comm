@@ -1,4 +1,4 @@
-![build status](https://github.com/schoeberl/chisel-book/actions/workflows/scala.yml/badge.svg)
+![build status](https://github.com/t-crest/soc-comm/actions/workflows/scala.yml/badge.svg)
 
 # Multicore Communication
 
