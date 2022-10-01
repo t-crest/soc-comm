@@ -123,6 +123,7 @@ clocking frequency. An Intel Qartus project is available in [quartus](quartus).
  * Find a way to configure
  * NI should not use split buffers when size is 0
  * Find a way to receive all inserted packets, this might improve the numbers
+   * Some single packets are still left over from one run to the next
  * Have the core # to slot # mapping in HW (it should be cheap)
    * Then change the (FIFO) buffers to include the destination instead of the time slot
  * Play with FIFO buffer variations

@@ -14,11 +14,12 @@ class TrafficGen(n: Int) {
 
   var injectionRate = 0.2 * n
   val r = new Random(0)
-  private var countCycles = 0
+  var countCycles = 0
   var inserted = 0
 
   def reset()  = {
     inserted = 0
+    countCycles = 0
     for (i <- 0 until n) {
       for (j <- 0 until n) {
         queuesSplit(i)(j) = new mutable.Queue[Int]()
@@ -60,39 +61,6 @@ class TrafficGen(n: Int) {
     * Execute this once per clock cycle and call back for packet injection
     */
   def tick(doInsert: Boolean): Unit = {
-    // remember which source and destination was taken in a cycle
-    // no doubles
-    val fromSet = mutable.Set[Int]()
-    val toSet = mutable.Set[Int]()
-
-    def getOne(s: mutable.Set[Int]): Int = {
-      var one = r.nextInt(n)
-      var count = 0
-      while (s.contains(one)) {
-        one = r.nextInt(n)
-        // Maybe just drop that one?
-        // if (count > 100 * n) throw new Exception("Livelock in getOne()")
-        if (count > 100 * n) return -1
-        count += 1
-      }
-      s += one
-      one
-    }
-
-    /*
-    while (inserted.toDouble / (countCycles + 1) < injectionRate) {
-      inserted += 1
-      val from = getOne(fromSet)
-      var to = getOne(toSet)
-      if (to == from) to = getOne(toSet)
-      // println(s"$countCycles $inserted: $from -> $to")
-      if (to != -1 && from != -1) {
-        insert(from, to, (from << 24) | (to << 16) | countCycles)
-      } else {
-        dropped += 1
-      }
-    }
-     */
     if (doInsert) {
       for (from <- 0 until n) {
         val rnd = r.nextDouble()
@@ -106,7 +74,6 @@ class TrafficGen(n: Int) {
         }
       }
     }
-
     countCycles += 1
   }
 }

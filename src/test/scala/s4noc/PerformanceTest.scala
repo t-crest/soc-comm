@@ -95,14 +95,12 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
       }
 
       println(s"${n * n} cores with ideal queues")
-      val count = 2000
-      val drain = 300
+      val count = 10000
+      val drain = 20
       for (rate <- 1 until 1 by 5) { // ?? is max
         t.injectionRate = rate.toDouble / 100
         val (injected, received, avg, min, max) = runIt(count, drain)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
-        // drain the NoC
-        d.clock.step(900)
         // TODO: sanity check of received, nr of cores, and injection rate
         println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
         println(s"($effectiveInjectionRate, $avg)")
@@ -111,7 +109,8 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   "S4NoC" should "work with bubble queues" in {
-    test(new S4NoC(Config(n * n, 2, 1, 1000, 32))).withAnnotations(Seq(VerilatorBackendAnnotation)) { d =>
+    test(new S4NoC(Config(n * n, 256, 256, 256, 32))).withAnnotations(Seq(VerilatorBackendAnnotation,
+      chiseltest.internal.NoThreadingAnnotation)) { d =>
 
       var countCycles = 0
       def tick() = {
@@ -154,12 +153,14 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
             if (ni.rx.valid.peekBoolean()) {
               val recv = ni.rx.bits.data.peek.litValue.toInt
               val latency = countCycles - (recv & 0x0ffff)
-              if (latency < min) min = latency
-              if (latency > max) max = latency
-              received += 1
-              sum += latency
-              // println(s"Received with latency of $latency")
-              // printInfo(recv)
+              // Ignore negative latency from packets from the former run
+              // TODO: find a way to really drain the NoC
+              if (latency > 0) {
+                if (latency < min) min = latency
+                if (latency > max) max = latency
+                received += 1
+                sum += latency
+              }
             }
           }
 
@@ -174,14 +175,15 @@ class PerformanceTest extends AnyFlatSpec with ChiselScalatestTester {
       println(s"${n * n} cores with different queues")
       val count = 10000
       val drain = 1000
-      d.clock.setTimeout(2000)
-      for (rate <- 1 until 31 by 5) { // ?? is max
+      d.clock.setTimeout(11000)
+      for (rate <- 1 until 32 by 5) { // ?? is max
         t.reset()
+        countCycles = 0
         t.injectionRate = rate.toDouble / 100
         val (injected, received, avg, min, max) = runIt(count, drain)
         val effectiveInjectionRate = injected.toDouble / count / (n * n)
         // TODO: sanity check of received, nr of cores, and injection rate
-        println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+        // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
         println(s"($effectiveInjectionRate, $avg)")
       }
     }

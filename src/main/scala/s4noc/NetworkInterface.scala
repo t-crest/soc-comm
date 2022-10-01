@@ -11,7 +11,6 @@ import chisel3.util._
 import chisel.lib.fifo._
 import soc.ReadyValidChannelsIO
 
-// TODO: add channel buffers
 // TODO: make this configurable
 class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
@@ -41,13 +40,13 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // TX
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new BubbleFifo(Entry(dt), conf.txDepth))
+  val txFifo = Module(new MemFifo(Entry(dt), conf.txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
   val toCore = translationTable(txFifo.io.deq.bits.time)
 
   // TODO: the split buffers do not need to be Entry, just data is enough
-  val splitBuffers = (0 until conf.n).map(_ => Module(new BubbleFifo(Entry(dt), conf.splitDepth)))
+  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(Entry(dt), conf.splitDepth)))
   for (i <- 0 until conf.n) {
     splitBuffers(i).io.enq.bits := txFifo.io.deq.bits
   }
