@@ -42,7 +42,7 @@ object Entry {
   }
 }
 
-// TODO: why conb?
+// TODO: why comb?
 class CpuPortCombIO(private val w: Int) extends Bundle {
   val addr = Input(UInt(8.W))
   val rdData = Output(UInt(w.W))

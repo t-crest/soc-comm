@@ -14,7 +14,7 @@ import s4noc.Entry
   */
 class CpuInterfaceS4NOC extends Module {
   val io = IO(new Bundle {
-    val cpuPort = new CpuPortIO(4)
+    val cpuPort = new MemoryMappedIO(4)
     val networkPort = new ReadyValidChannelsIO(Entry(UInt(32.W)))
   })
 
@@ -80,7 +80,5 @@ class CpuInterfaceS4NOC extends Module {
 
 
 object CpuInterfaceS4NOC extends App {
-
-  (new chisel3.stage.ChiselStage).emitVerilog(new CpuInterfaceS4NOC(), Array("--target-dir", "generated"))
-
+  emitVerilog(new CpuInterfaceS4NOC(), Array("--target-dir", "generated"))
 }
