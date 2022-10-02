@@ -78,21 +78,3 @@ class TrafficGen(n: Int) {
   }
 }
 
-object TrafficGen extends App {
-
-  val n = 4
-  val t = new TrafficGen(n)
-
-  for (i <- 0 until 10) {
-    t.tick(true)
-    for (i <- 0 until n) {
-      for (j <- 0 until n) {
-        val data = t.getValue(i, j)
-        if (data != -1) {
-          println(s"At $data $i -> $j")
-        }
-      }
-    }
-  }
-}
-
