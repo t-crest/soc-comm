@@ -121,9 +121,17 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
         cp(0).rdData.expect(0.U)
         cp(1).rdData.expect(1.U)
         cp(2).rdData.expect(2.U)
+      }
+    }
+  }
 
+  it should "use functions to access" in {
+    test(new HelloDevice(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
+      d => {
+        def step() = d.clock.step()
 
-
+        println(d.read(0))
+        println(d.read(1))
       }
     }
   }

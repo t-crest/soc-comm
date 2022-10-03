@@ -2,6 +2,7 @@ package soc
 
 import chisel3._
 import chisel3.util._
+import chiseltest._
 
 /**
   * Just a CPU interface, without any additional connection.
@@ -12,6 +13,15 @@ class CpuInterface(addrWidth: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new MemoryMappedIO(addrWidth)
   })
+
+  def read(addr: Int): BigInt = {
+    io.cpuPort.address.poke(addr.U)
+    io.cpuPort.wr.poke(false.B)
+    io.cpuPort.rd.poke(true.B)
+    clock.step()
+    // Ignore waiting for a moment
+    io.cpuPort.rdData.peekInt()
+  }
 
   val cp = io.cpuPort
 

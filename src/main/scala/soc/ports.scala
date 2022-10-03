@@ -10,6 +10,7 @@ package soc
 
 import chisel3._
 import chisel3.util.DecoupledIO
+import chiseltest._
 
 /**
   * A simple IO interface, as seen from the slave.
@@ -25,6 +26,16 @@ class MemoryMappedIO(private val addrWidth: Int) extends Bundle {
   val rdData = Output(UInt(32.W))
   val wrData = Input(UInt(32.W))
   val ack = Output(Bool())
+
+  // TODO: it would fit better here than in CpuInterface, but without a reference to a CpuInterface
+  def readX(addr: Int, d: CpuInterface): BigInt = {
+    d.io.cpuPort.address.poke(addr.U)
+    d.io.cpuPort.wr.poke(false.B)
+    d.io.cpuPort.rd.poke(true.B)
+    d.clock.step()
+    // Ignore waiting for a moment
+    d.io.cpuPort.rdData.peekInt()
+  }
 }
 
 class MultiPortIO(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {

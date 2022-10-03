@@ -14,13 +14,13 @@ class HelloDevice(coreId: Int) extends CpuInterface(2) {
 
   val reg = RegInit(0.U(32.W))
 
-  val readAdr = RegInit(0.U(1.W))
+  val readAdrReg = RegInit(0.U(1.W))
 
   when (cp.rd) {
-    readAdr := cp.address
+    readAdrReg := cp.address
   }
 
-  cp.rdData := Mux(readAdr === 1.U, nr, reg)
+  cp.rdData := Mux(readAdrReg === 1.U, nr, reg)
 
   when (cp.wr) {
     reg := cp.wrData
