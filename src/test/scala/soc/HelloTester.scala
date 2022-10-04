@@ -9,7 +9,7 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The HelloDevice"
 
   it should "have single cycle timing" in {
-    test(new HelloDevice(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
+    test(new HelloDevice(3)) {
       d => {
 
         def step() = d.clock.step()
@@ -77,8 +77,8 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "Work as multi-core" in {
-    test(new MultiCoreHello(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
+  it should "work as multi-core" in {
+    test(new MultiCoreHello(3)) {
       d => {
 
         def step() = d.clock.step()
@@ -130,8 +130,19 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
       d => {
         def step() = d.clock.step()
 
+        d.setTimeOut(10)
+        d.read(1)
+        step()
+        step()
         println(d.read(0))
         println(d.read(1))
+        step()
+        step()
+        d.write(0, 123)
+        d.write(0, 456)
+        assert(d.read(0) == 456)
+        assert(d.read(0) == 456)
+
       }
     }
   }

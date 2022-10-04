@@ -6,7 +6,9 @@ import chiseltest._
 
 /**
   * Just a CPU interface, without any additional connection.
-  *
+  * Default implementation of single cycle read and write.
+  * TODO: can this also be extended to do a multi-cycle read
+  * and write, so we can still use the read and write test functions?
   *
   */
 class CpuInterface(addrWidth: Int) extends Module {
@@ -14,16 +16,41 @@ class CpuInterface(addrWidth: Int) extends Module {
     val cpuPort = new MemoryMappedIO(addrWidth)
   })
 
+  val cp = io.cpuPort
+
+  var timeOut = -1
+  def setTimeOut(t: Int) = timeOut = t
+
+  def waitForAck() = {
+    if (!cp.ack.peekBoolean()) {
+      var time = 0
+      while (!cp.ack.peekBoolean() && (timeOut == -1 || time < timeOut)) {
+        clock.step()
+        time += 1
+      }
+      assert(time != timeOut, s"time out on read after $time cycles")
+    }
+  }
+
   def read(addr: Int): BigInt = {
-    io.cpuPort.address.poke(addr.U)
-    io.cpuPort.wr.poke(false.B)
-    io.cpuPort.rd.poke(true.B)
+    cp.address.poke(addr.U)
+    cp.wr.poke(false.B)
+    cp.rd.poke(true.B)
     clock.step()
-    // Ignore waiting for a moment
+    cp.rd.poke(false.B)
+    waitForAck()
     io.cpuPort.rdData.peekInt()
   }
 
-  val cp = io.cpuPort
+  def write(addr: Int, data: BigInt) = {
+    cp.address.poke(addr.U)
+    cp.wrData.poke(data.U)
+    cp.wr.poke(true.B)
+    cp.rd.poke(false.B)
+    clock.step()
+    cp.wr.poke(false.B)
+    waitForAck()
+  }
 
   val idle :: waitRead :: waitWrite :: Nil = Enum(3)
   val stateReg = RegInit(idle)
@@ -31,7 +58,12 @@ class CpuInterface(addrWidth: Int) extends Module {
   val rdyReg = RegInit(false.B)
   val dataReg = Reg(UInt(32.W))
 
-  // TODO: do we need to store the read address in a register?
+  // Register the read address.
+  val readAdrReg = RegInit(0.U(1.W))
+
+  when (cp.rd) {
+    readAdrReg := cp.address
+  }
 
   cp.ack := rdyReg
 
@@ -39,9 +71,13 @@ class CpuInterface(addrWidth: Int) extends Module {
   cp.rdData := 0.U
 
 
+  // TODO: what was the intention of this?
   val readyToWrite = WireDefault(true.B)
   val readyToRead = WireDefault(true.B)
 
+  // Really a FSM here?
+  // This looks a bit complicated. Maybe leave it up to the concrete
+  // devices to do the handshake.
   rdyReg := false.B
   switch(stateReg) {
     is(idle) {
@@ -62,7 +98,7 @@ class CpuInterface(addrWidth: Int) extends Module {
       }
     }
     is (waitRead) {
-
+// TODO: fill in
     }
     is (waitWrite) {
       when (readyToWrite) {
