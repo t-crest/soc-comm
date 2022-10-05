@@ -5,28 +5,52 @@ import chisel3.util._
 import s4noc.Entry
 
 /**
-  * CPU interface to two ready/valid channels with 32-bit data.
+  * CPU interface to two ready/valid channels.
+  * IO mapping as in classic PC serial port
+  * 0: status (control): bit 0 transmit ready, bit 1 rx data available
+  * 1: txd and rxd
   * TODO: used anywhere? No!
   * TODO: compare with Chisel book version
+  * TODO: write a test
   *
   */
-class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) extends Module {
-  val io = IO(new Bundle {
-    val cpuPort = new MemoryMappedIO(addrWidth)
-    val readyValidChannel = new ReadyValidChannelsIO(dt)
-  })
+class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) extends CpuInterface(addrWidth) {
 
-  val cp = io.cpuPort
-  val tx = io.readyValidChannel.tx
-  val rx = io.readyValidChannel.rx
+  val rv = IO(new ReadyValidChannelsIO(dt))
 
+  val tx = rv.tx
+  val rx = rv.rx
+
+  val statusReg = RegInit(0.U(2.W))
+  statusReg := rx.valid ## tx.ready
+
+  rx.ready := false.B
+  tx.valid := false.B
+  tx.bits := 0.U
+  cp.rdData := 0.U
+
+  // ack - this is now a non-blocking
+  ackReg := cp.rd || cp.wr
+
+  val rdDlyReg = RegInit(false.B)
+  rdDlyReg := cp.rd // Needed?
+
+  rx.ready := false.B
+  when (addrReg === 1.U && rdDlyReg) {
+    rx.ready := true.B
+  }
+  cp.rdData := Mux(addrReg === 0.U, statusReg, rx.bits)
+
+  // write to tx
+  tx.bits := cp.wrData
+  tx.valid := cp.wr
+
+  /*
+  // this is probably the blocking version
   val idle :: read :: writeWait :: Nil = Enum(3)
   val stateReg = RegInit(idle)
-
-  val rdyReg = RegInit(false.B)
   val dataReg = Reg(UInt(32.W))
 
-  cp.ack := rdyReg
 
   // some default values
   cp.rdData := 0.U
@@ -38,12 +62,12 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
   tx.valid := cp.wr || stateReg === writeWait
 
 
-  rdyReg := false.B
+  ackReg := false.B
   switch(stateReg) {
     is(idle) {
       when(cp.wr) {
         when (tx.ready) {
-          rdyReg := true.B
+          ackReg := true.B
         } .otherwise {
           dataReg := cp.wrData
           stateReg := writeWait
@@ -55,11 +79,13 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
     }
     is (writeWait) {
       when (tx.ready) {
-        rdyReg := true.B
+        ackReg := true.B
         stateReg := idle
       }
     }
   }
+
+   */
 }
 
 

@@ -152,11 +152,11 @@ To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``
  * Run S4NOC with T-CREST
  * Move (copy) the fair arbiter from the Chisel book into this repo
  * Do traffic generators like in the Dally book
- * Have a better defined CPU interface, with one cycle latency here not in OCP wrapper
-   * And document it here 
  * Provide blocking in the CPU interface if not data available or TX FIFO full
    * There is one in the Chisel book
  * Get one-way memory back in here
+ * Wishbone wrapper
+ * AXI wrapper
 
 ### Next Paper
 

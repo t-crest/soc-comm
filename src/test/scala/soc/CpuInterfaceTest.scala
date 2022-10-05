@@ -4,7 +4,7 @@ package soc
 import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-
+// TODO: this the wrong name
 class CpuInterfaceTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterface"
 

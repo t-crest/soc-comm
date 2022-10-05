@@ -11,7 +11,7 @@ import chiseltest._
   * and write, so we can still use the read and write test functions?
   *
   */
-class CpuInterface(addrWidth: Int) extends Module {
+abstract class CpuInterface(addrWidth: Int) extends Module {
   val io = IO(new Bundle {
     val cpuPort = new MemoryMappedIO(addrWidth)
   })
@@ -52,25 +52,20 @@ class CpuInterface(addrWidth: Int) extends Module {
     waitForAck()
   }
 
-  val idle :: waitRead :: waitWrite :: Nil = Enum(3)
-  val stateReg = RegInit(idle)
-
-  val rdyReg = RegInit(false.B)
-  val dataReg = Reg(UInt(32.W))
-
-  // Register the read address.
-  val readAdrReg = RegInit(0.U(1.W))
+  // register the (read) address
+  val addrReg = RegInit(0.U(addrWidth.W))
+  // register for the ack signal
+  val ackReg = RegInit(false.B)
 
   when (cp.rd) {
-    readAdrReg := cp.address
+    addrReg := cp.address
   }
-
-  cp.ack := rdyReg
-
-  // some default values
-  cp.rdData := 0.U
+  cp.ack := ackReg
 
 
+  /*
+  val idle :: waitRead :: waitWrite :: Nil = Enum(3)
+  val stateReg = RegInit(idle)
   // TODO: what was the intention of this?
   val readyToWrite = WireDefault(true.B)
   val readyToRead = WireDefault(true.B)
@@ -107,6 +102,8 @@ class CpuInterface(addrWidth: Int) extends Module {
       }
     }
   }
+
+   */
 }
 
 
