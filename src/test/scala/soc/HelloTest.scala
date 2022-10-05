@@ -5,7 +5,7 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
+class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The HelloDevice"
 
   it should "have single cycle timing" in {
@@ -79,11 +79,11 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "work as multi-core" in {
     test(new MultiCoreHello(3)) {
-      d => {
+      dut => {
 
-        def step() = d.clock.step()
+        def step() = dut.clock.step()
 
-        val cp = d.io.ports
+        val cp = dut.io.ports
 
         def setDefault() = {
           for (i <- 0 until 3) {
@@ -127,21 +127,21 @@ class HelloTester extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "use functions to access" in {
     test(new HelloDevice(3)).withAnnotations(Seq(WriteVcdAnnotation)) {
-      d => {
-        def step() = d.clock.step()
+      dut => {
+        def step() = dut.clock.step()
 
-        d.setTimeOut(10)
-        d.read(1)
+        dut.setTimeOut(10)
+        dut.read(1)
         step()
         step()
-        println(d.read(0))
-        println(d.read(1))
+        println(dut.read(0))
+        println(dut.read(1))
         step()
         step()
-        d.write(0, 123)
-        d.write(0, 456)
-        assert(d.read(0) == 456)
-        assert(d.read(0) == 456)
+        dut.write(0, 123)
+        dut.write(0, 456)
+        assert(dut.read(0) == 456)
+        assert(dut.read(0) == 456)
 
       }
     }

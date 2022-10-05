@@ -4,9 +4,9 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-import NocTester._
+import NocTest._
 
-class NocTester extends AnyFlatSpec with ChiselScalatestTester {
+class NocTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Simple NoC Tester (just one packet)"
 
   "S4NoC" should "receive one packet old style, verbose" in {
@@ -82,7 +82,7 @@ class NocTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
-object NocTester {
+object NocTest {
 
   def isDataAvail(port: CpuPortCombIO, clock: Clock): Boolean = {
     port.rd.poke(true.B)

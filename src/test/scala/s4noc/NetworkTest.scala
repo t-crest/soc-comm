@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
  * Test a 2x2 Network.
  */
 
-class NetworkTester extends AnyFlatSpec with ChiselScalatestTester {
+class NetworkTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "2x2 Network"
 
   "the NoC" should "work" in {

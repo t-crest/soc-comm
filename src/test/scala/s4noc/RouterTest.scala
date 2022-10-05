@@ -16,7 +16,7 @@ import org.scalatest.flatspec.AnyFlatSpec
  * and checking some known end values.
  */
 
-class RouterTester extends AnyFlatSpec with ChiselScalatestTester {
+class RouterTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Router"
 
   it should "give known values" in {

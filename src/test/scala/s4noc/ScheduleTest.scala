@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import Const._
 
-class ScheduleTester extends AnyFlatSpec {
+class ScheduleTest extends AnyFlatSpec {
   behavior of "Schedule creation"
 
   it should "pass" in {

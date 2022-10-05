@@ -5,7 +5,7 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-class CpuInterfaceTester extends AnyFlatSpec with ChiselScalatestTester {
+class CpuInterfaceTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterface"
 
   it should "handle write timing" in {
