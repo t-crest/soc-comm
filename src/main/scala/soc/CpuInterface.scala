@@ -1,8 +1,6 @@
 package soc
 
 import chisel3._
-import chisel3.util._
-import chiseltest._
 
 /**
   * Just a CPU interface, without any additional connection.
@@ -17,40 +15,6 @@ abstract class CpuInterface(addrWidth: Int) extends Module {
   })
 
   val cp = io.cpuPort
-
-  var timeOut = -1
-  def setTimeOut(t: Int) = timeOut = t
-
-  def waitForAck() = {
-    if (!cp.ack.peekBoolean()) {
-      var time = 0
-      while (!cp.ack.peekBoolean() && (timeOut == -1 || time < timeOut)) {
-        clock.step()
-        time += 1
-      }
-      assert(time != timeOut, s"time out on read after $time cycles")
-    }
-  }
-
-  def read(addr: Int): BigInt = {
-    cp.address.poke(addr.U)
-    cp.wr.poke(false.B)
-    cp.rd.poke(true.B)
-    clock.step()
-    cp.rd.poke(false.B)
-    waitForAck()
-    io.cpuPort.rdData.peekInt()
-  }
-
-  def write(addr: Int, data: BigInt) = {
-    cp.address.poke(addr.U)
-    cp.wrData.poke(data.U)
-    cp.wr.poke(true.B)
-    cp.rd.poke(false.B)
-    clock.step()
-    cp.wr.poke(false.B)
-    waitForAck()
-  }
 
   // register the (read) address
   val addrReg = RegInit(0.U(addrWidth.W))
