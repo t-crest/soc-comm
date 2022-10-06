@@ -2,6 +2,13 @@ package soc
 
 import chisel3._
 
+// no logic or anything else
+abstract class CpuInterfaceOnly(addrWidth: Int) extends Module {
+  val io = IO(new Bundle {
+    val cpuPort = new MemoryMappedIO(addrWidth)
+  })
+}
+
 /**
   * Just a CPU interface, without any additional connection.
   * Default implementation of single cycle read and write.
@@ -9,10 +16,7 @@ import chisel3._
   * and write, so we can still use the read and write test functions?
   *
   */
-abstract class CpuInterface(addrWidth: Int) extends Module {
-  val io = IO(new Bundle {
-    val cpuPort = new MemoryMappedIO(addrWidth)
-  })
+abstract class CpuInterface(addrWidth: Int) extends CpuInterfaceOnly(addrWidth) {
 
   val cp = io.cpuPort
 

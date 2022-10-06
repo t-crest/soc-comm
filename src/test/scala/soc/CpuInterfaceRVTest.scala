@@ -34,7 +34,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
         cp.wr.poke(false.B)
         cp.ack.expect(true.B)
 
-        println(helper.read(0))
+        // println(helper.read(0))
 
         tx.ready.poke(false.B)
         rx.valid.poke(false.B)
@@ -56,59 +56,54 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "work with a FIFO connected between tx and rx" in {
-    test(new Module() {
-      val io = IO(new Bundle{
-        val cpuPort = new MemoryMappedIO(4)
-      })
-
-      val cpif = Module(new CpuInterfaceRV(4, UInt(32.W)))
-      val fifo = Module(new BubbleFifo(UInt(32.W), 4))
-
-      io.cpuPort <> cpif.io.cpuPort
-      cpif.tx <> fifo.io.enq
-      cpif.rx <> fifo.io.deq
-    }) { d =>
-      // should get back at some time
-      // sadly I cannot access that internal port and te function for it :-(
-      // now needing to repeat code
-      // d.cpif.write(1, 0xabcd)
-
-      d.clock.step()
-    }
+  // Connect a CPU interface to a FIFO
+  class MyModule() extends CpuInterfaceOnly(4) {
+    val cpif = Module(new CpuInterfaceRV(4, UInt(32.W)))
+    val fifo = Module(new BubbleFifo(UInt(32.W), 4))
+    io.cpuPort <> cpif.io.cpuPort
+    cpif.tx <> fifo.io.enq
+    cpif.rx <> fifo.io.deq
   }
 
-
-
-  it should "work with a FIFO connected between tx and rx..." in {
-    test {
-      class MyModule() extends CpuInterfaceRV(4, UInt(32.W)) {
-        val cpif = Module(new CpuInterfaceRV(4, UInt(32.W)))
-        val fifo = Module(new BubbleFifo(UInt(32.W), 4))
-        // reconnect (overwrite) CPU interface
-        cp <> cpif.io.cpuPort
-        cpif.tx <> fifo.io.enq
-        cpif.rx <> fifo.io.deq
-      }
-      new MyModule()
-    }.withAnnotations(Seq(WriteVcdAnnotation)) { d =>
-      d.clock.step(4)
+  it should "work with a FIFO connected between tx and rx" in {
+    test(new MyModule()) { d =>
+      d.clock.step(2)
       val helper = new MemoryMappedIOHelper(d)
 
-      // should get back at some time
+      // should get back the data at some time
       helper.write(1, 0x1234)
       var ok = false
-      // TODO use ok in loop
       for (i <- 0 until 10 if !ok) {
-        if ((helper.read(0) & 0x02) != 0) {
+        if (helper.rxAvail) {
           assert(helper.read(1) == 0x1234)
-          // println(d.read(0))
           ok = true
         }
       }
-      // println(d.read(0))
       assert(ok)
-      // assert((helper.read(0) & 0x02) == 0)
+      assert((helper.read(0) & 0x02) == 0)
+
+      for (i <- 0 until 4) helper.sndWithCheck(i + 1)
+      for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
+    }
+  }
+
+  it should "TODO: send and receive one word every 2 clock cycles" in {
+    test(new MyModule()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+      d.clock.step(2)
+      val helper = new MemoryMappedIOHelper(d)
+
+      for (i <- 0 until 4) helper.sndWithCheck(i + 1)
+      for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
+    }
+  }
+
+  it should "TODO: loose words when not handshaking" in {
+    test(new MyModule()) { d =>
+      d.clock.step(2)
+      val helper = new MemoryMappedIOHelper(d)
+
+      for (i <- 0 until 4) helper.sndWithCheck(i + 1)
+      for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
     }
   }
 }

@@ -9,9 +9,8 @@ import s4noc.Entry
   * IO mapping as in classic PC serial port
   * 0: status (control): bit 0 transmit ready, bit 1 rx data available
   * 1: txd and rxd
-  * TODO: used anywhere? No!
+  * TODO: use it somewhere, maybe with a RV serial port
   * TODO: compare with Chisel book version
-  * TODO: write a test
   *
   */
 class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) extends CpuInterface(addrWidth) {
@@ -21,8 +20,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
   val tx = rv.tx
   val rx = rv.rx
 
-  val statusReg = RegInit(0.U(2.W))
-  statusReg := rx.valid ## tx.ready
+  val status = rx.valid ## tx.ready
 
   rx.ready := false.B
   tx.valid := false.B
@@ -39,7 +37,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
   when (addrReg === 1.U && rdDlyReg) {
     rx.ready := true.B
   }
-  cp.rdData := Mux(addrReg === 0.U, statusReg, rx.bits)
+  cp.rdData := Mux(addrReg === 0.U, status, rx.bits)
 
   // write to tx
   tx.bits := cp.wrData

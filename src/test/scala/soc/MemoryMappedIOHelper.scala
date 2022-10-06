@@ -3,7 +3,7 @@ package soc
 import chisel3._
 import chiseltest._
 
-class MemoryMappedIOHelper(cpif: CpuInterface) {
+class MemoryMappedIOHelper(cpif: CpuInterfaceOnly) {
 
   val cp = cpif.io.cpuPort
 
@@ -39,5 +39,20 @@ class MemoryMappedIOHelper(cpif: CpuInterface) {
     cpif.clock.step()
     cp.wr.poke(false.B)
     waitForAck()
+  }
+  // The folloiwng functions use the IO mapping with status bits add address 0 and data at address 1
+  def txRdy = (read(0) & 0x01) != 0
+  def rxAvail = (read(0) & 0x02) != 0
+  def send(data: BigInt) = write(1, data)
+  def receive = read(1)
+
+  def sndWithCheck(data: BigInt) = {
+    while (!txRdy) {}
+    send(data)
+  }
+
+  def rcvWithCheck() = {
+    while (!rxAvail) {}
+    receive
   }
 }
