@@ -130,7 +130,7 @@ class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
       dut => {
         def step() = dut.clock.step()
 
-        val helper = new MemoryMappedIOHelper(dut)
+        val helper = new MemoryMappedIOHelper(dut.cp, dut.clock)
 
         helper.setTimeOut(10)
         helper.read(1)

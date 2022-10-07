@@ -3,9 +3,9 @@ package soc
 import chisel3._
 import chiseltest._
 
-class MemoryMappedIOHelper(cpif: CpuInterfaceOnly) {
+class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
 
-  val cp = cpif.io.cpuPort
+  val cp = mmio
 
   var timeOut = -1
   def setTimeOut(t: Int) = timeOut = t
@@ -14,7 +14,7 @@ class MemoryMappedIOHelper(cpif: CpuInterfaceOnly) {
     if (!cp.ack.peekBoolean()) {
       var time = 0
       while (!cp.ack.peekBoolean() && (timeOut == -1 || time < timeOut)) {
-        cpif.clock.step()
+        clock.step()
         time += 1
       }
       assert(time != timeOut, s"time out on read after $time cycles")
@@ -25,7 +25,7 @@ class MemoryMappedIOHelper(cpif: CpuInterfaceOnly) {
     cp.address.poke(addr.U)
     cp.wr.poke(false.B)
     cp.rd.poke(true.B)
-    cpif.clock.step()
+    clock.step()
     cp.rd.poke(false.B)
     waitForAck()
     cp.rdData.peekInt()
@@ -36,7 +36,7 @@ class MemoryMappedIOHelper(cpif: CpuInterfaceOnly) {
     cp.wrData.poke(data.U)
     cp.wr.poke(true.B)
     cp.rd.poke(false.B)
-    cpif.clock.step()
+    clock.step()
     cp.wr.poke(false.B)
     waitForAck()
   }

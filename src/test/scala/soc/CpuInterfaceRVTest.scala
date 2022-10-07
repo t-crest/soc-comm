@@ -19,7 +19,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
         val rx = d.rv.rx
         val tx = d.rv.tx
 
-        val helper = new MemoryMappedIOHelper(d)
+        val helper = new MemoryMappedIOHelper(d.cp, d.clock)
 
         step()
         cp.ack.expect(false.B)
@@ -68,7 +68,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "work with a FIFO connected between tx and rx" in {
     test(new MyModule()) { d =>
       d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d)
+      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
 
       // should get back the data at some time
       helper.write(1, 0x1234)
@@ -90,7 +90,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "TODO: send and receive one word every 2 clock cycles" in {
     test(new MyModule()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
       d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d)
+      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
 
       for (i <- 0 until 4) helper.sndWithCheck(i + 1)
       for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
@@ -100,7 +100,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "TODO: loose words when not handshaking" in {
     test(new MyModule()) { d =>
       d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d)
+      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
 
       for (i <- 0 until 4) helper.sndWithCheck(i + 1)
       for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
