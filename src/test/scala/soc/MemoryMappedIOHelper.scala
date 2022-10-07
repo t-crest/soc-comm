@@ -5,16 +5,19 @@ import chiseltest._
 
 class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
 
-  val cp = mmio
+  private var clockCnt = 0
 
-  var timeOut = -1
+  private var timeOut = -1
   def setTimeOut(t: Int) = timeOut = t
 
+  def getClockCnt = clockCnt
+
   def waitForAck() = {
-    if (!cp.ack.peekBoolean()) {
+    if (!mmio.ack.peekBoolean()) {
       var time = 0
-      while (!cp.ack.peekBoolean() && (timeOut == -1 || time < timeOut)) {
+      while (!mmio.ack.peekBoolean() && (timeOut == -1 || time < timeOut)) {
         clock.step()
+        clockCnt += 1
         time += 1
       }
       assert(time != timeOut, s"time out on read after $time cycles")
@@ -22,22 +25,24 @@ class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
   }
 
   def read(addr: Int): BigInt = {
-    cp.address.poke(addr.U)
-    cp.wr.poke(false.B)
-    cp.rd.poke(true.B)
+    mmio.address.poke(addr.U)
+    mmio.wr.poke(false.B)
+    mmio.rd.poke(true.B)
+    clockCnt += 1
     clock.step()
-    cp.rd.poke(false.B)
+    mmio.rd.poke(false.B)
     waitForAck()
-    cp.rdData.peekInt()
+    mmio.rdData.peekInt()
   }
 
   def write(addr: Int, data: BigInt) = {
-    cp.address.poke(addr.U)
-    cp.wrData.poke(data.U)
-    cp.wr.poke(true.B)
-    cp.rd.poke(false.B)
+    mmio.address.poke(addr.U)
+    mmio.wrData.poke(data.U)
+    mmio.wr.poke(true.B)
+    mmio.rd.poke(false.B)
+    clockCnt += 1
     clock.step()
-    cp.wr.poke(false.B)
+    mmio.wr.poke(false.B)
     waitForAck()
   }
   // The folloiwng functions use the IO mapping with status bits add address 0 and data at address 1

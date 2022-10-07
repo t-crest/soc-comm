@@ -87,23 +87,54 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "TODO: send and receive one word every 2 clock cycles" in {
-    test(new MyModule()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
-      d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
+  // Connect two CPU interfaces to two FIFOs
+  class MyModule2() extends Module {
+    val io = IO(new Bundle {
+      val cpA = new MemoryMappedIO(4)
+      val cpB = new MemoryMappedIO(4)
+    })
+    val cpifA = Module(new CpuInterfaceRV(4, UInt(32.W)))
+    val cpifB = Module(new CpuInterfaceRV(4, UInt(32.W)))
+    val fifoA = Module(new MemFifo(UInt(32.W), 4))
+    val fifoB = Module(new MemFifo(UInt(32.W), 4))
 
-      for (i <- 0 until 4) helper.sndWithCheck(i + 1)
-      for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
+    io.cpA <> cpifA.io.cpuPort
+    io.cpB <> cpifB.io.cpuPort
+    cpifA.tx <> fifoA.io.enq
+    cpifB.rx <> fifoA.io.deq
+    cpifB.tx <> fifoB.io.enq
+    cpifA.rx <> fifoB.io.deq
+  }
+
+  it should "Send and receive one word every 2 clock cycles" in {
+    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+      d.clock.step(2)
+      val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
+      val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
+
+      fork {
+        for (i <- 0 until 200) assert(rcvHelper.rcvWithCheck() == i + 1)
+        println("rcv " + rcvHelper.getClockCnt)
+      }
+      for (i <- 0 until 100) sndHelper.sndWithCheck(i + 1)
+      println("clock cycles to send 100 packets: " + sndHelper.getClockCnt)
     }
   }
 
-  it should "TODO: loose words when not handshaking" in {
-    test(new MyModule()) { d =>
+  it should "TODO: loosing words when not handshaking (in HW)" in {
+    test(new MyModule2()) { d =>
+      /*
       d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
+      val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
+      val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
 
-      for (i <- 0 until 4) helper.sndWithCheck(i + 1)
-      for (i <- 0 until 4) assert(helper.rcvWithCheck() == i + 1)
+      fork {
+        for (i <- 0 until 200) assert(rcvHelper.rcvWithCheck() == i + 1)
+        println("rcv " + rcvHelper.getClockCnt)
+      }
+      for (i <- 0 until 100) sndHelper.send(i + 1)
+      println("clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+      */
     }
   }
 }
