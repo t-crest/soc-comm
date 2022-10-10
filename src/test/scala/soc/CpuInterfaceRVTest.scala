@@ -66,7 +66,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "work with a FIFO connected between tx and rx" in {
-    test(new MyModule()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new MyModule()) { d =>
       d.clock.step(2)
       val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
 
@@ -122,21 +122,56 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "Can run in full speed, but TODO: loosing words when not handshaking (in HW)" in {
+  it should "Should be able to run in full speed" in {
     test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
       val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
 
       fork {
+        for (i <- 0 until 100) assert(rcvHelper.receive == i + 1)
+        println("rcv " + rcvHelper.getClockCnt)
+      }
+      for (i <- 0 until 100) sndHelper.send(i + 1)
+      println("Send without check: clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+    }
+  }
+
+  it should "Should do HW handshake when rcv is slowing down" in {
+    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+      d.clock.step(2)
+      val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
+      val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
+
+      fork {
         for (i <- 0 until 100) {
-          // d.clock.step(2)
+          rcvHelper.step(2)
           assert(rcvHelper.receive == i + 1)
         }
         println("rcv " + rcvHelper.getClockCnt)
       }
       for (i <- 0 until 100) sndHelper.send(i + 1)
-      println("Send without check: clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+      println("Send without check: slow rcv, clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+    }
+  }
+
+  // keep the name for now as VCD is open
+  it should "Should do HW handshake when send is slowing down" in {
+    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+      d.clock.step(2)
+      val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
+      val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
+
+      fork {
+        for (i <- 0 until 100) assert(rcvHelper.receive == i + 1)
+        println("rcv " + rcvHelper.getClockCnt)
+      }
+
+      for (i <- 0 until 100) {
+        sndHelper.step(2)
+        sndHelper.send(i + 1)
+      }
+      println("Send without check: slow send, clock cycles to send 100 packets: " + sndHelper.getClockCnt)
     }
   }
 }

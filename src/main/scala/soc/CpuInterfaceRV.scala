@@ -66,6 +66,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
       rx.ready := true.B
       when (rx.valid) {
         stateReg := idle
+        // this is different from write - check
         cp.ack := true.B
         idleReaction()
       }
@@ -75,7 +76,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
       tx.bits := wrDataReg
       when (tx.ready) {
         stateReg := idle
-        cp.ack := true.B
+        ackReg := true.B
         idleReaction()
       }
     }

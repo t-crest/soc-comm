@@ -12,6 +12,11 @@ class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
 
   def getClockCnt = clockCnt
 
+  def step(n: Int): Unit = {
+    clock.step(n)
+    clockCnt += n
+  }
+
   def waitForAck() = {
     if (!mmio.ack.peekBoolean()) {
       var time = 0
