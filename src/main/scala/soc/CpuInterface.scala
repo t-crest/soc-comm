@@ -19,6 +19,7 @@ abstract class CpuInterfaceOnly(addrWidth: Int) extends Module {
 abstract class CpuInterface(addrWidth: Int) extends CpuInterfaceOnly(addrWidth) {
 
   val cp = io.cpuPort
+  // TODO: is it really worth the effort to have some logic here and other logic in CpuInterfaceRV?
 
   // register the (read) address
   val addrReg = RegInit(0.U(addrWidth.W))
@@ -29,7 +30,6 @@ abstract class CpuInterface(addrWidth: Int) extends CpuInterfaceOnly(addrWidth) 
     addrReg := cp.address
   }
   cp.ack := ackReg
-
 
   /*
   val idle :: waitRead :: waitWrite :: Nil = Enum(3)

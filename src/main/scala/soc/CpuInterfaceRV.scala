@@ -22,68 +22,64 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
 
   val status = rx.valid ## tx.ready
 
+  // Some defaults
   rx.ready := false.B
   tx.valid := false.B
-  tx.bits := 0.U
-  cp.rdData := 0.U
-
-  // ack - this is now a non-blocking
-  ackReg := cp.rd || cp.wr
-
-  val rdDlyReg = RegInit(false.B)
-  rdDlyReg := cp.rd // Needed?
-
-  rx.ready := false.B
-  when (addrReg === 1.U && rdDlyReg) {
-    rx.ready := true.B
-  }
-  cp.rdData := Mux(addrReg === 0.U, status, rx.bits)
-
-  // write to tx
   tx.bits := cp.wrData
-  tx.valid := cp.wr
+  cp.rdData := rx.bits
 
-  /*
-  // this is probably the blocking version
-  val idle :: read :: writeWait :: Nil = Enum(3)
+  val idle :: readStatus :: readWait :: writeWait :: Nil = Enum(4)
   val stateReg = RegInit(idle)
-  val dataReg = Reg(UInt(32.W))
+  val wrDataReg = Reg(UInt(32.W))
 
-
-  // some default values
-  cp.rdData := 0.U
-  rx.ready := false.B
-
-  // write
-  tx.valid := false.B
-  tx.bits := Mux(stateReg === idle, cp.wrData, dataReg)
-  tx.valid := cp.wr || stateReg === writeWait
-
+  def idleReaction() = {
+    when (cp.wr) {
+      tx.valid := true.B
+      when (tx.ready) {
+        ackReg := true.B
+      } .otherwise {
+        wrDataReg := cp.wrData
+        stateReg := writeWait
+      }
+    }
+    when (cp.rd) {
+      when (cp.address === 0.U) {
+        stateReg := readStatus
+        ackReg := true.B
+      } .otherwise {
+        stateReg := readWait
+      }
+    }
+  }
 
   ackReg := false.B
   switch(stateReg) {
-    is(idle) {
-      when(cp.wr) {
-        when (tx.ready) {
-          ackReg := true.B
-        } .otherwise {
-          dataReg := cp.wrData
-          stateReg := writeWait
-        }
+    is (idle) {
+      idleReaction()
+    }
+    is (readStatus) {
+      cp.rdData := status
+      stateReg := idle
+      idleReaction()
+    }
+    is (readWait) {
+      rx.ready := true.B
+      when (rx.valid) {
+        stateReg := idle
+        cp.ack := true.B
+        idleReaction()
       }
     }
-    is (read) {
-
-    }
     is (writeWait) {
+      tx.valid := true.B
+      tx.bits := wrDataReg
       when (tx.ready) {
-        ackReg := true.B
         stateReg := idle
+        cp.ack := true.B
+        idleReaction()
       }
     }
   }
-
-   */
 }
 
 

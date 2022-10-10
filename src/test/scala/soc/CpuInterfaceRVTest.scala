@@ -66,7 +66,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "work with a FIFO connected between tx and rx" in {
-    test(new MyModule()) { d =>
+    test(new MyModule()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
       d.clock.step(2)
       val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
 
@@ -79,6 +79,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
           ok = true
         }
       }
+
       assert(ok)
       assert((helper.read(0) & 0x02) == 0)
 
@@ -107,7 +108,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "Send and receive one word every 2 clock cycles" in {
-    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
       val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
@@ -117,24 +118,25 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
         println("rcv " + rcvHelper.getClockCnt)
       }
       for (i <- 0 until 100) sndHelper.sndWithCheck(i + 1)
-      println("clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+      println("withCheck: clock cycles to send 100 packets: " + sndHelper.getClockCnt)
     }
   }
 
-  it should "TODO: loosing words when not handshaking (in HW)" in {
+  it should "Can run in full speed, but TODO: loosing words when not handshaking (in HW)" in {
     test(new MyModule2()) { d =>
-      /*
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
       val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
 
       fork {
-        for (i <- 0 until 200) assert(rcvHelper.rcvWithCheck() == i + 1)
+        for (i <- 0 until 100) {
+          // d.clock.step(2)
+          assert(rcvHelper.receive == i + 1)
+        }
         println("rcv " + rcvHelper.getClockCnt)
       }
       for (i <- 0 until 100) sndHelper.send(i + 1)
-      println("clock cycles to send 100 packets: " + sndHelper.getClockCnt)
-      */
+      println("Send without check: clock cycles to send 100 packets: " + sndHelper.getClockCnt)
     }
   }
 }
