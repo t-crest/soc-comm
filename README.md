@@ -127,7 +127,8 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Find the "old" S4NOC combinational interface usage and substitute it with the real, pipelined interface
+ * Decide where to translate between core number and slot, and back on RX
+ * Find the "old" S4NOC combinational interface (top has now "old" in the name) usage and substitute it with the real, pipelined interface
  * Test the NoC (is the receiver the right one?)
    * The ideal queues is failing, the real thing is OK
  * Find a way to configure

@@ -39,6 +39,9 @@ object PerformanceTest extends App {
   val t = new TrafficGen(n * n)
   var slotCnt = 0
 
+  /**
+    * This is the interface directly to the network without an NI, or a CPU interface.
+    */
   RawTester.test(new Network(n, UInt(32.W))) { d =>
     var countCycles = 0
 

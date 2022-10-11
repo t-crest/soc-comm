@@ -11,7 +11,7 @@ import chisel3._
   * license see LICENSE
   * @param conf
   */
-class S4NoCTop(conf: Config) extends Module  {
+class S4NoCTopCombOld(conf: Config) extends Module  {
   val io = IO(new Bundle {
     val cpuPorts = Vec(conf.n, new CpuPortCombIO(conf.width))
     val cycCnt = Output(UInt(32.W))

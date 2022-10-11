@@ -10,7 +10,7 @@ import chisel3._
 
 class S4nocTrafficGen(conf: Config) extends Module {
 
-  val s4noc = Module(new S4NoCTop(conf))
+  val s4noc = Module(new S4NoCTopCombOld(conf))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
     val data = Output(UInt(conf.width.W))

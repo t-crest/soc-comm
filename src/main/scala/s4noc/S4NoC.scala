@@ -11,6 +11,12 @@ package s4noc
 import chisel3._
 import soc.ReadyValidChannelsIO
 
+/**
+  * Top level of the S4NOC.
+  * Interface is in and out FIFOs with data and time/core.
+  *
+  * @param conf
+  */
 class S4NoC(conf: Config) extends Module  {
   val io = IO(new Bundle {
     val networkPort = Vec(conf.n, Flipped(new ReadyValidChannelsIO(Entry(UInt(conf.width.W)))))
@@ -33,6 +39,6 @@ class S4NoC(conf: Config) extends Module  {
 
 object S4NoC extends App {
   val conf = Config(4, 2, 2, 2, 32)
-  (new chisel3.stage.ChiselStage).emitVerilog(new S4NoC(conf), Array("--target-dir", "generated"))
+  emitVerilog(new S4NoC(conf), Array("--target-dir", "generated"))
 }
 

@@ -195,6 +195,9 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
         cp.ack.expect(false.B)
         helper.write(2, 0x12)
         helper.write(1, 0x34)
+        // should come back on the RX port
+        assert(helper.read(1) == 0x34)
+        assert(helper.read(2) == 0x12)
       }
     }
   }

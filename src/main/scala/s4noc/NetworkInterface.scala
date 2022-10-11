@@ -1,9 +1,3 @@
-/*
-  Network interface for the S4NOC.
-
-  Author: Martin Schoeberl (martin@jopdesign.com)
-  license see LICENSE
- */
 package s4noc
 
 import chisel3._
@@ -11,7 +5,20 @@ import chisel3.util._
 import chisel.lib.fifo._
 import soc.ReadyValidChannelsIO
 
-// TODO: make this configurable
+// TODO: make this (better) configurable
+
+/**
+  * Network interface (NI) for the S4NOC.
+  * Contains various FIFO buffers.
+  * Expects insertion of data with the time slot to indicate the destination.
+  * // TODO: do we want this? Or would core id be nicer?
+  * We can do the mapping in the CPU interface, but this is not nice.
+  *
+  * @param id
+  * @param conf
+  * @param dt
+  * @tparam T
+  */
 class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
     val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))
