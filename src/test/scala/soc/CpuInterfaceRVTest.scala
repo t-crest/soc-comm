@@ -5,6 +5,7 @@ import chisel.lib.fifo._
 import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
+import s4noc.Entry
 
 class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterfaceRV"
@@ -155,9 +156,8 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  // keep the name for now as VCD is open
   it should "Should do HW handshake when send is slowing down" in {
-    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
       val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)
@@ -172,6 +172,30 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
         sndHelper.send(i + 1)
       }
       println("Send without check: slow send, clock cycles to send 100 packets: " + sndHelper.getClockCnt)
+    }
+  }
+
+  // Connect a CPU interface to a FIFO with Entry
+  class MyModule3() extends CpuInterface(4) {
+    val cpif = Module(new CpuInterfaceRV(4, Entry(UInt(32.W)), true))
+    val fifo = Module(new BubbleFifo(Entry(UInt(32.W)), 4))
+    io.cpuPort <> cpif.io.cpuPort
+    cpif.tx <> fifo.io.enq
+    cpif.rx <> fifo.io.deq
+  }
+
+  it should "do work with a S4NOC Entry" in {
+    test(new MyModule3()).withAnnotations(Seq(WriteVcdAnnotation)) {
+      d => {
+
+        val cp = d.io.cpuPort
+        val helper = new MemoryMappedIOHelper(d.cp, d.clock)
+
+        d.clock.step()
+        cp.ack.expect(false.B)
+        helper.write(2, 0x12)
+        helper.write(1, 0x34)
+      }
     }
   }
 }

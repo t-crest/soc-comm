@@ -127,6 +127,7 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
+ * Find the "old" S4NOC combinational interface usage and substitute it with the real, pipelined interface
  * Test the NoC (is the receiver the right one?)
    * The ideal queues is failing, the real thing is OK
  * Find a way to configure
@@ -146,8 +147,7 @@ To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``
 
 ## TODO
 
- * Do a simple multicore device (no communication,
-   just a register and core number) and integrate it with T-CREST
+ * Integrate a simple multicore device with T-CREST
    * A multicore "Hello World"
  * Run S4NOC with T-CREST
  * Move (copy) the fair arbiter from the Chisel book into this repo

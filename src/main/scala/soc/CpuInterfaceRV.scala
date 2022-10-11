@@ -12,48 +12,63 @@ import s4noc.Entry
   * TODO: compare with Chisel book version
   *
   */
-class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) extends CpuInterface(addrWidth) {
+class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false ) extends CpuInterface(addrWidth) {
 
   val rv = IO(new ReadyValidChannelsIO(dt))
 
   val tx = rv.tx
   val rx = rv.rx
 
-  // This is duplicated in HelloDevice
-  // register the (read) address
-  val addrReg = RegInit(0.U(addrWidth.W))
-  // register for the ack signal
   val ackReg = RegInit(false.B)
-  when (cp.rd) {
-    addrReg := cp.address
-  }
   cp.ack := ackReg
 
   val status = rx.valid ## tx.ready
 
+  // Two additional registers, used by S4NOC for addressing of nodes
+  val txDestReg = RegInit(0.U(8.W))
+  val rxSourceReg = RegInit(0.U(8.W))
+  // TODO: detect Entry type
+  // println("Type: " + dt.isInstanceOf[Entry[UInt(32.W)]])
+
   // Some defaults
   rx.ready := false.B
   tx.valid := false.B
-  tx.bits := cp.wrData
-  cp.rdData := rx.bits
+  if (s4noc) {
+    val e = Wire(new Entry(UInt(32.W)))
+    e.data := cp.wrData
+    e.time := txDestReg
+    rv.tx.bits := e
+    cp.rdData := rv.rx.bits.asTypeOf(Entry(UInt(32.W))).data
+  } else {
+    rv.tx.bits := cp.wrData
+    cp.rdData := rv.rx.bits
+  }
 
-  val idle :: readStatus :: readWait :: writeWait :: Nil = Enum(4)
+  val idle :: readStatus :: readSource :: readWait :: writeWait :: Nil = Enum(5)
   val stateReg = RegInit(idle)
   val wrDataReg = Reg(UInt(32.W))
 
   def idleReaction() = {
     when (cp.wr) {
-      tx.valid := true.B
-      when (tx.ready) {
+      when (cp.address === 2.U) {
+        txDestReg := cp.wrData
         ackReg := true.B
       } .otherwise {
-        wrDataReg := cp.wrData
-        stateReg := writeWait
+        tx.valid := true.B
+        when (tx.ready) {
+          ackReg := true.B
+        } .otherwise {
+          wrDataReg := cp.wrData
+          stateReg := writeWait
+        }
       }
     }
     when (cp.rd) {
       when (cp.address === 0.U) {
         stateReg := readStatus
+        ackReg := true.B
+      } .elsewhen (cp.address === 2.U) {
+        stateReg := readSource
         ackReg := true.B
       } .otherwise {
         stateReg := readWait
@@ -71,18 +86,32 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
       stateReg := idle
       idleReaction()
     }
+    is (readSource) {
+      cp.rdData := rxSourceReg
+      stateReg := idle
+      idleReaction()
+    }
     is (readWait) {
       rx.ready := true.B
       when (rx.valid) {
         stateReg := idle
+        if (s4noc) {
+          rxSourceReg := rx.bits.asTypeOf(Entry(UInt(32.W))).time
+        }
         // this is different from write - check
         cp.ack := true.B
         idleReaction()
       }
     }
+
     is (writeWait) {
       tx.valid := true.B
-      tx.bits := wrDataReg
+      if (s4noc) {
+        val e = tx.bits.asTypeOf(Entry(UInt(32.W)))
+        e.data := wrDataReg
+      } else {
+        tx.bits := wrDataReg
+      }
       when (tx.ready) {
         stateReg := idle
         ackReg := true.B
