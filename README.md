@@ -127,7 +127,9 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Decide where to translate between core number and slot, and back on RX
+ * Majoe change now: use core id in the NI and FIFOs
+   * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
+  * Decide where to translate between core number and slot, and back on RX
  * Find the "old" S4NOC combinational interface (top has now "old" in the name) usage and substitute it with the real, pipelined interface
  * Test the NoC (is the receiver the right one?)
    * The ideal queues is failing, the real thing is OK

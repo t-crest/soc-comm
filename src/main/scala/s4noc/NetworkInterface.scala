@@ -51,18 +51,19 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   io.networkPort.tx <> txFifo.io.enq
 
   val toCore = translationTable(txFifo.io.deq.bits.time)
+  // val toCore = txFifo.io.deq.bits.core
 
   // TODO: the split buffers do not need to be Entry, just data is enough
-  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(Entry(dt), conf.splitDepth)))
+  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(dt, conf.splitDepth)))
   for (i <- 0 until conf.n) {
-    splitBuffers(i).io.enq.bits := txFifo.io.deq.bits
+    splitBuffers(i).io.enq.bits := txFifo.io.deq.bits.data
   }
 
   // there must be a more elegant solution
   val enqReadyVec = VecInit(Seq.fill(conf.n)(false.B))
   val enqValidVec = VecInit(Seq.fill(conf.n)(false.B))
   val deqValidVec = VecInit(Seq.fill(conf.n)(false.B))
-  val deqDataVec = Wire(Vec(conf.n, Entry(dt)))
+  val deqDataVec = Wire(Vec(conf.n, dt))
   val deqReadyVec = VecInit(Seq.fill(conf.n)(false.B))
 
   // connections
@@ -86,7 +87,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   when (slotOk) { deqReadyVec(core) := true.B }
 
   val valid = deqValidVec(core) && slotOk
-  io.local.in.data := deqDataVec(core).data
+  io.local.in.data := deqDataVec(core)
   io.local.in.valid := valid
 
   // RX

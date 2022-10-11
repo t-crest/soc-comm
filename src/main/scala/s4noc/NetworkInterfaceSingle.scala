@@ -12,6 +12,7 @@ import chisel3.util._
 import soc.ReadyValidChannelsIO
 
 // TODO: make it configurable. Or maybe drop the single one
+// TODO: if kept need to switch to core id
 class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
     val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))
