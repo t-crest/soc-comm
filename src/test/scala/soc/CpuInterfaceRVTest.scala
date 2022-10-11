@@ -57,7 +57,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Connect a CPU interface to a FIFO
-  class MyModule() extends CpuInterfaceOnly(4) {
+  class MyModule() extends CpuInterface(4) {
     val cpif = Module(new CpuInterfaceRV(4, UInt(32.W)))
     val fifo = Module(new BubbleFifo(UInt(32.W), 4))
     io.cpuPort <> cpif.io.cpuPort
@@ -138,7 +138,7 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "Should do HW handshake when rcv is slowing down" in {
-    test(new MyModule2()).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
       val rcvHelper = new MemoryMappedIOHelper(d.io.cpB, d.clock)

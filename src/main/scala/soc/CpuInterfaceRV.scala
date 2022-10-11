@@ -9,7 +9,6 @@ import s4noc.Entry
   * IO mapping as in classic PC serial port
   * 0: status (control): bit 0 transmit ready, bit 1 rx data available
   * 1: txd and rxd
-  * TODO: use it somewhere, maybe with a RV serial port
   * TODO: compare with Chisel book version
   *
   */
@@ -19,6 +18,16 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T) e
 
   val tx = rv.tx
   val rx = rv.rx
+
+  // This is duplicated in HelloDevice
+  // register the (read) address
+  val addrReg = RegInit(0.U(addrWidth.W))
+  // register for the ack signal
+  val ackReg = RegInit(false.B)
+  when (cp.rd) {
+    addrReg := cp.address
+  }
+  cp.ack := ackReg
 
   val status = rx.valid ## tx.ready
 
