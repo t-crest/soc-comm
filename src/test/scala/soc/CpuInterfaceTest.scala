@@ -28,7 +28,7 @@ class CpuInterfaceTest extends AnyFlatSpec with ChiselScalatestTester {
         noc.tx.ready.poke(true.B)
         step()
         noc.tx.bits.data.expect(0x0123.U)
-        noc.tx.bits.time.expect(3.U)
+        noc.tx.bits.core.expect(3.U)
         cpu.ack.expect(true.B)
         // delayed ready
         cpu.wr.poke(false.B)
@@ -49,7 +49,7 @@ class CpuInterfaceTest extends AnyFlatSpec with ChiselScalatestTester {
         step()
         noc.tx.ready.poke(true.B)
         noc.tx.bits.data.expect(0x0456.U)
-        noc.tx.bits.time.expect(1.U)
+        noc.tx.bits.core.expect(1.U)
         step()
         cpu.ack.expect(true.B)
         step()

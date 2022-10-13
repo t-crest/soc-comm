@@ -9,6 +9,7 @@ import s4noc.Entry
   * IO mapping as in classic PC serial port
   * 0: status (control): bit 0 transmit ready, bit 1 rx data available
   * 1: txd and rxd
+  * 2: write receiver, read sender
   * TODO: compare with Chisel book version
   *
   */
@@ -36,7 +37,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s
   if (s4noc) {
     val e = Wire(new Entry(UInt(32.W)))
     e.data := cp.wrData
-    e.time := txDestReg
+    e.core := txDestReg
     rv.tx.bits := e
     cp.rdData := rv.rx.bits.asTypeOf(Entry(UInt(32.W))).data
   } else {
@@ -96,7 +97,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s
       when (rx.valid) {
         stateReg := idle
         if (s4noc) {
-          rxSourceReg := rx.bits.asTypeOf(Entry(UInt(32.W))).time
+          rxSourceReg := rx.bits.asTypeOf(Entry(UInt(32.W))).core
         }
         // this is different from write - check
         cp.ack := true.B

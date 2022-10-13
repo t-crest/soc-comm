@@ -38,11 +38,11 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
         ret
       }
       d.io.cpuPorts(0).wrData.poke("hcafebabe".U)
-      d.io.cpuPorts(0).addr.poke(0.U)
+      d.io.cpuPorts(0).addr.poke(3.U)
       d.io.cpuPorts(0).wr.poke(true.B)
       d.clock.step(1)
       d.io.cpuPorts(0).wrData.poke(0.U)
-      d.io.cpuPorts(0).addr.poke(0.U)
+      d.io.cpuPorts(0).addr.poke(3.U)
       d.io.cpuPorts(0).wr.poke(false.B)
 
       var done = false
@@ -62,7 +62,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
       // Master thread (core 0)
       // Write into time slot 0 to reach core 3
       fork {
-        write(d.io.cpuPorts(0), 0.U, "hcafebabe".U, d.clock)
+        write(d.io.cpuPorts(0), 3.U, "hcafebabe".U, d.clock)
         // waste some time to see the concurrency
         for (i <- 0 until 20) {
           d.clock.step(1)

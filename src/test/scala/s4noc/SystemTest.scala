@@ -37,7 +37,7 @@ class SystemTest extends AnyFlatSpec with ChiselScalatestTester {
 
       val th = fork {
         for (i <- 0 until CNT) {
-          blockingWrite(d.io.cpuPorts(0), 0.U, (data(i).toLong & 0xffffffffL).U, d.clock)
+          blockingWrite(d.io.cpuPorts(0), 3.U, (data(i).toLong & 0xffffffffL).U, d.clock)
         }
       }
 
@@ -64,7 +64,7 @@ class SystemTest extends AnyFlatSpec with ChiselScalatestTester {
       val th = fork {
         for (i <- 0 until CNT) {
           val data = d.io.cycCnt.peek()
-          blockingWrite(d.io.cpuPorts(0), 0.U, d.io.cycCnt.peek, d.clock)
+          blockingWrite(d.io.cpuPorts(0), 3.U, d.io.cycCnt.peek, d.clock)
         }
       }
 

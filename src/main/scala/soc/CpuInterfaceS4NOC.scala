@@ -39,7 +39,7 @@ class CpuInterfaceS4NOC extends Module {
   // write
   tx.valid := false.B
   tx.bits.data := Mux(stateReg === idle, cp.wrData, dataReg)
-  tx.bits.time := Mux(stateReg === idle, cp.address, addrReg)
+  tx.bits.core := Mux(stateReg === idle, cp.address, addrReg)
   tx.valid := cp.wr || stateReg === writeWait
 
 

@@ -50,11 +50,17 @@ class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
     mmio.wr.poke(false.B)
     waitForAck()
   }
-  // The folloiwng functions use the IO mapping with status bits add address 0 and data at address 1
-  def txRdy = (read(0) & 0x01) != 0
-  def rxAvail = (read(0) & 0x02) != 0
+
+  def setReceiver(n: Int) = write(2, n)
+  def getSender() = read(2)
+
+  // send and receive without status check, may block
   def send(data: BigInt) = write(1, data)
   def receive = read(1)
+
+  // The following functions use the IO mapping with status bits add address 0 and data at address 1
+  def txRdy = (read(0) & 0x01) != 0
+  def rxAvail = (read(0) & 0x02) != 0
 
   def sndWithCheck(data: BigInt) = {
     while (!txRdy) {}

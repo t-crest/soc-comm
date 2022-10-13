@@ -50,10 +50,10 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val txFifo = Module(new MemFifo(Entry(dt), conf.txDepth))
   io.networkPort.tx <> txFifo.io.enq
 
-  val toCore = translationTable(txFifo.io.deq.bits.time)
-  // val toCore = txFifo.io.deq.bits.core
+  // val toCore = translationTable(txFifo.io.deq.bits.core)
+  val toCore = txFifo.io.deq.bits.core
 
-  // TODO: the split buffers do not need to be Entry, just data is enough
+  // TODO: Minimum should be a single register. Could be enough in most cases.
   val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(dt, conf.splitDepth)))
   for (i <- 0 until conf.n) {
     splitBuffers(i).io.enq.bits := txFifo.io.deq.bits.data
@@ -95,7 +95,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
   rxFifo.io.enq.valid := io.local.out.valid
   rxFifo.io.enq.bits.data := io.local.out.data
-  rxFifo.io.enq.bits.time := timeSlotReg
+  rxFifo.io.enq.bits.core := timeSlotReg
 
   io.networkPort.rx <> rxFifo.io.deq
 }

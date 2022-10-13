@@ -146,7 +146,7 @@ object PerformanceTest extends App {
             // printInfo(data)
             if (data != -1) {
               ni.tx.bits.data.poke(data.U)
-              ni.tx.bits.time.poke(time.U)
+              ni.tx.bits.core.poke(time.U)
               ni.tx.valid.poke(true.B)
               injected += 1
             }

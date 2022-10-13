@@ -33,7 +33,7 @@ class RouterIO[T <: Data](private val dt: T) extends Bundle {
 // This should be a generic data for the FIFO
 class Entry[T <: Data](private val dt: T) extends Bundle {
   val data = dt.cloneType
-  val time = UInt(8.W)
+  val core = UInt(8.W)
 }
 
 object Entry {

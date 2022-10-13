@@ -13,7 +13,7 @@ class NITester extends AnyFlatSpec with ChiselScalatestTester {
 
       // dut.io.networkPort.tx.bits.poke(chiselTypeOf(dut.io.networkPort.tx.bits).Lit(_.data -> 1.U, _.time -> 2.U))
       dut.io.networkPort.tx.bits.data.poke(1.U)
-      dut.io.networkPort.tx.bits.time.poke(2.U)
+      dut.io.networkPort.tx.bits.core.poke(2.U)
       dut.io.networkPort.tx.valid.poke(true.B)
 
       var pass = false

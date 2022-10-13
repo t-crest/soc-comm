@@ -37,7 +37,7 @@ class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
 
   io.networkPort.tx.valid := false.B
   io.networkPort.tx.bits.data := io.cpuPort.wrData
-  io.networkPort.tx.bits.time := io.cpuPort.addr
+  io.networkPort.tx.bits.core := io.cpuPort.addr
   when (io.cpuPort.wr && io.networkPort.tx.ready) {
     io.networkPort.tx.valid := true.B
   }
@@ -56,7 +56,7 @@ class CpuInterfaceComb[T <: Data](dt: T, width: Int) extends Module {
     when (addr === 0.U)  {
       io.networkPort.rx.ready := true.B
     } .elsewhen(addr === 1.U) {
-      io.cpuPort.rdData := io.networkPort.rx.bits.time
+      io.cpuPort.rdData := io.networkPort.rx.bits.core
     } .elsewhen(addr === 2.U) {
       io.cpuPort.rdData := Cat(0.U(31.W), io.networkPort.tx.ready)
     } .elsewhen(addr === 3.U) {

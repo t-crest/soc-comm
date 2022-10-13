@@ -11,8 +11,8 @@ import chisel3._
 import chisel3.util._
 import soc.ReadyValidChannelsIO
 
-// TODO: make it configurable. Or maybe drop the single one
-// TODO: if kept need to switch to core id
+// TODO: probably make the other NI configurable. Or maybe drop the single one
+// TODO: if kept it needs to switch to core id
 class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
     val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))
@@ -42,7 +42,7 @@ class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
   }
   txFifo.io.deq.ready := !txFullReg
   io.local.in.data := txDataReg.data
-  val doSend = txFullReg && regTimeSlot === txDataReg.time
+  val doSend = txFullReg && regTimeSlot === txDataReg.core
   io.local.in.valid := doSend
   when (doSend) { txFullReg := false.B }
 
@@ -56,7 +56,7 @@ class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
 
   when (!rxFullReg && io.local.out.valid) {
     rxDataReg.data := io.local.out.data
-    rxDataReg.time := regTimeSlot
+    rxDataReg.core := regTimeSlot
     rxFullReg := true.B
   }
 
