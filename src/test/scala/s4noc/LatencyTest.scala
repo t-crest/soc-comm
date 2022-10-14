@@ -1,16 +1,13 @@
 package s4noc
 
-import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import s4noc.NocTest._
 import soc._
 
 /**
-  * Do some performance tests.
-  * Adapt from combinational and then drop the original. Then rename that one again.
+  * Do some performance/latency tests.
   */
-class SystemTestNew extends AnyFlatSpec with ChiselScalatestTester {
+class LatencyTest extends AnyFlatSpec with ChiselScalatestTester {
 
   behavior of "S4NoC"
 
@@ -24,7 +21,7 @@ class SystemTestNew extends AnyFlatSpec with ChiselScalatestTester {
 
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
-      helpSnd.setReceiver(3)
+      helpSnd.setDest(3)
       val th = fork {
         for (i <- 0 until CNT) {
           helpSnd.send(data(i).toLong & 0xffffffffL)
@@ -47,7 +44,7 @@ class SystemTestNew extends AnyFlatSpec with ChiselScalatestTester {
 
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
-      helpSnd.setReceiver(3)
+      helpSnd.setDest(3)
 
       val th = fork {
         for (i <- 0 until CNT) {

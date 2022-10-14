@@ -10,7 +10,7 @@ import chisel3._
 
 class S4nocTrafficGen(conf: Config) extends Module {
 
-  val s4noc = Module(new S4NoCTopCombOld(conf))
+  val s4noc = Module(new S4NoCTop(conf))
   // This is almost Chisel 3 syntax.
   val io = IO(new Bundle {
     val data = Output(UInt(conf.width.W))
@@ -24,7 +24,7 @@ class S4nocTrafficGen(conf: Config) extends Module {
     cntReg := cntReg + 1.U
 
     // addresses are in words
-    s4noc.io.cpuPorts(i).addr := cntReg(7, 2)
+    s4noc.io.cpuPorts(i).address := cntReg(7, 2)
     s4noc.io.cpuPorts(i).wrData := cntReg(conf.width+7, 8)
     s4noc.io.cpuPorts(i).wr := cntReg(0)
     s4noc.io.cpuPorts(i).rd := cntReg(1)

@@ -51,7 +51,7 @@ class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
     waitForAck()
   }
 
-  def setReceiver(n: Int) = write(2, n)
+  def setDest(n: Int) = write(2, n)
   def getSender() = read(2)
 
   // send and receive without status check, may block

@@ -127,29 +127,15 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Majoe change now: use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
-   * "schould work under full load hangs", when was the error introduced?
-   * Maybe do new tests and drop the old ones based on the comb stuff
-   * Need to check:
-     * GenExample
-       MeasureLatency.scala
-       NetworkCompare.scala
-       NetworkTest
-       NITester
-       NocTest
-       PerformanceTest$
-       RouterTest
-       ScheduleTest
-       SystemTest
-       TrafficGen
+ * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
    * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
    * Decide where to translate between core number and slot, and back on RX
-   * Also check the NISingle for the change
+   * NetworkInterfaceSingle needs to be changed
    * Also translate in RX time slot to core number
-   * Should also check how much HW this is, proably nothing. Max 4 LUTs for a tbale for 16 cores
- * Find the "old" S4NOC combinational interface (top has now "old" in the name) usage and substitute it with the real, pipelined interface
+     * Have a (failing) test first for this
+   * Should also check how much HW this is, probably nothing. Max 4 LUTs for a table for 16 cores
  * Test the NoC (is the receiver the right one?)
-   * The ideal queues is failing, the real thing is OK
+   * The ideal queues is failing, the real thing is OK (still?)
  * Find a way to configure
  * NI should not use split buffers when size is 0
  * Find a way to receive all inserted packets, this might improve the numbers
