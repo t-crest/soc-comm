@@ -28,13 +28,19 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val sched = Schedule(conf.dim)
   val len = sched.schedule.length
   // from slot count to destination core
-  val translationTable = VecInit(Seq.fill(len)(0.U(8.W)))
+  val translationTableSend = VecInit(Seq.fill(len)(0.U(8.W)))
+  // from slot count to sending core
+  val translationTableRcv = VecInit(Seq.fill(len)(0.U(8.W)))
   val validSlot = VecInit(Seq.fill(len)(false.B))
   for (i <- 0 until len) {
     val dest = sched.timeToDest(id, i).dest
     if (dest != -1) {
-      translationTable(i) := dest.U
+      translationTableSend(i) := dest.U
       validSlot(i) := true.B
+    }
+    val src = sched.timeToSource(id, i)
+    if (src != -1) {
+      translationTableRcv(i) := src.U
     }
   }
 
@@ -82,7 +88,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     }
   }
 
-  val core = translationTable(timeSlotReg)
+  val core = translationTableSend(timeSlotReg)
   val slotOk = validSlot(timeSlotReg)
   when (slotOk) { deqReadyVec(core) := true.B }
 
@@ -95,7 +101,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
   rxFifo.io.enq.valid := io.local.out.valid
   rxFifo.io.enq.bits.data := io.local.out.data
-  rxFifo.io.enq.bits.core := timeSlotReg
+  rxFifo.io.enq.bits.core := translationTableRcv(timeSlotReg)
 
   io.networkPort.rx <> rxFifo.io.deq
 }

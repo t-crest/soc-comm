@@ -38,6 +38,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
       for (i <- 0 until 14) {
         if (helpRcv.rxAvail) {
           assert(helpRcv.receive == BigInt("cafebabe", 16))
+          assert(helpRcv.getSender() == 0)
           println("Got a packet")
           done = true
         }
