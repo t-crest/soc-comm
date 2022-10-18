@@ -91,7 +91,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
           for (j <- 0 until n - 1) {
             // TODO: the following step  should not be needed
             // If omitted one or more packets will be lost
-            help(i).step(10)
+            // help(i).step(10)
             val data = help(i).receive
             val from = help(i).getSender()
             println(s"receive at $i from $from with $data")
