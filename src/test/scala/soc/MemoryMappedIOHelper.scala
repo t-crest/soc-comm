@@ -7,7 +7,7 @@ class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
 
   private var clockCnt = 0
 
-  private var timeOut = 10
+  private var timeOut = 100
   def setTimeOut(t: Int) = timeOut = t
 
   def getClockCnt = clockCnt

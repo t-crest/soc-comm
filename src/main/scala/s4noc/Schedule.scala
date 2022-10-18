@@ -158,7 +158,7 @@ class Schedule(val n: Int) {
   }
 
   /**
-    * Giving a receive slot, it returns the sender (source).
+    * Giving a receive slot and the receiving core, it returns the sender (source).
     * @param core
     */
   def timeToSource(dest: Int, slot: Int) = {
@@ -167,7 +167,7 @@ class Schedule(val n: Int) {
     for (sendingCore <- 0 until n * n) {
       for (sendingSlot <-0 until schedule.length) {
         val d = timeToDest(sendingCore, sendingSlot)
-        if (d.dest == dest && slot == sendingSlot + d.pathLength) {
+        if (d.dest == dest && slot == (sendingSlot + d.pathLength) % schedule.length) {
           source = sendingCore
         }
       }
