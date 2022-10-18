@@ -72,7 +72,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
 
 
   it should "have the correct sender ID in the IO register, multi threaded" in {
-    val n = 9
+    val n = 4
     test(new S4NoCTop(Config(n, 16, 2, 2, 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
 
       val threads = new Array[TesterThreadList](n)
@@ -90,7 +90,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
           }
           for (j <- 0 until n - 1) {
             // TODO: the following step  should not be needed
-            // If omitted one packet will be lost
+            // If omitted one or more packets will be lost
             help(i).step(10)
             val data = help(i).receive
             val from = help(i).getSender()

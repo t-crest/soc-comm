@@ -128,9 +128,8 @@ sbt "test:runMain s4noc.PerformanceTest"
 #### TODO (S4NOC)
 
  * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
-   * More tests of the RX slot to core translation
+   * Fix the multithreaded NotTest
    * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
-   * Decide where to translate between core number and slot, and back on RX
    * NetworkInterfaceSingle needs to be changed
    * Should also check how much HW this is, probably nothing. Max 4 LUTs for a table for 16 cores
  * Test the NoC (is the receiver the right one?)
