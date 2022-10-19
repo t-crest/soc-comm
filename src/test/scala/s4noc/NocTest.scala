@@ -50,7 +50,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "have the correct sender ID in the IO register" in {
     val n = 4
-    test(new S4NoCTop(Config(n, 16, 2, 2, 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new S4NoCTop(Config(n, 16, 2, 2, 32))) { d =>
 
       val help = new Array[MemoryMappedIOHelper](n)
 
@@ -88,10 +88,10 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
               println(s"send from $i to $j")
             }
           }
+          // help(i).step(50)
+          // TODO: when teh rx FIFO is a memory (also register) FIFO this is broken
+          // TODO: probably enq and deq in same clock cycle bug
           for (j <- 0 until n - 1) {
-            // TODO: the following step  should not be needed
-            // If omitted one or more packets will be lost
-            help(i).step(10)
             val data = help(i).receive
             val from = help(i).getSender()
             println(s"receive at $i from $from with $data")

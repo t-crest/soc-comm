@@ -127,7 +127,9 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
+ * MemFifo and RegFifo have a bug!
+   * probably enq and deq in same clock cycle bug
+  * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
    * Fix the multithreaded NotTest
    * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
    * NetworkInterfaceSingle needs to be changed
