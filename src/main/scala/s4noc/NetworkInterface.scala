@@ -97,7 +97,8 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   io.local.in.valid := valid
 
   // RX
-  val rxFifo = Module(new DoubleBufferFifo(Entry(dt), conf.rxDepth))
+  val rxFifo = Module(new MemFifo(Entry(dt), conf.rxDepth))
+  // val rxFifo = Module(new DoubleBufferFifo(Entry(dt), conf.rxDepth))
   // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
   dontTouch(rxFifo.io.enq.ready)
   rxFifo.io.enq.valid := io.local.out.valid

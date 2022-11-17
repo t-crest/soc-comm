@@ -89,7 +89,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
             }
           }
           // help(i).step(50)
-          // TODO: when teh rx FIFO is a memory (also register) FIFO this is broken
+          // TODO: when the rx FIFO is a memory (also register) FIFO this is broken
           // TODO: probably enq and deq in same clock cycle bug
           for (j <- 0 until n - 1) {
             val data = help(i).receive
