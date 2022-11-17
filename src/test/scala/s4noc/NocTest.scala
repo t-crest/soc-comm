@@ -39,7 +39,6 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
         if (helpRcv.rxAvail) {
           assert(helpRcv.receive == BigInt("cafebabe", 16))
           assert(helpRcv.getSender() == 0)
-          // println("Got a packet")
           done = true
         }
       }
@@ -48,7 +47,6 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  /*
   it should "have the correct sender ID in the IO register" in {
     val n = 4
     test(new S4NoCTop(Config(n, 16, 2, 2, 32))) { d =>
@@ -71,10 +69,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-   */
 
-
-  /*
   it should "have the correct sender ID in the IO register, multi threaded" in {
     val n = 4
     test(new S4NoCTop(Config(n, 16, 2, 2, 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
@@ -92,9 +87,6 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
               println(s"send from $i to $j")
             }
           }
-          // help(i).step(50)
-          // TODO: when the rx FIFO is a memory (also register) FIFO this is broken
-          // TODO: probably enq and deq in same clock cycle bug
           for (j <- 0 until n - 1) {
             val data = help(i).receive
             val from = help(i).getSender()
@@ -108,6 +100,4 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
   }
-
-   */
 }

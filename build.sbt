@@ -7,19 +7,19 @@ scalacOptions ++= Seq(
   "-language:reflectiveCalls",
 )
 
-val chiselVersion = "3.5.3"
+val chiselVersion = "3.5.5"
 addCompilerPlugin("edu.berkeley.cs" %% "chisel3-plugin" % chiselVersion cross CrossVersion.full)
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
-libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.3"
+libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.5"
 
 // For FIFO buffers
-libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.0"
+libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.1"
 
 // library name
 name := "soc-comm"
 
 // library version
-version := "0.1.2"
+version := "0.1.3"
 
 // groupId, SCM, license information
 organization := "io.github.t-crest"
