@@ -127,11 +127,7 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * MemFifo and RegFifo have a bug!
-   * RegFifo is fixed in ip-contributions, but not yet published
-   * probably enq and deq in same clock cycle bug
  * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
-   * Fix the multithreaded NotTest
    * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
    * NetworkInterfaceSingle needs to be changed
    * Should also check how much HW this is, probably nothing. Max 4 LUTs for a table for 16 cores
@@ -141,8 +137,10 @@ sbt "test:runMain s4noc.PerformanceTest"
  * NI should not use split buffers when size is 0
  * Find a way to receive all inserted packets, this might improve the numbers
    * Some single packets are still left over from one run to the next
+   * Maybe this is fixed now after the FIFO fixes?
  * Have the core # to slot # mapping in HW (it should be cheap)
    * Then change the (FIFO) buffers to include the destination instead of the time slot
+   * Is this already done?
  * Play with FIFO buffer variations
 
 To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``` with
