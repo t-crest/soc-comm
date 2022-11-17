@@ -13,7 +13,7 @@ libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.5.3"
 
 // For FIFO buffers
-libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.1"
+libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.0"
 
 // library name
 name := "soc-comm"

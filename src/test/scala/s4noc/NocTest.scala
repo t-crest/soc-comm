@@ -48,6 +48,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  /*
   it should "have the correct sender ID in the IO register" in {
     val n = 4
     test(new S4NoCTop(Config(n, 16, 2, 2, 32))) { d =>
@@ -70,7 +71,10 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+   */
 
+
+  /*
   it should "have the correct sender ID in the IO register, multi threaded" in {
     val n = 4
     test(new S4NoCTop(Config(n, 16, 2, 2, 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
@@ -104,4 +108,6 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
   }
+
+   */
 }
