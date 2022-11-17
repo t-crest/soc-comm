@@ -22,7 +22,7 @@ We may consider moving to AXI. Or better provide a bridge, as AXI is not so supe
 This project is published with Maven Central. Add following line to your ```build.sbt```
 
 ```
-libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.2"
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.3"
 ```
 ## Dependency
 
