@@ -11,7 +11,7 @@ import s4noc.Entry
   * 1: txd and rxd
   * 2: write receiver, read sender
   * TODO: compare with Chisel book version
-  *
+  * TODO: make it generic and do a subtype for s4noc
   */
 class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false ) extends CpuInterface(addrWidth) {
 

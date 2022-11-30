@@ -1,10 +1,9 @@
-
+# This Makefile is outdated
 all: doit test
 
 # Generate Verilog code
 doit:
 	sbt "runMain empty.AddMain"
-	sbt "runMain soc.DirectLink"
 
 # Run the tests
 
