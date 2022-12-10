@@ -1,34 +1,64 @@
 package soc
 
 import chisel3._
+import chisel3.util._
 
 /**
-  * An minimal Wishbone IO device.
-  * It contains a single register to write and read at address 0
-  * and the read-only core ID at address 1.
+  * An minimal Wishbone IO device in pipelined mode.
+  * It contains a single register to write and read.
   *
-  * @param coreId
+  * To stress the master a bit, it varies the ack timing.
   */
 class HelloWishbone() extends WishboneDevice(2) {
 
-  io.port.rdData := 0.U
-  io.port.ack := false.B
-  /*
-  // TODO: following five lines are duplicated in CpuInterfaceRV, back to CpuInterface?
-  val addrReg = RegInit(0.U(2.W))
-  val ackReg = RegInit(false.B)
-  when (cp.rd) {
-    addrReg := cp.address
-  }
-  cp.ack := ackReg
+  val port = io.port
+  port.rdData := 0.U
+  port.ack := false.B
 
-  val nr = coreId.U(32.W)
-  val reg = RegInit(0.U(32.W))
-  when (cp.wr) {
-    reg := cp.wrData
-  }
-  ackReg := cp.wr || cp.rd
-  cp.rdData := Mux(addrReg === 1.U, nr, reg)
+  val longAckReg = RegInit(false.B)
+  val dataReg = RegInit(0.U(32.W))
+  val cntReg = RegInit(0.U)
 
-   */
+  val idle :: read :: write :: Nil = Enum(2)
+  val stateReg = RegInit(idle)
+
+  val start = port.cyc & port.stb
+
+  switch (stateReg) {
+    is (idle) {
+      when(start) {
+        when(port.we) {
+          dataReg := port.wrData
+          stateReg := write
+        }.otherwise {
+          stateReg := read
+        }
+        when (longAckReg) {
+          cntReg := 3.U
+        } .otherwise {
+          cntReg := 0.U
+        }
+        longAckReg != longAckReg
+      }
+    }
+    is(write) {
+      when (cntReg === 0.U) {
+        port.ack := true.B
+        stateReg := idle
+      } .otherwise {
+        cntReg := cntReg - 1.U
+      }
+    }
+    is(read) {
+      when(cntReg === 0.U) {
+        port.ack := true.B
+        stateReg := idle
+      }.otherwise {
+        cntReg := cntReg - 1.U
+      }
+      when(port.ack) {
+        port.rdData := dataReg
+      }
+    }
+  }
 }
