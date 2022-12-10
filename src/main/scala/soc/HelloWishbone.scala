@@ -19,7 +19,7 @@ class HelloWishbone() extends WishboneDevice(2) {
   val dataReg = RegInit(0.U(32.W))
   val cntReg = RegInit(0.U)
 
-  val idle :: read :: write :: Nil = Enum(2)
+  val idle :: read :: write :: Nil = Enum(3)
   val stateReg = RegInit(idle)
 
   val start = port.cyc & port.stb
