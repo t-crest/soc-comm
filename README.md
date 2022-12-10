@@ -48,27 +48,48 @@ For the Chisel based tests a compiler with gcc like interface is needed.
 
 ## Projects
 
-### CPU Interface
+### The CPU Interface PipeCon
 
-For this project we define a simple pipelined IO interface,
-consisting of following signals:
+For this project we define a simple pipelined IO interface, that we
+name PipeCon for pipelined connection.
+The interface consisting of following signals:
 
 ```scala
-class CpuPortIO(private val addrWidth: Int) extends Bundle {
-  val wr = Input(Bool())
-  val rd = Input(Bool())
-  val address = Input(UInt(addrWidth.W))
-  val wrData = Input(UInt(32.W))
-  val rdData = Output(UInt(32.W))
-  val ack = Output(Bool())
+class PipeConIO(private val addrWidth: Int) extends Bundle {
+   val address = Output(UInt(addrWidth.W))
+   val rd = Output(Bool())
+   val wr = Output(Bool())
+   val rdData = Input(UInt(32.W))
+   val wrData = Output(UInt(32.W))
+   val wrMask = Output(UInt(4.W))
+   val ack = Input(Bool())
 }
 ```
+
+The main rules define PipeCon:
+
+ * There are two transactions: read and write
+ * The transaction command is valid for a single clock cycle
+ * The IO device responds earliest in the following clock cycle with an asserted `ack` signal
+ * A read result is valid in the clock cycle `ack` is asserted
+ * An IO device can insert wait cycles by asserting `ack` later
+ * The CPU may issue a new read or write command in the same cycle `ack` is asserted
+
+The PipeCon specification fits well with...
+
+This definition is basically the same as the CoreIO from Patmos,
+which itself is a valid OCP interface. However, as OCP is a big specification
+and not used so much, we define here the simplified version without
+a reference to OCP.
+
+
 
 A read or write command are signaled by an asserted ```rd``` or ```wr```.
 The address and write data (if it is a write) need to be valid during
 the command. Commands are only valid for a single cycle.
 Each command needs to be acknowledged by an active ```ack```,
-earliest one cycle after the command. It can also insert wait
+from the IO device earliest one cycle after the command.
+The IO device can also insert wait
 states by delaying ```ack```. Read data is available with the ```ack```
 signal for one clock cycle.
 
@@ -152,6 +173,7 @@ To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``
 
 ## TODO
 
+ * Use and document the PipeCon, direction from master
  * Integrate a simple multicore device with T-CREST
    * A multicore "Hello World"
  * Run S4NOC with T-CREST
