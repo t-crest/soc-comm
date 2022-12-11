@@ -30,6 +30,20 @@ class WishboneIO(addrWith: Int) extends Bundle {
   val stb = Output(Bool())
   val ack = Input(Bool())
   val cyc = Output(Bool())
+
+  def setDefaults(): Unit = {
+    addr := 0.U
+    wrData := 0.U
+    we := false.B
+    cyc := false.B
+    sel := 0.U
+    stb := 0.U
+  }
+
+  def setDefaultsFlipped(): Unit = {
+    rdData := 0.U
+    ack := false.B
+  }
 }
 
 /*
