@@ -3,8 +3,8 @@ package soc
 import chisel3._
 
 /**
-  * A pipelined interface called PipeCon.
-  * Signal direction from the CPU
+  * A pipelined interface called PipeCon, similar to the OCPCore in the Patmos project.
+  * Signal direction from the CPU.
   * @param addrWidth
   */
 class PipeConIO(private val addrWidth: Int) extends Bundle {

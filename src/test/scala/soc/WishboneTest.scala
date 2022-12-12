@@ -8,9 +8,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import s4noc.Entry
 
 class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
-  behavior of "The Wishbone example device"
+  behavior of "The Wishbone stuff"
 
-  it should "do something" in {
+  it should "work with the example device" in {
     test(new HelloWishbone()) {
       d => {
         def step() = d.clock.step()
@@ -41,6 +41,55 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
         assert(rd == 1234)
         step()
         p.ack.expect(false.B)
+      }
+    }
+  }
+
+  it should "work as a hello wrapper" in {
+    test(new WishboneWrappedHello()) {
+      d => {
+        def step() = d.clock.step()
+
+        val p = d.io.port
+        p.cyc.poke(true.B)
+        p.stb.poke(true.B)
+        p.we.poke(true.B)
+        p.addr.poke(0.U)
+        p.wrData.poke(1234.U)
+        step()
+        p.cyc.poke(false.B)
+        p.stb.poke(false.B)
+        p.we.poke(false.B)
+        p.ack.expect(true.B)
+        step()
+        p.ack.expect(false.B)
+        p.cyc.poke(true.B)
+        p.stb.poke(true.B)
+        step()
+        p.ack.expect(true.B)
+        p.rdData.expect(1234.U)
+        p.addr.poke(4)
+        step()
+        p.ack.expect(true.B)
+        p.rdData.expect(42.U)
+      }
+    }
+  }
+
+  it should "the lock should work" in {
+    test(new WishboneHardwareLock()) {
+      d => {
+        val wbh = new WishboneHelper(d.io.port, d.clock)
+
+        // grab the lock
+        assert(wbh.read(0) == 1)
+        // should not be possible to grab again
+        assert(wbh.read(0) == 0)
+        // release the lock
+        wbh.write(0, 0)
+        // should be possible to grab again
+        assert(wbh.read(0) == 1)
+
       }
     }
   }

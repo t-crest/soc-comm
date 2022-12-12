@@ -19,7 +19,7 @@ libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.5.1"
 name := "soc-comm"
 
 // library version
-version := "0.1.3"
+version := "0.1.4"
 
 // groupId, SCM, license information
 organization := "io.github.t-crest"
