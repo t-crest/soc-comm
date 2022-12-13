@@ -1,17 +1,15 @@
 
-package soc
+package wishbone
 
-import chisel.lib.fifo._
 import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import s4noc.Entry
 
 class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The Wishbone stuff"
 
   it should "work with the example device" in {
-    test(new HelloWishbone()) {
+    test(new Hello()) {
       d => {
         def step() = d.clock.step()
 
@@ -46,7 +44,7 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "work as a hello wrapper" in {
-    test(new WishboneWrappedHello()) {
+    test(new WrappedHello()) {
       d => {
         def step() = d.clock.step()
 
@@ -77,7 +75,7 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "the lock should work" in {
-    test(new WishboneHardwareLock()) {
+    test(new WBHardwareLock()) {
       d => {
         val wbh = new WishboneHelper(d.io.port, d.clock)
 

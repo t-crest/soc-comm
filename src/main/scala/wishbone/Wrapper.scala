@@ -1,12 +1,13 @@
-package soc
+package wishbone
 
 import chisel3._
+import soc.MemoryMappedIO
 
 /**
   * A Wishbone wrapper for the our PipeCon interface.
   *
   */
-class WishboneWrapper(addrWidth: Int) extends WishboneDevice(addrWidth) {
+class Wrapper(addrWidth: Int) extends WishboneDevice(addrWidth) {
 
   // TODO: switch to PipeConIO at some point
   val cpuIf = IO(new Bundle {

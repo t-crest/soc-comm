@@ -1,4 +1,4 @@
-package soc
+package wishbone
 
 import chisel3._
 

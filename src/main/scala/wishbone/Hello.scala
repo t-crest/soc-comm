@@ -1,4 +1,4 @@
-package soc
+package wishbone
 
 import chisel3._
 import chisel3.util._
@@ -9,7 +9,7 @@ import chisel3.util._
   *
   * To stress the master a bit, it varies the ack timing.
   */
-class HelloWishbone() extends WishboneDevice(2) {
+class Hello() extends WishboneDevice(2) {
 
   val port = io.port
   port.rdData := 0.U

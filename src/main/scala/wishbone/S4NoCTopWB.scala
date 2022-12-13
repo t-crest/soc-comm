@@ -1,7 +1,7 @@
-package s4noc
+package wishbone
 
 import chisel3._
-import soc._
+import s4noc.{Config, S4NoCTop}
 
 
 /**
@@ -20,7 +20,7 @@ class S4NoCTopWB(conf: Config) extends Module  {
 
   val s4noc = new S4NoCTop(conf)
   for (i <- 0 until conf.n) {
-    val wb = Module(new WishboneWrapper(4))
+    val wb = Module(new Wrapper(4))
     wb.cpuIf.cpuPort <> s4noc.io.cpuPorts(i)
     io.wbPorts(i) <> wb.io.port
   }
