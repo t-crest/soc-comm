@@ -51,6 +51,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s
 
   def idleReaction() = {
     when (cp.wr) {
+      // printf("Write %d to %d\n", cp.wrData, cp.address)
       when (cp.address === 2.U) {
         txDestReg := cp.wrData
         ackReg := true.B
@@ -65,6 +66,7 @@ class CpuInterfaceRV[T <: Data](private val addrWidth: Int, private val dt: T, s
       }
     }
     when (cp.rd) {
+      // printf("Read from %d\n", cp.address)
       when (cp.address === 0.U) {
         stateReg := readStatus
         ackReg := true.B

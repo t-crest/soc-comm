@@ -15,10 +15,10 @@ import s4noc.{Config, S4NoCTop}
 
 class S4NoCTopWB(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val wbPorts = Vec(conf.n, new WishboneIO(4))
+    val wbPorts = Vec(conf.n, Flipped(new WishboneIO(4)))
   })
 
-  val s4noc = new S4NoCTop(conf)
+  val s4noc = Module(new S4NoCTop(conf))
   for (i <- 0 until conf.n) {
     val wb = Module(new Wrapper(4))
     wb.cpuIf.cpuPort <> s4noc.io.cpuPorts(i)

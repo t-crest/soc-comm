@@ -70,6 +70,11 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
         step()
         p.ack.expect(true.B)
         p.rdData.expect(42.U)
+
+        val wbh = new WishboneIOHelper(d.io.port, d.clock)
+        wbh.write(0, 0xcafe)
+        assert(wbh.read(0) == 0xcafe)
+
       }
     }
   }
@@ -77,7 +82,7 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "the lock should work" in {
     test(new WBHardwareLock()) {
       d => {
-        val wbh = new WishboneHelper(d.io.port, d.clock)
+        val wbh = new WishboneIOHelper(d.io.port, d.clock)
 
         // grab the lock
         assert(wbh.read(0) == 1)
