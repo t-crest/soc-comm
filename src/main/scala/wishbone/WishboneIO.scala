@@ -44,6 +44,24 @@ class WishboneIO(addrWith: Int) extends Bundle {
   def setDefaultsFlipped(): Unit = {
     rdData := 0.U
     ack := false.B
+  }  
+  
+  def driveReadReq(_addr: UInt): Unit = {
+    addr := _addr
+    wrData := 0.U
+    we := false.B
+    cyc := true.B
+    sel := 15.U// Assume we always want 4 bytes for now
+    stb := true.B
+  }
+
+  def driveWriteReq(_addr: UInt, data: UInt) = {
+    addr := _addr
+    wrData := data
+    we := true.B
+    cyc := true.B
+    sel := 15.U // Assume we always want 4 bytes for now
+    stb := true.B
   }
 }
 
