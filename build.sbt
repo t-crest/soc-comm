@@ -42,3 +42,6 @@ publishTo := Some(
   else
     Opts.resolver.sonatypeStaging
 )
+
+
+lazy val soc_comm = (project in file("."))
