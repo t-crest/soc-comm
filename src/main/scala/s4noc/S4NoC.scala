@@ -18,12 +18,21 @@ import soc.ReadyValidChannelsIO
   * @param conf
   */
 class S4NoC(conf: Config) extends Module  {
-  val io = IO(Vec(conf.n, new ChannelIO(UInt(conf.width.W))))
+  val io = IO(new Bundle {
+    val channels = Vec(conf.n, new ChannelIO(UInt(conf.width.W)))
+    val read = Input(Vec(conf.n, new Bool()))
+  })
 
   val net = Module(new Network(conf.dim, UInt(conf.width.W)))
+  val bufferedData = Reg(Vec(conf.n, UInt(conf.width.W)))
+  val bufferedValid = RegInit(VecInit(Array.fill(conf.n)(false.B)))
 
   for (i <- 0 until conf.n) {
-    net.io.local <> io
+    bufferedData(i) := Mux(net.io(i).out.valid, net.io(i).out.data, bufferedData(i))
+    bufferedValid(i) := (bufferedValid(i) && !io.read(i)) || net.io(i).out.valid
+    net.io(i).in <> io.channels(i).in
+    io.channels(i).out.data := bufferedData(i)
+    io.channels(i).out.valid := bufferedValid(i)
   }
 }
 
