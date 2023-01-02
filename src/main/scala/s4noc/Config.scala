@@ -4,6 +4,7 @@ package s4noc
   * S4NoC Configuration case class
   * @param n nodes
   * @param txDepth tx FIFO depth
+  * @param splitDepth ??????
   * @param rxDepth rx FIFO depth
   * @param width channel width (usually 32)
   */

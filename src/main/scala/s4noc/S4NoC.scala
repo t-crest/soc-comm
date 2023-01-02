@@ -18,23 +18,13 @@ import soc.ReadyValidChannelsIO
   * @param conf
   */
 class S4NoC(conf: Config) extends Module  {
-  val io = IO(new Bundle {
-    val networkPort = Vec(conf.n, Flipped(new ReadyValidChannelsIO(Entry(UInt(conf.width.W)))))
-    val cycCnt = Output(UInt(32.W))
-  })
-
+  val io = IO(Vec(conf.n, new ChannelIO(UInt(conf.width.W))))
 
   val net = Module(new Network(conf.dim, UInt(conf.width.W)))
 
   for (i <- 0 until conf.n) {
-    val ni = Module(new NetworkInterface(i, conf, UInt(conf.width.W)))
-    net.io.local(i) <> ni.io.local
-    io.networkPort(i) <> ni.io.networkPort
+    net.io.local <> io
   }
-
-  val cntReg = RegInit(0.U(32.W))
-  cntReg := cntReg + 1.U
-  io.cycCnt := cntReg
 }
 
 object S4NoC extends App {
