@@ -1,6 +1,7 @@
 package s4noc
 
 import chisel3._
+import chisel3.util.log2Ceil
 
 
 /**
@@ -39,6 +40,18 @@ class Entry[T <: Data](private val dt: T) extends Bundle {
 object Entry {
   def apply[T <: Data](dt: T) = {
     new Entry(dt)
+  }
+}
+
+class CpuNocIO[T <: Data](private val dt: T, private val conf: Config) extends Bundle {
+  val load = new Bundle {
+    val bits = Output(dt)
+    val ready = Input(new Bool())
+  }
+  val loadFromCore = Input(UInt((log2Ceil(conf.n) + 1).W))
+  val store = new Bundle {
+    val bits = Input(dt)
+    val valid = Input(new Bool())
   }
 }
 

@@ -21,10 +21,10 @@ import soc.ReadyValidChannelsIO
   */
 class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   val io = IO(new Bundle {
-    val networkPort = Flipped(new ReadyValidChannelsIO(Entry(dt)))
-    val local = Flipped(new ChannelIO(dt))
+    val cpu = new CpuNocIO(dt, conf)
+    val network = Flipped(new ChannelIO(dt))
   })
-
+  val readingValidInsteadOfData: Bool = io.cpu.loadFromCore(log2Ceil(conf.n))
   val sched = Schedule(conf.dim)
   val len = sched.schedule.length
   // from slot count to destination core
@@ -50,60 +50,22 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // Maybe we can use that delay here as well for something good
   val timeSlotReg = RegNext(regCnt, init = 0.U)
 
-  // TX
-  // in/out direction is from the network view
-  // flipped here
-  val txFifo = Module(new MemFifo(Entry(dt), conf.txDepth))
-  io.networkPort.tx <> txFifo.io.enq
+  val toCore = translationTableSend(timeSlotReg)
+  val fromCore = translationTableRcv(timeSlotReg)
 
-  // val toCore = translationTable(txFifo.io.deq.bits.core)
-  val toCore = txFifo.io.deq.bits.core
-
-  // TODO: Minimum should be a single register. Could be enough in most cases.
-  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(dt, conf.splitDepth)))
-  for (i <- 0 until conf.n) {
-    splitBuffers(i).io.enq.bits := txFifo.io.deq.bits.data
+  val receivedData = Reg(Vec(conf.n, new SingleChannelIO(dt)))
+  when (io.network.out.valid) {
+    receivedData(fromCore).data := io.network.out.data
+    receivedData(fromCore).valid := true.B
   }
-
-  // there must be a more elegant solution
-  val enqReadyVec = VecInit(Seq.fill(conf.n)(false.B))
-  val enqValidVec = VecInit(Seq.fill(conf.n)(false.B))
-  val deqValidVec = VecInit(Seq.fill(conf.n)(false.B))
-  val deqDataVec = Wire(Vec(conf.n, dt))
-  val deqReadyVec = VecInit(Seq.fill(conf.n)(false.B))
-
-  // connections
-  for (i <- 0 until conf.n) {
-    enqReadyVec(i) := splitBuffers(i).io.enq.ready
-    splitBuffers(i).io.enq.valid := enqValidVec(i)
-    deqValidVec(i) := splitBuffers(i).io.deq.valid
-    deqDataVec(i) := splitBuffers(i).io.deq.bits
-    splitBuffers(i).io.deq.ready := deqReadyVec(i)
+  when (io.cpu.load.ready && !readingValidInsteadOfData) {
+    receivedData(io.cpu.loadFromCore).valid := false.B
   }
-  // the following is a combinational valid/ready path from a split buffer
-  txFifo.io.deq.ready := enqReadyVec(toCore)
-  when (txFifo.io.deq.valid) {
-    when (enqReadyVec(toCore)) {
-      enqValidVec(toCore) := true.B
-    }
-  }
-
-  val core = translationTableSend(timeSlotReg)
-  val slotOk = validSlot(timeSlotReg)
-  when (slotOk) { deqReadyVec(core) := true.B }
-
-  val valid = deqValidVec(core) && slotOk
-  io.local.in.data := deqDataVec(core)
-  io.local.in.valid := valid
-
-  // RX
-  val rxFifo = Module(new MemFifo(Entry(dt), conf.rxDepth))
-  // val rxFifo = Module(new DoubleBufferFifo(Entry(dt), conf.rxDepth))
-  // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
-  dontTouch(rxFifo.io.enq.ready)
-  rxFifo.io.enq.valid := io.local.out.valid
-  rxFifo.io.enq.bits.data := io.local.out.data
-  rxFifo.io.enq.bits.core := translationTableRcv(timeSlotReg)
-
-  io.networkPort.rx <> rxFifo.io.deq
+  io.cpu.load.bits := Mux(
+    readingValidInsteadOfData,
+    receivedData(io.cpu.loadFromCore(1, 0)).valid,
+    receivedData(io.cpu.loadFromCore(1, 0)).data
+  )
+  io.network.in.valid := io.cpu.store.valid
+  io.network.in.data := io.cpu.store.bits
 }

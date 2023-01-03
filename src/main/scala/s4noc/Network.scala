@@ -13,14 +13,16 @@ import Const._
  * Create and connect a n x n NoC.
  */
 class Network[T <: Data](n: Int, dt: T) extends Module {
-  val io = IO(Vec(n * n, new ChannelIO(dt)))
+  val io = IO(new Bundle {
+    val local = Vec(n * n, new ChannelIO(dt))
+  })
 
   val schedule = Schedule(n).schedule
 
   val net = new Array[S4Router[T]](n * n)
   for (i <- 0 until n * n) {
     net(i) = Module(new S4Router(schedule, dt))
-    io(i) <> net(i).io.ports(LOCAL)
+    io.local(i) <> net(i).io.ports(LOCAL)
   }
 
   // Router indexes:
