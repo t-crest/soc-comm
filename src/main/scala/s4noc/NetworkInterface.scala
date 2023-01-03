@@ -25,6 +25,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     val network = Flipped(new ChannelIO(dt))
   })
   val readingValidInsteadOfData: Bool = io.cpu.loadFromCore(log2Ceil(conf.n))
+  val readingRegCnt: Bool = io.cpu.loadFromCore(log2Ceil(conf.n) + 1)
   val sched = Schedule(conf.dim)
   val len = sched.schedule.length
   // from slot count to destination core
@@ -62,9 +63,13 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     receivedData(io.cpu.loadFromCore).valid := false.B
   }
   io.cpu.load.bits := Mux(
-    readingValidInsteadOfData,
-    receivedData(io.cpu.loadFromCore(1, 0)).valid,
-    receivedData(io.cpu.loadFromCore(1, 0)).data
+    readingRegCnt,
+    regCnt,
+    Mux(
+      readingValidInsteadOfData,
+      receivedData(io.cpu.loadFromCore(1, 0)).valid,
+      receivedData(io.cpu.loadFromCore(1, 0)).data
+    )
   )
   io.network.in.valid := io.cpu.store.valid
   io.network.in.data := io.cpu.store.bits
