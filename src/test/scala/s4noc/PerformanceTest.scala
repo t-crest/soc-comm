@@ -54,6 +54,7 @@ object PerformanceTest extends App {
 
       var injected = 0 // into the NoC
       var received = 0 // from the NoC
+      var drained = 0
       var min = 10000
       var max = 0
       var sum = 0
@@ -99,10 +100,10 @@ object PerformanceTest extends App {
       (injected, received, sum.toDouble / received, min, max)
     }
 
-    println(s"${n * n} cores with ideal queues")
-    val count = 10000
+    val count = 1000
+    println(s"${n * n} cores with ideal queues, $count samples")
     val drain = 20
-    for (rate <- 1 until 11 by 10) { // ?? is max
+    for (rate <- 1 until 100 by 10) { // ?? is max
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(count, drain)
       val effectiveInjectionRate = injected.toDouble / count / (n * n)
@@ -112,6 +113,8 @@ object PerformanceTest extends App {
     }
   }
 
+  /*
+  // Maybe this should go into its own class
   RawTester.test(new S4NoC(Config(n * n, 256, 256, 256, 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
@@ -190,5 +193,7 @@ object PerformanceTest extends App {
       println(s"($effectiveInjectionRate, $avg)")
     }
   }
+
+   */
 }
 

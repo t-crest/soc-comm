@@ -12,7 +12,7 @@ class TrafficGen(n: Int) {
   val queuesSplit = Array.ofDim[mutable.Queue[Int]](n, n)
   val queues = Array.ofDim[mutable.Queue[(Int, Int)]](n)
 
-  var injectionRate = 0.2 * n
+  var injectionRate = 0.0 // 0.2 * n
   val r = new Random(0)
   var countCycles = 0
   var inserted = 0

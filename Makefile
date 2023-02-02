@@ -3,7 +3,7 @@ all: doit test
 
 # Generate Verilog code
 doit:
-	sbt "runMain empty.AddMain"
+	sbt "runMain s4noc.S4nocTrafficGen 9"
 
 # Run the tests
 
@@ -12,6 +12,9 @@ test:
 
 test-all:
 	sbt test
+
+perf:
+	sbt "test:run s4noc.PerformanceTest"
 
 latency:
 	sbt "test:runMain s4noc.MeasureLatency" | grep result
