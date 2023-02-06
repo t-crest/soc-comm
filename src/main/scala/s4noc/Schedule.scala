@@ -131,6 +131,7 @@ class Schedule(val n: Int) {
     */
   def timeToDest(core: Int, slot : Int): Destination = {
 
+    if (slot == -1) return Destination(-1, 0)
     var dest = core
     var step = schedule(slot).indexOf(LOCAL)
     var count = 0

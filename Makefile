@@ -14,10 +14,11 @@ test-all:
 	sbt test
 
 perf:
-	sbt "test:run s4noc.PerformanceTest"
+	sbt "Test / run s4noc.PerformanceTest"
 
+# the is an old, for now disabled test
 latency:
-	sbt "test:runMain s4noc.MeasureLatency" | grep result
+#	sbt "test / runMain s4noc.MeasureLatency" | grep result
 
 # do the right thing, does not yet do it
 vcd:

@@ -6,7 +6,8 @@ import scala.collection.mutable._
 
 object PerformanceTest extends App {
 
-  val n = 4
+  // n * n is the number of cores
+  val n = 2
 
   def printScheduleInfo(sched: Schedule) = {
     println(sched)
@@ -37,20 +38,21 @@ object PerformanceTest extends App {
   val sched = Schedule(n)
   // printScheduleInfo(sched)
   val t = new TrafficGen(n * n)
-  var slotCnt = 0
+  // schedule starts one clock cycle later
+  var slotCnt = -1
 
   /**
     * This is the interface directly to the network without an NI, or a CPU interface.
     */
   RawTester.test(new Network(n, UInt(32.W))) { d =>
-    var countCycles = 0
-
-    def tick() = {
-      d.clock.step()
-      countCycles += 1
-    }
 
     def runIt(count: Int, drain: Int) = {
+      var countCycles = 0
+
+      def tick() = {
+        d.clock.step()
+        countCycles += 1
+      }
 
       var injected = 0 // into the NoC
       var received = 0 // from the NoC
@@ -61,7 +63,6 @@ object PerformanceTest extends App {
       t.reset()
 
       for (i <- 0 until (count + drain)) {
-        // println(s"clock cycle #: $countCycles")
         t.tick(i < count)
         for (core <- 0 until n * n) {
           val local = d.io.local(core)
@@ -79,36 +80,39 @@ object PerformanceTest extends App {
             }
           }
           // receive
-          // TODO: sanity check for correct routing
           if (local.out.valid.peekBoolean()) {
             val recv = local.out.data.peekInt().toInt
+            // println(s"received ($core, $recv)")
+            // printInfo(recv)
+            assert(t.check.contains((core, recv)), "Value out of thin air")
+            t.check.remove((core, recv))
             val latency = countCycles - (recv & 0x0ffff)
             val to = (recv >> 16) & 0x0ff
-            // assert(to == core, s"$to should be $core")
+            assert(to == core, s"$to should be $core")
             if (latency < min) min = latency
             if (latency > max) max = latency
             received += 1
             sum += latency
-            // println(s"Received with latency of $latency")
-            // printInfo(recv)
+            // println(s"Received $received with latency of $latency")
           }
         }
 
         tick()
         slotCnt = (slotCnt + 1) % sched.len
       }
+      assert(t.check.size == 0, s"Check set should be empty, but is ${t.check.size}. NoC needs to be drained.")
       (injected, received, sum.toDouble / received, min, max)
     }
 
-    val count = 1000
-    println(s"${n * n} cores with ideal queues, $count samples")
-    val drain = 20
-    for (rate <- 1 until 100 by 10) { // ?? is max
+    val count = 4000
+    println(s"${n * n} cores with ideal queues, $count clock cycles")
+    val drain = 2000
+    d.clock.setTimeout(10000)
+    for (rate <- 1 until 67 by 3) { // ?? is max
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(count, drain)
       val effectiveInjectionRate = injected.toDouble / count / (n * n)
-      // TODO: sanity check of received, nr of cores, and injection rate
-      println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+      // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
       println(s"($effectiveInjectionRate, $avg)")
     }
   }

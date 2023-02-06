@@ -148,12 +148,11 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
+ * Re-enable the second test in PerformanceTest
  * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
    * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
    * NetworkInterfaceSingle needs to be changed
    * Should also check how much HW this is, probably nothing. Max 4 LUTs for a table for 16 cores
- * Test the NoC (is the receiver the right one?)
-   * The ideal queues is failing, the real thing is OK (still?)
  * Find a way to configure
  * NI should not use split buffers when size is 0
  * Find a way to receive all inserted packets, this might improve the numbers
