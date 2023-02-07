@@ -44,7 +44,8 @@ object PerformanceTest extends App {
   /**
     * This is the interface directly to the network without an NI, or a CPU interface.
     */
-  RawTester.test(new Network(n, UInt(32.W))) { d =>
+  RawTester.test(new Network(n, UInt(32.W)), Seq(VerilatorBackendAnnotation, chiseltest.internal.NoThreadingAnnotation)
+    ) { d =>
 
     def runIt(count: Int, drain: Int) = {
       var countCycles = 0
@@ -108,7 +109,7 @@ object PerformanceTest extends App {
     println(s"${n * n} cores with ideal queues, $count clock cycles")
     val drain = 2000
     d.clock.setTimeout(10000)
-    for (rate <- 1 until 67 by 3) { // ?? is max
+    for (rate <- 1 until 67 by 3) { // for 2x2
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(count, drain)
       val effectiveInjectionRate = injected.toDouble / count / (n * n)

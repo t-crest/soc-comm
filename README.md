@@ -179,9 +179,9 @@ To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``
  * Move (copy) the fair arbiter from the Chisel book into this repo
  * Do traffic generators like in the Dally book
  * Provide blocking in the CPU interface if not data available or TX FIFO full
-   * There is one in the Chisel book
+   * DONE 
+   * There is one in the Chisel book, compare them, maybe make them the same
  * Get one-way memory back in here
- * Wishbone wrapper
  * AXI wrapper
 
 ### Next Paper
