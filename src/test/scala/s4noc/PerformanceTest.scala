@@ -7,7 +7,7 @@ import scala.collection.mutable._
 object PerformanceTest extends App {
 
   // n * n is the number of cores
-  val n = 2
+  val n = 3
 
   def printScheduleInfo(sched: Schedule) = {
     println(sched)
