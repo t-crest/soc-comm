@@ -1,6 +1,7 @@
 package s4noc
 
 import chisel3._
+import chisel3.util.log2Ceil
 
 
 /**
@@ -39,6 +40,19 @@ class Entry[T <: Data](private val dt: T) extends Bundle {
 object Entry {
   def apply[T <: Data](dt: T) = {
     new Entry(dt)
+  }
+}
+
+class CpuNocIO[T <: Data](private val dt: T, private val conf: Config) extends Bundle {
+  val load = new Bundle {
+    val bits = Output(dt)
+    val ready = Input(new Bool())
+  }
+  // one extra bit to select between valid/data, another extra bit to allow reading cycle count mod schedule length (mod is expensive, schedule is computed using a strategy that in general is not likely to produce schedules with length that is a power of 2, even when the number of cores is a power of 2)
+  val loadFromCore = Input(UInt((log2Ceil(conf.n) + 2).W))
+  val store = new Bundle {
+    val bits = Input(dt)
+    val valid = Input(new Bool())
   }
 }
 
