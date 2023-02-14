@@ -148,19 +148,14 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Re-enable the second test in PerformanceTest
- * Major change now (partially DONE): use core id in the NI, the FIFOs, and the testers. CPU interface should be natural
-   * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
-   * NetworkInterfaceSingle needs to be changed
-   * Should also check how much HW this is, probably nothing. Max 4 LUTs for a table for 16 cores
- * Find a way to configure
- * NI should not use split buffers when size is 0
- * Find a way to receive all inserted packets, this might improve the numbers
-   * Some single packets are still left over from one run to the next
-   * Maybe this is fixed now after the FIFO fixes?
- * Have the core # to slot # mapping in HW (it should be cheap)
-   * Then change the (FIFO) buffers to include the destination instead of the time slot
-   * Is this already done?
+ * Find a way to configure FIFOs
+ * Share testing code between ideal and concrete NIs
+ * Play with configuration
+ * Check memory FIFO if it is 
+ * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
+  * NetworkInterfaceSingle needs to be changed, or a configuration of one NI
+  * Should also check how much HW the translation is, probably nothing. Max 4 LUTs for a table for 16 cores
+  * NI should not use split buffers when size is 0
  * Play with FIFO buffer variations
 
 To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``` with

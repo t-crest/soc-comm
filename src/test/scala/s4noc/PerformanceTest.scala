@@ -7,7 +7,7 @@ import scala.collection.mutable._
 object PerformanceTest extends App {
 
   // n * n is the number of cores
-  val n = 3
+  val n = 4
 
   def printScheduleInfo(sched: Schedule) = {
     println(sched)
@@ -113,7 +113,7 @@ object PerformanceTest extends App {
     val drain = 4000
     println(s"${n * n} cores with ideal queues, $heatUp heatup cycles, $count clock cycles")
     d.clock.setTimeout(10000)
-    for (rate <- 1 until 91 by 3) { // for 2x2
+    for (rate <- 25 until 26 by 3) { // for 2x2
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(heatUp, count, drain)
       val effectiveInjectionRate = injected.toDouble / (heatUp + count) / (n * n)
@@ -122,9 +122,9 @@ object PerformanceTest extends App {
     }
   }
 
-  /*
+
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, 256, 256, 256, 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, 32, 2, 32, 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
     var countCycles = 0
@@ -134,10 +134,11 @@ object PerformanceTest extends App {
       countCycles += 1
     }
 
-    def runIt(count: Int, drain: Int) = {
+    def runIt(heatUp: Int, count: Int, drain: Int) = {
 
       var injected = 0 // into the NoC
       var received = 0 // from the NoC
+      var receivedCnt = 0 // after heatup phase
       var min = 10000
       var max = 0
       var sum = 0
@@ -145,20 +146,19 @@ object PerformanceTest extends App {
       t.reset()
 
       var destCnt = 0
-      for (i <- 0 until (count + drain)) {
+      for (i <- 0 until (heatUp + count + drain)) {
         // println(s"clock cycle #: $countCycles")
-        t.tick(i < count) // only generate new traffic until drain cycles
+        t.tick(i < (heatUp + count)) // only generate new traffic until drain cycles
         for (core <- 0 until n * n) {
           val ni = d.io.networkPort(core)
           // send
           ni.tx.valid.poke(false.B)
           if (ni.tx.ready.peekBoolean()) {
-            val (data, dest) = t.getValueFromSingle(core)
-            val time = sched.coreToTimeSlot(core, dest)
+            val (dest, data) = t.getValueForCore(core)
             // printInfo(data)
             if (data != -1) {
               ni.tx.bits.data.poke(data.U)
-              ni.tx.bits.core.poke(time.U)
+              ni.tx.bits.core.poke(dest.U)
               ni.tx.valid.poke(true.B)
               injected += 1
             }
@@ -169,13 +169,18 @@ object PerformanceTest extends App {
             val recv = ni.rx.bits.data.peek.litValue.toInt
             val to = (recv >> 16) & 0x0ff
             assert(to == core, s"$to should be $core")
+            assert(t.check.contains((core, recv)), "Value out of thin air")
+            t.check.remove((core, recv))
             val latency = countCycles - (recv & 0x0ffff)
             // Ignore negative latency from packets from the former run
             // TODO: find a way to really drain the NoC
-            if (latency > 0) {
+            // if (latency > 0)
+            assert(latency > 0, "Value from last run")
+            received += 1
+            if (i > heatUp) {
               if (latency < min) min = latency
               if (latency > max) max = latency
-              received += 1
+              receivedCnt += 1
               sum += latency
             }
           }
@@ -184,25 +189,24 @@ object PerformanceTest extends App {
         slotCnt = (slotCnt + 1) % sched.len
         destCnt = (destCnt + 1) % (n * n)
       }
-      (injected, received, sum.toDouble / received, min, max)
+      // assert(t.check.size == 0, s"Check set should be empty, but is ${t.check.size}. NoC needs to be drained.")
+      (injected, received, sum.toDouble / receivedCnt, min, max)
     }
 
     println(s"${n * n} cores with different queues")
-    val count = 10000
-    val drain = 1000
+    val count = 8000
+    val heatUp = 4000
+    val drain = 6000
     d.clock.setTimeout(11000)
-    for (rate <- 1 until 32 by 5) { // ?? is max
+    for (rate <- 1 until 30 by 3) { // ?? is max
       t.reset()
       countCycles = 0
       t.injectionRate = rate.toDouble / 100
-      val (injected, received, avg, min, max) = runIt(count, drain)
-      val effectiveInjectionRate = injected.toDouble / count / (n * n)
-      // TODO: sanity check of received, nr of cores, and injection rate
+      val (injected, received, avg, min, max) = runIt(heatUp, count, drain)
+      val effectiveInjectionRate = injected.toDouble / (heatUp + count) / (n * n)
       // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
       println(s"($effectiveInjectionRate, $avg)")
     }
   }
-
-   */
 }
 

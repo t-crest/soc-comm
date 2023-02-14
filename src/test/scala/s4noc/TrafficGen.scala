@@ -11,7 +11,10 @@ import scala.util.Random
   */
 class TrafficGen(n: Int) {
 
+  // one queue per node per destination for ideal measurements
   val queues = Array.ofDim[mutable.Queue[Int]](n, n)
+  // one queue per node, including the destination
+  val mergedQueues = Array.ofDim[mutable.Queue[(Int, Int)]](n)
   val check = new mutable.HashSet[(Int, Int)]()
 
   var injectionRate = 0.0
@@ -26,12 +29,14 @@ class TrafficGen(n: Int) {
       for (j <- 0 until n) {
         queues(i)(j) = new mutable.Queue[Int]()
       }
+      mergedQueues(i) = new mutable.Queue[(Int, Int)]()
     }
   }
 
   def insertValue(from: Int, to: Int, data: Int): Unit = {
     queues(from)(to).enqueue(data)
     val v =  (to, data)
+    mergedQueues(from).enqueue(v)
     check += v
     // println(s"insert into queues: from $from to $v, check size = ${check.size}")
   }
@@ -40,6 +45,15 @@ class TrafficGen(n: Int) {
     val q = queues(from)(to)
     if (q.isEmpty) {
       -1
+    } else {
+      q.dequeue()
+    }
+  }
+
+  def getValueForCore(from: Int) = {
+    val q = mergedQueues(from)
+    if (q.isEmpty) {
+      (-1, -1)
     } else {
       q.dequeue()
     }
