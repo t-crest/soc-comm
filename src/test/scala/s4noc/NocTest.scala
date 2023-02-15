@@ -9,7 +9,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "NoC Tester"
 
   "S4NoC" should "have a simple test" in {
-    test(new S4NoCTop(Config(4, 2, 2, 2, 32))) { d =>
+    test(new S4NoCTop(Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32))) { d =>
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
       helpSnd.setDest(3)
@@ -19,7 +19,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "receive one packet, threaded" in {
-    test(new S4NoCTop(Config(4, 2, 2, 2, 32))) { d =>
+    test(new S4NoCTop(Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32))) { d =>
       // Master thread (core 0)
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
@@ -49,7 +49,7 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "have the correct sender ID in the IO register" in {
     val n = 4
-    test(new S4NoCTop(Config(n, 16, 2, 2, 32))) { d =>
+    test(new S4NoCTop(Config(n, BubbleType(16), BubbleType(2), BubbleType(2), 32))) { d =>
 
       val help = new Array[MemoryMappedIOHelper](n)
 
@@ -70,9 +70,10 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
 
+  // TODO: this test fails with BubbleType FIFOs
   it should "have the correct sender ID in the IO register, multi threaded" in {
     val n = 4
-    test(new S4NoCTop(Config(n, 16, 2, 2, 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
+    test(new S4NoCTop(Config(n, MemType(16), MemType(2), MemType(2), 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
 
       val threads = new Array[TesterThreadList](n)
       val help = new Array[MemoryMappedIOHelper](n)

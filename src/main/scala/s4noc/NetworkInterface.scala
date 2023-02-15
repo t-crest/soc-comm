@@ -53,16 +53,18 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // TX
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new MemFifo(Entry(dt), conf.txDepth))
+  val txFifo = conf.tx.getFifo(dt)
   io.networkPort.tx <> txFifo.io.enq
 
   // val toCore = translationTable(txFifo.io.deq.bits.core)
   val toCore = txFifo.io.deq.bits.core
 
   // TODO: Minimum should be a single register. Could be enough in most cases.
-  val splitBuffers = (0 until conf.n).map(_ => Module(new MemFifo(dt, conf.splitDepth)))
+  // TODO: we are wasting resources when also having the core # in this FIFO
+  val splitBuffers = (0 until conf.n).map(_ => conf.split.getFifo(dt))
   for (i <- 0 until conf.n) {
-    splitBuffers(i).io.enq.bits := txFifo.io.deq.bits.data
+    splitBuffers(i).io.enq.bits.data := txFifo.io.deq.bits.data
+    splitBuffers(i).io.enq.bits.core := i.U
   }
 
   // there must be a more elegant solution
@@ -77,7 +79,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
     enqReadyVec(i) := splitBuffers(i).io.enq.ready
     splitBuffers(i).io.enq.valid := enqValidVec(i)
     deqValidVec(i) := splitBuffers(i).io.deq.valid
-    deqDataVec(i) := splitBuffers(i).io.deq.bits
+    deqDataVec(i) := splitBuffers(i).io.deq.bits.data
     splitBuffers(i).io.deq.ready := deqReadyVec(i)
   }
   // the following is a combinational valid/ready path from a split buffer
@@ -97,8 +99,7 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   io.local.in.valid := valid
 
   // RX
-  val rxFifo = Module(new MemFifo(Entry(dt), conf.rxDepth))
-  // val rxFifo = Module(new DoubleBufferFifo(Entry(dt), conf.rxDepth))
+  val rxFifo = conf.rx.getFifo((dt))
   // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
   dontTouch(rxFifo.io.enq.ready)
   rxFifo.io.enq.valid := io.local.out.valid

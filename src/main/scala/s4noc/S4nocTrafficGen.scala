@@ -43,5 +43,5 @@ class S4nocTrafficGen(conf: Config) extends Module {
 
 object S4nocTrafficGen extends App {
   println("Generating the S4NoC hardware with a traffic generator")
-  emitVerilog(new S4nocTrafficGen(Config(args(0).toInt, 8, 8, 8, 32)), Array("--target-dir", "generated"))
+  emitVerilog(new S4nocTrafficGen(Config(args(0).toInt, BubbleType(8), BubbleType(8), BubbleType(8), 32)), Array("--target-dir", "generated"))
 }

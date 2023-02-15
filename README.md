@@ -148,7 +148,6 @@ sbt "test:runMain s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
- * Find a way to configure FIFOs
  * Share testing code between ideal and concrete NIs
  * Play with configuration
  * Check memory FIFO if it is 

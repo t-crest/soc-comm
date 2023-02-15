@@ -38,7 +38,7 @@ class S4NoC(conf: Config) extends Module  {
 }
 
 object S4NoC extends App {
-  val conf = Config(4, 2, 2, 2, 32)
+  val conf = Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32)
   emitVerilog(new S4NoC(conf), Array("--target-dir", "generated"))
 }
 

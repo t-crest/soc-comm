@@ -124,7 +124,7 @@ object PerformanceTest extends App {
 
 
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, 32, 2, 32, 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, BubbleType(32), BubbleType(2), BubbleType(32), 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
     var countCycles = 0

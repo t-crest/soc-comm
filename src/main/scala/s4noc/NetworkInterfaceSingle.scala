@@ -29,7 +29,7 @@ class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
 
   // in/out direction is from the network view
   // flipped here
-  val txFifo = Module(new BubbleFifo(Entry(dt), conf.txDepth))
+  val txFifo = conf.tx.getFifo(dt)
   io.networkPort.tx <> txFifo.io.enq
 
   // local buffer to avoid combinational ready/valid
@@ -46,7 +46,7 @@ class NetworkInterfaceSingle[T <: Data](conf: Config, dt: T) extends Module {
   io.local.in.valid := doSend
   when (doSend) { txFullReg := false.B }
 
-  val rxFifo = Module(new BubbleFifo(Entry(dt), conf.rxDepth))
+  val rxFifo = conf.rx.getFifo(dt)
 
   io.networkPort.rx <> rxFifo.io.deq
 
