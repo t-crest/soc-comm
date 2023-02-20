@@ -150,14 +150,11 @@ sbt "test:runMain s4noc.PerformanceTest"
 
  * Share testing code between ideal and concrete NIs
  * Play with configuration
- * Check memory FIFO if it is 
- * 0 split buffer should probably be just a single register, is this different from a single element BubbleFifo?
-  * NetworkInterfaceSingle needs to be changed, or a configuration of one NI
-  * Should also check how much HW the translation is, probably nothing. Max 4 LUTs for a table for 16 cores
-  * NI should not use split buffers when size is 0
+ * Check memory FIFO if it is memory in an FPGA
+ * Should also check how much HW the translation is, probably nothing. Max 4 LUTs for a table for 16 cores
  * Play with FIFO buffer variations
 
-To analyze memory issues (o increase the heap size with Xmx) use a ```.sbtopts``` with
+To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtopts``` with
 ```
 -J-XX:+HeapDumpOnOutOfMemoryError
 -J-XX:HeapDumpPath=.

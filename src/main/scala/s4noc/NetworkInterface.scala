@@ -5,8 +5,6 @@ import chisel3.util._
 import chisel.lib.fifo._
 import soc.ReadyValidChannelsIO
 
-// TODO: make this (better) configurable
-
 /**
   * Network interface (NI) for the S4NOC.
   * Contains various FIFO buffers.
@@ -101,7 +99,6 @@ class NetworkInterface[T <: Data](id: Int, conf: Config, dt: T) extends Module {
   // RX
   val rxFifo = conf.rx.getFifo((dt))
   // rxFifo.io.enq.ready is ignored. When the FIFO is full, packets are simply dropped.
-  dontTouch(rxFifo.io.enq.ready)
   rxFifo.io.enq.valid := io.local.out.valid
   rxFifo.io.enq.bits.data := io.local.out.data
   rxFifo.io.enq.bits.core := translationTableRcv(timeSlotReg)

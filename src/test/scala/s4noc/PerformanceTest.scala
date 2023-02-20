@@ -117,14 +117,14 @@ object PerformanceTest extends App {
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(heatUp, count, drain)
       val effectiveInjectionRate = injected.toDouble / (heatUp + count) / (n * n)
-      // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
-      println(s"($effectiveInjectionRate, $avg)")
+      println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+      // println(s"($effectiveInjectionRate, $avg)")
     }
   }
 
 
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, BubbleType(32), BubbleType(2), BubbleType(32), 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, RegType(32), RegType(4), RegType(32), 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
     var countCycles = 0
@@ -196,7 +196,7 @@ object PerformanceTest extends App {
     println(s"${n * n} cores with different queues")
     val count = 8000
     val heatUp = 4000
-    val drain = 6000
+    val drain = 4000
     d.clock.setTimeout(11000)
     for (rate <- 1 until 30 by 3) { // ?? is max
       t.reset()
