@@ -124,7 +124,7 @@ object PerformanceTest extends App {
 
 
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, RegType(32), RegType(4), RegType(32), 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, RegType(256), RegType(26), RegType(256), 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
     var countCycles = 0
@@ -189,23 +189,26 @@ object PerformanceTest extends App {
         slotCnt = (slotCnt + 1) % sched.len
         destCnt = (destCnt + 1) % (n * n)
       }
-      // assert(t.check.size == 0, s"Check set should be empty, but is ${t.check.size}. NoC needs to be drained.")
+      assert(t.check.size == 0, s"Check set should be empty, but is ${t.check.size}. NoC needs to be drained.")
       (injected, received, sum.toDouble / receivedCnt, min, max)
     }
 
     println(s"${n * n} cores with different queues")
     val count = 8000
     val heatUp = 4000
-    val drain = 4000
-    d.clock.setTimeout(11000)
-    for (rate <- 1 until 30 by 3) { // ?? is max
+    val drain = 20000
+    d.clock.setTimeout(200000)
+    // for (rate <- 1 until 30 by 3) { // ?? is max
+    for (count <- 8000 to 56000 by 8000) {
+      println(s"count: $count")
+      val rate = 58 // 56
       t.reset()
       countCycles = 0
       t.injectionRate = rate.toDouble / 100
       val (injected, received, avg, min, max) = runIt(heatUp, count, drain)
       val effectiveInjectionRate = injected.toDouble / (heatUp + count) / (n * n)
-      // println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
-      println(s"($effectiveInjectionRate, $avg)")
+      println(s"inserted ${t.inserted} injected: $injected received: $received requested injection rate: ${t.injectionRate} effective injection rate $effectiveInjectionRate avg: $avg, min: $min, max: $max")
+      // println(s"($effectiveInjectionRate, $avg)")
     }
   }
 }
