@@ -124,7 +124,7 @@ object PerformanceTest extends App {
 
 
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, RegType(256), RegType(26), RegType(256), 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, MemType(256), MemType(26), MemType(256), 32)), Seq(VerilatorBackendAnnotation,
     chiseltest.internal.NoThreadingAnnotation)) { d =>
 
     var countCycles = 0
@@ -199,7 +199,7 @@ object PerformanceTest extends App {
     val drain = 20000
     d.clock.setTimeout(200000)
     // for (rate <- 1 until 30 by 3) { // ?? is max
-    for (count <- 8000 to 56000 by 8000) {
+    for (count <- 8000 to 16000 by 8000) {
       println(s"count: $count")
       val rate = 58 // 56
       t.reset()

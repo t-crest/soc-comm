@@ -22,7 +22,7 @@ We may consider moving to AXI. Or better provide a bridge, as AXI is not so supe
 This project is published with Maven Central. Add following line to your ```build.sbt```
 
 ```
-libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.4"
+libraryDependencies += "io.github.t-crest" % "soc-comm" % "0.1.5"
 ```
 ## Dependency
 
@@ -143,7 +143,7 @@ clocking frequency. An Intel Qartus project is available in [quartus](quartus).
 The performance test is run as an application within the test folder:
 
 ```
-sbt "test:runMain s4noc.PerformanceTest"
+sbt "Test / run s4noc.PerformanceTest"
 ```
 
 #### TODO (S4NOC)
