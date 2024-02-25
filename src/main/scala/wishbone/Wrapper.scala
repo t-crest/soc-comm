@@ -9,7 +9,7 @@ import soc.MemoryMappedIO
   */
 class Wrapper(addrWidth: Int) extends WishboneDevice(addrWidth) {
 
-  // TODO: switch to PipeConIO at some point
+  // TODO: rename to PipeConIO at some point
   val cpuIf = IO(new Bundle {
     val cpuPort = Flipped(new MemoryMappedIO(addrWidth-2))
   })
@@ -18,6 +18,7 @@ class Wrapper(addrWidth: Int) extends WishboneDevice(addrWidth) {
 
   cp.address := wb.addr >> 2
   cp.wrData := wb.wrData
+  cp.wrMask := "b1111".U
   wb.rdData := cp.rdData
   wb.ack := cp.ack
   val cmd = wb.cyc & wb.stb

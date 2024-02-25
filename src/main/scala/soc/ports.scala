@@ -24,6 +24,7 @@ class MemoryMappedIO(private val addrWidth: Int) extends Bundle {
   val wr = Input(Bool())
   val rdData = Output(UInt(32.W))
   val wrData = Input(UInt(32.W))
+  val wrMask = Input(UInt(4.W))
   val ack = Output(Bool())
 }
 

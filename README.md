@@ -163,17 +163,19 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
 
 ## TODO
 
- * Use and document the PipeCon, direction from master
- * Integrate a simple multicore device with T-CREST
+ * [ ] Use and document the PipeCon, direction from master
+   * Or stick to the CpuInterface as it is and rename it
+ * [ ] Wrapper for OCP (in Patmos)
+ * [ ] Integrate a simple multicore device with T-CREST
    * A multicore "Hello World"
- * Run S4NOC with T-CREST
- * Move (copy) the fair arbiter from the Chisel book into this repo
- * Do traffic generators like in the Dally book
- * Provide blocking in the CPU interface if not data available or TX FIFO full
-   * DONE 
-   * There is one in the Chisel book, compare them, maybe make them the same
- * Get one-way memory back in here
- * AXI wrapper
+ * [ ] Run S4NOC with T-CREST
+ * [ ] Move (copy) the fair arbiter from the Chisel book into this repo
+ * [ ] Do traffic generators like in the Dally book
+ * [ ] Provide blocking in the CPU interface if not data available or TX FIFO full
+   * [x] DONE 
+   * [ ] There is one in the Chisel book, compare them, maybe make them the same
+ * [ ] Get one-way memory back in here
+ * [ ] AXI wrapper
 
 ### Next Paper
 
