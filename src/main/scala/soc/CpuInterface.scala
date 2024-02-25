@@ -8,7 +8,7 @@ import chisel3._
   */
 abstract class CpuInterface(addrWidth: Int) extends Module {
   val io = IO(new Bundle {
-    val cpuPort = new MemoryMappedIO(addrWidth)
+    val cpuPort = new PipeConIO(addrWidth)
   })
   val cp = io.cpuPort
 }

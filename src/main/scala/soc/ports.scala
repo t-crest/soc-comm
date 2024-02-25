@@ -18,7 +18,7 @@ import chisel3.util.DecoupledIO
   *
   * @param addrWidth width of the address part
   */
-class MemoryMappedIO(private val addrWidth: Int) extends Bundle {
+class PipeConIO(private val addrWidth: Int) extends Bundle {
   val address = Input(UInt(addrWidth.W))
   val rd = Input(Bool())
   val wr = Input(Bool())
@@ -28,12 +28,8 @@ class MemoryMappedIO(private val addrWidth: Int) extends Bundle {
   val ack = Output(Bool())
 }
 
-class MultiPortIO(private val nrPorts: Int, private val addrWidth: Int) extends Bundle {
-  val ports = Vec(nrPorts, new MemoryMappedIO(addrWidth))
-}
-
 abstract class MultiCoreDevice(nrCores: Int, addrWidth: Int) extends Module {
-  val io = IO(new MultiPortIO(nrCores, addrWidth))
+  val ports = IO(Vec(nrCores, new PipeConIO(addrWidth)))
 }
 
 /**

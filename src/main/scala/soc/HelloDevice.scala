@@ -32,6 +32,6 @@ class MultiCoreHello(nrCores: Int) extends MultiCoreDevice(nrCores, 2) {
 
   for(i <- 0 until nrCores) {
     val d = Module(new HelloDevice(i))
-    d.io.cpuPort <> io.ports(i)
+    d.io.cpuPort <> ports(i)
   }
 }

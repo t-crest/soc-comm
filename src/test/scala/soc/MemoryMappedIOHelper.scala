@@ -3,7 +3,7 @@ package soc
 import chisel3._
 import chiseltest._
 
-class MemoryMappedIOHelper(mmio: MemoryMappedIO, clock: Clock) {
+class MemoryMappedIOHelper(mmio: PipeConIO, clock: Clock) {
 
   private var clockCnt = 0
 

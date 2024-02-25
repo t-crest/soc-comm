@@ -8,14 +8,16 @@ This repo shall include all the multicore communication we have done in
 [T-CREST](https://github.com/t-crest) as a standalone repo to make the
 work more useful.
 
-Currently we plan to use a simple rd/wr/address/data/rdy interface, which maps
+We use a simple rd/wr/address/data/rdy interface, which maps
 dirctly to the Patmos OCPcore interface (A command is acked in the next
 clock cycle or later, IO devices need to be ready to accept a command
 during the ack cycle).
 
 The S4NOC has currently a slightly different interface (no rdy needed).
 
-We may consider moving to AXI. Or better provide a bridge, as AXI is not so super nice.
+The repo also contains a Wishbone wrapper.
+
+We plan to  provide a bridge to AXI, as AXI is not so super nice.
 
 ## Usage
 
@@ -51,18 +53,18 @@ For the Chisel based tests a compiler with gcc like interface is needed.
 ### The CPU Interface PipeCon
 
 For this project we define a simple pipelined IO interface, that we
-name PipeCon for pipelined connection.
+name `PipeCon` for pipelined connection.
 The interface consisting of following signals:
 
 ```scala
 class PipeConIO(private val addrWidth: Int) extends Bundle {
-   val address = Output(UInt(addrWidth.W))
-   val rd = Output(Bool())
-   val wr = Output(Bool())
-   val rdData = Input(UInt(32.W))
-   val wrData = Output(UInt(32.W))
-   val wrMask = Output(UInt(4.W))
-   val ack = Input(Bool())
+   val address = Input(UInt(addrWidth.W))
+   val rd = Input(Bool())
+   val wr = Input(Bool())
+   val rdData = Output(UInt(32.W))
+   val wrData = Input(UInt(32.W))
+   val wrMask = Input(UInt(4.W))
+   val ack = Output(Bool())
 }
 ```
 
@@ -75,14 +77,14 @@ The main rules define PipeCon:
  * An IO device can insert wait cycles by asserting `ack` later
  * The CPU may issue a new read or write command in the same cycle `ack` is asserted
 
-The PipeCon specification fits well with...
+The PipeCon specification fits well for pipelined processors,
+being parallel to the memory stage that has one clock cycle read
+latency.
 
 This definition is basically the same as the CoreIO from Patmos,
 which itself is a valid OCP interface. However, as OCP is a big specification
 and not used so much, we define here the simplified version without
 a reference to OCP.
-
-
 
 A read or write command are signaled by an asserted ```rd``` or ```wr```.
 The address and write data (if it is a write) need to be valid during
@@ -163,7 +165,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
 
 ## TODO
 
- * [ ] Use and document the PipeCon, direction from master
+ * [x] Use and document the PipeCon, direction from master
    * Or stick to the CpuInterface as it is and rename it
  * [ ] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST

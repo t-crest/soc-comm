@@ -83,7 +83,7 @@ class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
 
         def step() = dut.clock.step()
 
-        val cp = dut.io.ports
+        val cp = dut.ports
 
         def setDefault() = {
           for (i <- 0 until 3) {
