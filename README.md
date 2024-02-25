@@ -172,6 +172,8 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
    * A multicore "Hello World"
  * [ ] Run S4NOC with T-CREST
  * [ ] Move (copy) the fair arbiter from the Chisel book into this repo
+   * [ ] Write a test for the arbiter (or delegate it)
+ * [ ] Use that arbiter for access to the serial port in T-CREST (using the ip-contributions version)
  * [ ] Do traffic generators like in the Dally book
  * [ ] Provide blocking in the CPU interface if not data available or TX FIFO full
    * [x] DONE 
