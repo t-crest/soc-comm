@@ -181,6 +181,29 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
  * [ ] Get one-way memory back in here
  * [ ] AXI wrapper
 
+OCP Wrapper like this:
+
+```scala
+class S4nocOCPWrapper(nrCores: Int, txFifo: Int, rxFifo: Int) extends CmpDevice(nrCores) {
+
+  val s4noc = Module(new S4noc(nrCores, txFifo, rxFifo))
+
+  for (i <- 0 until nrCores) {
+
+    val resp = Mux(io.cores(i).M.Cmd === OcpCmd.RD || io.cores(i).M.Cmd === OcpCmd.WR,
+      OcpResp.DVA, OcpResp.NULL)
+
+    // addresses are in words
+    s4noc.io.cpuPorts(i).addr := io.cores(i).M.Addr >> 2
+    s4noc.io.cpuPorts(i).wrData := io.cores(i).M.Data
+    s4noc.io.cpuPorts(i).wr := io.cores(i).M.Cmd === OcpCmd.WR
+    s4noc.io.cpuPorts(i).rd := io.cores(i).M.Cmd === OcpCmd.RD
+    io.cores(i).S.Data := RegNext(s4noc.io.cpuPorts(i).rdData)
+    io.cores(i).S.Resp := Reg(init = OcpResp.NULL, next = resp)
+  }
+}
+```
+
 ### Next Paper
 
  * Build a standard NoC router for best effort
