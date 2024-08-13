@@ -135,11 +135,11 @@ provide a standard mapping for the ```PipeCon```, the ```PipeConRV```:
  * CPU interface to two ready/valid channels (one for transmit/tx, one for receive/rx).
  * IO mapping as in the classic PC serial port (UART)
  * 0: status (control): bit 0 tx ready, bit 1 rx data available
- * 1: write into txd and read from rxd
+ * 4: write into txd and read from rxd
 
 Additionally, for the S4NOC we provide following port:
 
- * 2: write receiver, read sender (S4NOC specific)
+ * 8: write receiver, read sender (S4NOC specific)
 
 
 
@@ -193,7 +193,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
 ## TODO
 
  * [x] Use and document the PipeCon, direction from slave
-   * Or stick to the CpuInterface as it is and rename it
+ * [ ] Use a better name for the PipeCon interface (not io)
  * [ ] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST
    * A multicore "Hello World"
@@ -221,7 +221,7 @@ class S4nocOCPWrapper(nrCores: Int, txFifo: Int, rxFifo: Int) extends CmpDevice(
       OcpResp.DVA, OcpResp.NULL)
 
     // addresses are in words
-    s4noc.io.cpuPorts(i).addr := io.cores(i).M.Addr >> 2
+    s4noc.io.cpuPorts(i).addr := io.cores(i).M.Addr
     s4noc.io.cpuPorts(i).wrData := io.cores(i).M.Data
     s4noc.io.cpuPorts(i).wr := io.cores(i).M.Cmd === OcpCmd.WR
     s4noc.io.cpuPorts(i).rd := io.cores(i).M.Cmd === OcpCmd.RD

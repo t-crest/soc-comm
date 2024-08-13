@@ -11,12 +11,12 @@ class Wrapper(addrWidth: Int) extends WishboneDevice(addrWidth) {
 
   // TODO: rename to PipeConIO at some point
   val cpuIf = IO(new Bundle {
-    val cpuPort = Flipped(new PipeConIO(addrWidth-2))
+    val cpuPort = Flipped(new PipeConIO(addrWidth))
   })
   val cp = cpuIf.cpuPort
   val wb = io.port
 
-  cp.address := wb.addr >> 2
+  cp.address := wb.addr
   cp.wrData := wb.wrData
   cp.wrMask := "b1111".U
   wb.rdData := cp.rdData

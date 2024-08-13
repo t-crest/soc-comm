@@ -5,14 +5,14 @@ import chisel3._
 /**
   * An minimal IO device.
   * It contains a single register to write and read at address 0
-  * and the read-only core ID at address 1.
+  * and the read-only core ID at address 4.
   *
   * @param coreId
   */
-class HelloDevice(coreId: Int) extends PipeCon(2) {
+class HelloDevice(coreId: Int) extends PipeCon(3) {
 
-  // TODO: following five lines are duplicated in CpuInterfaceRV, back to CpuInterface?
-  val addrReg = RegInit(0.U(2.W))
+  // TODO: following five lines are duplicated in PipeConRV, back to PipeCon class?
+  val addrReg = RegInit(0.U(3.W))
   val ackReg = RegInit(false.B)
   when (cp.rd) {
     addrReg := cp.address
@@ -25,10 +25,10 @@ class HelloDevice(coreId: Int) extends PipeCon(2) {
     reg := cp.wrData
   }
   ackReg := cp.wr || cp.rd
-  cp.rdData := Mux(addrReg === 1.U, nr, reg)
+  cp.rdData := Mux(addrReg === 4.U, nr, reg)
 }
 
-class MultiCoreHello(nrCores: Int) extends MultiCoreDevice(nrCores, 2) {
+class MultiCoreHello(nrCores: Int) extends MultiCoreDevice(nrCores, 3) {
 
   for(i <- 0 until nrCores) {
     val d = Module(new HelloDevice(i))

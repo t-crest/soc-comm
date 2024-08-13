@@ -191,11 +191,11 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
 
         d.clock.step()
         d.cp.ack.expect(false.B)
-        helper.write(2, 0x12)
-        helper.write(1, 0x34)
+        helper.write(8, 0x12)
+        helper.write(4, 0x34)
         // should come back on the RX port
-        assert(helper.read(1) == 0x34)
-        assert(helper.read(2) == 0x12)
+        assert(helper.read(4) == 0x34)
+        assert(helper.read(8) == 0x12)
       }
     }
   }

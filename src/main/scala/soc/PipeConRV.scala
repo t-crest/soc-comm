@@ -8,12 +8,13 @@ import s4noc.Entry
   * CPU interface to two ready/valid channels.
   * IO mapping as in classic PC serial port
   * 0: status (control): bit 0 transmit ready, bit 1 rx data available
-  * 1: txd and rxd
-  * 2: write receiver, read sender
+  * 4: txd and rxd
+ * S4NOC:
+  * 8: write receiver, read sender
   * TODO: compare with Chisel book version
   * TODO: make it generic and do a subtype for s4noc
   */
-class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false ) extends PipeCon(addrWidth) {
+class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false) extends PipeCon(addrWidth) {
 
   val rv = IO(new ReadyValidChannelsIO(dt))
 
@@ -52,7 +53,7 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
   def idleReaction() = {
     when (cp.wr) {
       // printf("Write %d to %d\n", cp.wrData, cp.address)
-      when (cp.address === 2.U) {
+      when (cp.address === 8.U) {
         txDestReg := cp.wrData
         ackReg := true.B
       } .otherwise {
@@ -70,7 +71,7 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
       when (cp.address === 0.U) {
         stateReg := readStatus
         ackReg := true.B
-      } .elsewhen (cp.address === 2.U) {
+      } .elsewhen (cp.address === 8.U) {
         stateReg := readSource
         ackReg := true.B
       } .otherwise {

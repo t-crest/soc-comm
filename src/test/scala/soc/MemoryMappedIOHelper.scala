@@ -51,12 +51,12 @@ class MemoryMappedIOHelper(mmio: PipeConIO, clock: Clock) {
     waitForAck()
   }
 
-  def setDest(n: Int) = write(2, n)
-  def getSender() = read(2)
+  def setDest(n: Int) = write(8, n)
+  def getSender() = read(8)
 
   // send and receive without status check, may block
-  def send(data: BigInt) = write(1, data)
-  def receive = read(1)
+  def send(data: BigInt) = write(4, data)
+  def receive = read(4)
 
   // The following functions use the IO mapping with status bits add address 0 and data at address 1
   def txRdy = (read(0) & 0x01) != 0

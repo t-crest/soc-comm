@@ -11,6 +11,7 @@ abstract class PipeCon(addrWidth: Int) extends Module {
     val cpuPort = new PipeConIO(addrWidth)
   })
   val cp = io.cpuPort
+  assert(addrWidth >= 2, "Address width needs some size for byte addresses")
 }
 
 

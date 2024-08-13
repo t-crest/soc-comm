@@ -5,7 +5,7 @@ import soc._
 
 
 /**
-  * Top level of the S4NOC with CPU interfaces.
+  * Top level of the S4NOC with PipeCon CPU interfaces.
   *
   * Author: Martin Schoeberl (martin@jopdesign.com)
   * license see LICENSE
@@ -19,7 +19,7 @@ class S4NoCTop(conf: Config) extends Module  {
 
   val s4noc = Module(new S4NoC(conf))
   for (i <- 0 until conf.n) {
-    val ci = Module(new PipeConRV(conf.width, Entry(UInt(conf.width.W)), true))
+    val ci = Module(new PipeConS4NoC(conf.width, Entry(UInt(conf.width.W))))
     s4noc.io.networkPort(i) <> ci.rv
     io.cpuPorts(i) <> ci.io.cpuPort
   }
