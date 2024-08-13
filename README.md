@@ -68,6 +68,17 @@ class PipeConIO(private val addrWidth: Int) extends Bundle {
 }
 ```
 
+```PipeCon``` itself is an abstract class, just containing  the interface:
+
+```scala
+abstract class PipeCon(addrWidth: Int) extends Module {
+  val io = IO(new Bundle {
+    val cpuPort = new PipeConIO(addrWidth)
+  })
+  val cp = io.cpuPort
+}
+```
+
 The main rules define PipeCon:
 
  * There are two transactions: read and write
@@ -115,6 +126,22 @@ The Patmos processor uses an OCP version with exact this
 protocol for accessing IO devices (OCPcore). Memory is connected via a burst interface.
 The Patmos Handbook gives a detailed description of the
 used OCP interfaces.
+
+#### Ready/Valid Interface
+
+For IO devices with a ready/valid interface (Chisel ```Decoupled```) we
+provide a standard mapping for the ```PipeCon```, the ```PipeConRV```:
+
+ * CPU interface to two ready/valid channels (one for transmit/tx, one for receive/rx).
+ * IO mapping as in the classic PC serial port (UART)
+ * 0: status (control): bit 0 tx ready, bit 1 rx data available
+ * 1: write into txd and read from rxd
+
+Additionally, for the S4NOC we provide following port:
+
+ * 2: write receiver, read sender (S4NOC specific)
+
+
 
 ### S4NOC
 
@@ -165,7 +192,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
 
 ## TODO
 
- * [x] Use and document the PipeCon, direction from master
+ * [x] Use and document the PipeCon, direction from slave
    * Or stick to the CpuInterface as it is and rename it
  * [ ] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST

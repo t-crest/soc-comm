@@ -7,11 +7,11 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import s4noc.Entry
 
-class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
+class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterfaceRV"
 
   it should "do something" in {
-    test(new CpuInterfaceRV(4, UInt(32.W))) {
+    test(new PipeConRV(4, UInt(32.W))) {
       d => {
 
         def step() = d.clock.step()
@@ -58,8 +58,8 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Connect a CPU interface to a FIFO
-  class MyModule() extends CpuInterface(4) {
-    val cpif = Module(new CpuInterfaceRV(4, UInt(32.W)))
+  class MyModule() extends PipeCon(4) {
+    val cpif = Module(new PipeConRV(4, UInt(32.W)))
     val fifo = Module(new BubbleFifo(UInt(32.W), 4))
     io.cpuPort <> cpif.io.cpuPort
     cpif.tx <> fifo.io.enq
@@ -95,8 +95,8 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
       val cpA = new PipeConIO(4)
       val cpB = new PipeConIO(4)
     })
-    val cpifA = Module(new CpuInterfaceRV(4, UInt(32.W)))
-    val cpifB = Module(new CpuInterfaceRV(4, UInt(32.W)))
+    val cpifA = Module(new PipeConRV(4, UInt(32.W)))
+    val cpifB = Module(new PipeConRV(4, UInt(32.W)))
     val fifoA = Module(new MemFifo(UInt(32.W), 4))
     val fifoB = Module(new MemFifo(UInt(32.W), 4))
 
@@ -176,10 +176,10 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Connect a CPU interface to a FIFO with Entry
-  class MyModule3() extends CpuInterface(4) {
-    val cpif = Module(new CpuInterfaceRV(4, Entry(UInt(32.W)), true))
+  class MyModule3() extends PipeCon(4) {
+    val cpif = Module(new PipeConRV(4, Entry(UInt(32.W)), true))
     val fifo = Module(new BubbleFifo(Entry(UInt(32.W)), 4))
-    io.cpuPort <> cpif.io.cpuPort
+    cp <> cpif.io.cpuPort
     cpif.tx <> fifo.io.enq
     cpif.rx <> fifo.io.deq
   }
@@ -187,12 +187,10 @@ class CpuInterfaceRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "do work with a S4NOC Entry" in {
     test(new MyModule3()).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
-
-        val cp = d.io.cpuPort
         val helper = new MemoryMappedIOHelper(d.cp, d.clock)
 
         d.clock.step()
-        cp.ack.expect(false.B)
+        d.cp.ack.expect(false.B)
         helper.write(2, 0x12)
         helper.write(1, 0x34)
         // should come back on the RX port

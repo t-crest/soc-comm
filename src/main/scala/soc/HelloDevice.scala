@@ -9,7 +9,7 @@ import chisel3._
   *
   * @param coreId
   */
-class HelloDevice(coreId: Int) extends CpuInterface(2) {
+class HelloDevice(coreId: Int) extends PipeCon(2) {
 
   // TODO: following five lines are duplicated in CpuInterfaceRV, back to CpuInterface?
   val addrReg = RegInit(0.U(2.W))
