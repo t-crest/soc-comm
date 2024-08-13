@@ -3,7 +3,7 @@ all: doit test
 
 # Generate Verilog code
 doit:
-	sbt "runMain s4noc.S4nocTrafficGen 9"
+	sbt "runMain s4noc.S4NoCVerilogGen 9"
 
 # Run the tests
 
