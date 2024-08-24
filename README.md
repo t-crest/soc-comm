@@ -139,7 +139,7 @@ provide a standard mapping for the ```PipeCon```, the ```PipeConRV```:
 
 Additionally, for the S4NOC we provide following port:
 
- * 8: write receiver, read sender (S4NOC specific)
+ * 8: write destination, read source (S4NOC specific)
 
 
 
