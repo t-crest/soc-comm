@@ -103,7 +103,7 @@ class Schedule(val n: Int) {
     schedule.foreach(a => {
       s += "( "
       a.foreach(v => {
-        s += v + " "
+        s += s"$v "
       })
       s += ")\n"
     })

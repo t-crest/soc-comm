@@ -21,7 +21,7 @@ class NITester extends AnyFlatSpec with ChiselScalatestTester {
       for (i <- 1 until 30) {
         dut.clock.step()
         dut.io.networkPort.tx.valid.poke(false.B)
-        if (dut.io.local.in.data.peek.litValue == 1) pass = true
+        if (dut.io.local.in.data.peekInt() == 1) pass = true
        }
       assert(pass)
     }

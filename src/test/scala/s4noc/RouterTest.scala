@@ -35,7 +35,7 @@ class RouterTest extends AnyFlatSpec with ChiselScalatestTester {
         c.io.ports(3).in.valid.poke(true.B)
         c.io.ports(4).in.valid.poke(true.B)
         c.clock.step(1)
-        println(f"${c.io.ports(0).out.data.peek.litValue.toInt}%02x ${c.io.ports(0).out.valid.peek.litValue}")
+        println(f"${c.io.ports(0).out.data.peekInt()}%02x ${c.io.ports(0).out.valid.peekInt()}")
       }
       // TODO: these are NOT manually verified, but from the printout
       c.io.ports(0).out.data.expect(0x57.U)

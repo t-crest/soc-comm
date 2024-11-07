@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
  * Test a 2x2 Network.
  */
 
-class NetworkTest extends AnyFlatSpec with ChiselScalatestTester {
+class NetworkTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "2x2 Network"
 
   "the NoC" should "work" in {
@@ -23,9 +23,9 @@ class NetworkTest extends AnyFlatSpec with ChiselScalatestTester {
         }
         dut.clock.step(1)
         for (j <- 0 until 4) {
-          print(dut.io.local(j).out.valid.peek.litValue + " " + dut.io.local(j).out.data.peek.litValue + " ")
+          print(s"${dut.io.local(j).out.valid.peekInt()}  ${dut.io.local(j).out.data.peekInt()} ")
         }
-        println
+        println()
       }
       dut.io.local(0).out.data.expect(0x24.U)
     }
@@ -83,8 +83,8 @@ class NetworkTest extends AnyFlatSpec with ChiselScalatestTester {
           var cnt = 0
           val port = dut.io.local(core).out
           for (i <- 0 until TESTS + tdmLength) {
-            val valid = port.valid.peek.litToBoolean
-            val data = port.data.peek.litValue.toInt
+            val valid = port.valid.peekBoolean()
+            val data = port.data.peekInt().toInt
             val sndCnt = data >> 16
             val sndCore = (data >> 8) & 0xff
             val dest = data & 0xff
@@ -108,7 +108,7 @@ class NetworkTest extends AnyFlatSpec with ChiselScalatestTester {
         def dump(): Unit = {
           for (i <- 0 until n * n) {
             for (j <- 0 until 5) {
-              // print(s"$i $j ${dut.net(i).io.ports(j).out.data.peek.litValue()} | ")
+              // print(s"$i $j ${dut.net(i).io.ports(j).out.data.peekInt} | ")
             }
             // println
           }

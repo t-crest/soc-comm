@@ -44,7 +44,8 @@ object PerformanceTest extends App {
   /**
     * This is the interface directly to the network without an NI, or a CPU interface.
     */
-  RawTester.test(new Network(n, UInt(32.W)), Seq(VerilatorBackendAnnotation, chiseltest.internal.NoThreadingAnnotation)
+  // RawTester.test(new Network(n, UInt(32.W)), Seq(VerilatorBackendAnnotation, chiseltest.internal.NoThreadingAnnotation)
+  RawTester.test(new Network(n, UInt(32.W))
     ) { d =>
 
     def runIt(heatUp: Int, count: Int, drain: Int) = {
@@ -124,8 +125,8 @@ object PerformanceTest extends App {
 
 
   // Maybe this should go into its own class
-  RawTester.test(new S4NoC(Config(n * n, MemType(256), MemType(26), MemType(256), 32)), Seq(VerilatorBackendAnnotation,
-    chiseltest.internal.NoThreadingAnnotation)) { d =>
+  // RawTester.test(new S4NoC(Config(n * n, MemType(256), MemType(26), MemType(256), 32)), Seq(VerilatorBackendAnnotation,
+  RawTester.test(new S4NoC(Config(n * n, MemType(256), MemType(26), MemType(256), 32))) { d =>
 
     var countCycles = 0
 
@@ -166,7 +167,7 @@ object PerformanceTest extends App {
           // receive
           ni.rx.ready.poke(true.B)
           if (ni.rx.valid.peekBoolean()) {
-            val recv = ni.rx.bits.data.peek.litValue.toInt
+            val recv = ni.rx.bits.data.peekInt().toInt
             val to = (recv >> 16) & 0x0ff
             assert(to == core, s"$to should be $core")
             assert(t.check.contains((core, recv)), "Value out of thin air")

@@ -7,7 +7,7 @@ import soc._
 /**
   * Do some performance/latency tests.
   */
-class LatencyTest extends AnyFlatSpec with ChiselScalatestTester {
+class LatencyTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTester {
 
   behavior of "S4NoC"
 
@@ -33,7 +33,7 @@ class LatencyTest extends AnyFlatSpec with ChiselScalatestTester {
         assert(d.toInt == data(i))
       }
       println("" + CNT + " words sent")
-      println("Bandwidth = " + (d.io.cycCnt.peek.litValue.toFloat / CNT) + " clock cycles per word")
+      println("Bandwidth = " + (d.io.cycCnt.peekInt().toFloat / CNT) + " clock cycles per word")
 
       th.join()
     }

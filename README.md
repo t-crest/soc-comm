@@ -177,11 +177,13 @@ sbt "Test / run s4noc.PerformanceTest"
 
 #### TODO (S4NOC)
 
+ * NetworkTest and LatencyTest disabled, as they (now) run too long
  * Share testing code between ideal and concrete NIs
  * Play with configuration
  * Check memory FIFO if it is memory in an FPGA
  * Should also check how much HW the translation is, probably nothing. Max 4 LUTs for a table for 16 cores
  * Play with FIFO buffer variations
+ * Have Raw tester with Verilator annotation
 
 To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtopts``` with
 ```
