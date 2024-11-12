@@ -74,15 +74,19 @@ class TopTest extends Module {
 }
 class TestSpiMaster extends AnyFlatSpec with ChiselScalatestTester {
 
+  /*
   "SpiMaster" should "work" in {
     test(new SpiMaster).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       dut.clock.step(20)
     }
   }
 
+   */
+
   "TopTest" should "work" in {
     test(new TopTest).withAnnotations(Seq(WriteVcdAnnotation, IcarusBackendAnnotation)) { dut =>
-      dut.clock.step(400)
+      dut.clock.setTimeout(1500001)
+      dut.clock.step(1500000)
     }
   }
 }

@@ -16,7 +16,7 @@ class SpiMaster extends Module {
   })
 
   object State extends ChiselEnum {
-    val idle, tx1, tx2, rx1, rx2 = Value
+    val start, idle, tx1, tx2, rx1, rx2 = Value
   }
   import State._
   val state = RegInit(idle)
@@ -25,7 +25,8 @@ class SpiMaster extends Module {
   val mosiReg = RegInit(0.U(8.W))
   val misoReg = RegInit(0.U(8.W))
   val bitsReg = RegInit(0.U(8.W))
-  val cntReg = RegInit(0.U(8.W))
+  val cntReg = RegInit(0.U(32.W))
+  val CNT_MAX = 9000.U
 
 
   spi.ncs := 1.U
@@ -33,26 +34,40 @@ class SpiMaster extends Module {
   spi.mosi := mosiReg(7)
   io.dataOut := misoReg
 
-  val JTAG_ID = 0x9f.U
+  // val JTAG_ID = 0x90.U
+  val JTAG_ID = 0xab.U
+  val RD_STATUS = 0x05.U
   val RDSR = 0x05.U
   val READ = 0x03.U
 
   switch(state) {
+    is(start) {
+      spi.ncs := 1.U
+      spi.sclk := 0.U
+      cntReg := cntReg + 1.U
+      when(cntReg === CNT_MAX) {
+        state := idle
+        cntReg := 0.U
+      }
+    }
     is(idle) {
       spi.ncs := 1.U
       spi.sclk := 0.U
-      when(true.B) {
+      cntReg := cntReg + 1.U
+      when(cntReg === CNT_MAX) {
+        // when data is available
         state := tx1
         bitsReg := 7.U
         cntReg := 0.U
         mosiReg := JTAG_ID
       }
+
     }
     is(tx1) {
       spi.ncs := 0.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
-      when(cntReg === 3.U) {
+      when(cntReg === CNT_MAX) {
         state := tx2
         cntReg := 0.U
       }
@@ -61,7 +76,7 @@ class SpiMaster extends Module {
       spi.ncs := 0.U
       spi.sclk := 1.U
       cntReg := cntReg + 1.U
-      when(cntReg === 3.U) {
+      when(cntReg === CNT_MAX) {
         state := tx1
         cntReg := 0.U
         mosiReg := mosiReg(6, 0) ## 0.U // io.dataIn(7))
@@ -75,7 +90,7 @@ class SpiMaster extends Module {
       spi.ncs := 0.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
-      when(cntReg === 3.U) {
+      when(cntReg === CNT_MAX) {
         state := rx2
         cntReg := 0.U
         bitsReg := bitsReg - 1.U
@@ -88,7 +103,7 @@ class SpiMaster extends Module {
       spi.ncs := 0.U
       spi.sclk := 1.U
       cntReg := cntReg + 1.U
-      when(cntReg === 3.U) {
+      when(cntReg === CNT_MAX) {
         state := rx1
         cntReg := 0.U
         bitsReg := bitsReg - 1.U

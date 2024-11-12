@@ -34,10 +34,17 @@ synth:
 
 cp-bit:
 	-mkdir build
-	scp masca@chipdesign1.compute.dtu.dk:~/source/wildcat/build/$(HW).bit build
+	scp masca@chipdesign1.compute.dtu.dk:~/t-crest/soc-comm/build/$(HW).bit build
 # Configure the Basys3 or NexysA7 board with open source tools
 config:
 	openocd -f 7series.txt
+
+# serial port on Mac
+listen:
+	ls /dev/tty.*
+	screen /dev/tty.usbserial-210292B408601 115200
+
+# stop with Ctrl+A and Ctrl+\
 
 clean:
 	git clean -fd

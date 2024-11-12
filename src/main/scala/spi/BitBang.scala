@@ -26,7 +26,7 @@ class BitBang(frequ: Int) extends Module {
   io.tx := tx.io.txd
   rx.io.rxd := io.rx
 
-  tx.io.channel.bits := '0'.U + io.sw
+  tx.io.channel.bits := '0'.U + io.miso
   tx.io.channel.valid := rx.io.channel.valid
   rx.io.channel.ready := true.B
   val regVal = RegEnable('0'.U + rx.io.channel.bits(3, 0), rx.io.channel.valid)
