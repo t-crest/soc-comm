@@ -21,7 +21,6 @@ class SpiMaster extends Module {
   import State._
   val state = RegInit(idle)
 
-  val (x, y) = Counter(true.B, 10)
   val mosiReg = RegInit(0.U(8.W))
   val misoReg = RegInit(0.U(8.W))
   val bitsReg = RegInit(0.U(8.W))
@@ -30,7 +29,7 @@ class SpiMaster extends Module {
 
 
   spi.ncs := 1.U
-  spi.sclk := x
+  spi.sclk := 0.U
   spi.mosi := mosiReg(7)
   io.dataOut := misoReg
 
