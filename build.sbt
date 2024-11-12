@@ -29,6 +29,8 @@ developers := List(Developer("schoeberl", "schoeberl", "martin@jopdesign.com", u
 licenses += ("BSD-2-Clause", url("https://opensource.org/licenses/BSD-2-Clause"))
 publishMavenStyle := true
 
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
+
 // disable publishw ith scala version, otherwise artifact name will include scala version
 // e.g cassper_2.11
 crossPaths := false

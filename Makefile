@@ -24,5 +24,20 @@ latency:
 vcd:
 	sbt "testOnly chisel3.tests.BasicTest -- -DwriteVcd=1"
 
+synpath:
+	source /home/shared/Xilinx/Vivado/2017.4/settings64.sh
+
+HW = BitBang
+
+synth:
+	./vivado_synth.sh -t $(HW) -p xc7a100tcsg324-1 -x nexysA7.xdc -o build generated/$(HW).v
+
+cp-bit:
+	-mkdir build
+	scp masca@chipdesign1.compute.dtu.dk:~/source/wildcat/build/$(HW).bit build
+# Configure the Basys3 or NexysA7 board with open source tools
+config:
+	openocd -f 7series.txt
+
 clean:
 	git clean -fd
