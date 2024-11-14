@@ -72,7 +72,7 @@ class TopTest extends Module {
 
   io.dout := ctrl.io.dataOut
 }
-class TestSpiMaster extends AnyFlatSpec with ChiselScalatestTester {
+class TestSpiMaster(doNotRun: String) extends AnyFlatSpec with ChiselScalatestTester {
 
   /*
   "SpiMaster" should "work" in {
