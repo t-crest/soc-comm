@@ -85,8 +85,8 @@ class TestSpiMaster extends AnyFlatSpec with ChiselScalatestTester {
 
   "TopTest" should "work" in {
     test(new TopTest).withAnnotations(Seq(WriteVcdAnnotation, IcarusBackendAnnotation)) { dut =>
-      dut.clock.setTimeout(1500001)
-      dut.clock.step(1500000)
+      dut.clock.setTimeout(10001)
+      dut.clock.step(10000)
     }
   }
 }

@@ -27,7 +27,7 @@ vcd:
 synpath:
 	source /home/shared/Xilinx/Vivado/2017.4/settings64.sh
 
-HW = BitBang
+HW = UartDebug
 
 synth:
 	./vivado_synth.sh -t $(HW) -p xc7a100tcsg324-1 -x nexysA7.xdc -o build generated/$(HW).v

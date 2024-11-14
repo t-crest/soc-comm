@@ -25,7 +25,7 @@ class SpiMaster extends Module {
   val misoReg = RegInit(0.U(8.W))
   val bitsReg = RegInit(0.U(8.W))
   val cntReg = RegInit(0.U(32.W))
-  val CNT_MAX = 9000.U
+  val CNT_MAX = 100.U
 
 
   spi.ncs := 1.U
@@ -54,7 +54,7 @@ class SpiMaster extends Module {
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
-        // when data is available
+        // + when data is available
         state := tx1
         bitsReg := 7.U
         cntReg := 0.U
@@ -82,20 +82,20 @@ class SpiMaster extends Module {
         bitsReg := bitsReg - 1.U
         when(bitsReg === 0.U) {
           state := rx1
+          bitsReg := 7.U
         }
       }
     }
+    // maybe one tick earlier
     is(rx1) {
       spi.ncs := 0.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
+        misoReg := misoReg(7, 1) ## spi.miso
         state := rx2
         cntReg := 0.U
         bitsReg := bitsReg - 1.U
-        when(bitsReg === 0.U) {
-          state := rx1
-        }
       }
     }
     is(rx2) {
@@ -106,8 +106,6 @@ class SpiMaster extends Module {
         state := rx1
         cntReg := 0.U
         bitsReg := bitsReg - 1.U
-        // probably wrong bit order
-        misoReg := spi.miso ## misoReg(7, 1)
         when(bitsReg === 0.U) {
           state := idle
         }

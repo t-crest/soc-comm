@@ -14,6 +14,7 @@ libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.6.2"
 
 // For FIFO buffers
 libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "0.6.1"
+libraryDependencies += "com.fazecast" % "jSerialComm" % "[2.0.0,3.0.0)"
 
 // library name
 name := "soc-comm"
