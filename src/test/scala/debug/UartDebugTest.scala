@@ -10,8 +10,8 @@ class UartDebugTestTop extends Module {
   val io = IO(new Bundle {
     val inRx = new UartIO()
     val outTx = Flipped(new UartIO())
-    val dout = Output(UInt(32.W))
-    val din = Input(UInt(32.W))
+    // val dout = Output(UInt(32.W))
+    // val din = Input(UInt(32.W))
   })
 
   val tx = Module(new BufferedTx(100000000, 100000000/16))
@@ -24,20 +24,29 @@ class UartDebugTestTop extends Module {
 
   dbg.io.rx := tx.io.txd
   rx.io.rxd := dbg.io.tx
-  io.dout := dbg.io.dout
-  dbg.io.din := io.din
+  dbg.io.din := ~dbg.io.dout
 }
 
 class UartDebugTest extends AnyFlatSpec with ChiselScalatestTester {
   "UartDebug" should "work" in {
     test(new UartDebugTestTop()).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-      dut.io.din.poke(0xabcd.U)
-      dut.clock.setTimeout(10001)
-      dut.io.outTx.valid.poke(true.B)
-      dut.io.outTx.bits.poke(0x42.U)
-      dut.clock.step(10)
-      dut.io.outTx.valid.poke(false.B)
-      dut.clock.step(1000)
+      def write(c: Char): Unit = {
+        dut.io.outTx.valid.poke(true.B)
+        dut.io.outTx.bits.poke(c.U)
+        while (!dut.io.outTx.ready.peekBoolean()) {
+          dut.clock.step(1)
+        }
+        dut.clock.step(1)
+        dut.io.outTx.valid.poke(false.B)
+      }
+
+      val s = "w123xabc\r r "
+      for (c <- s) {
+        write(c)
+      }
+      dut.clock.setTimeout(0)
+      // TODO: real checks would be nice, not jst waveform inspection
+      dut.clock.step(5000)
     }
   }
 }
