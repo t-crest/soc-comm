@@ -157,7 +157,3 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
   }
   io.dout := doutReg
 }
-
-object UartDebug extends App {
-  emitVerilog(new UartDebug(100000000),  Array("--target-dir", "generated"))
-}
