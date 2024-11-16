@@ -36,7 +36,7 @@ class BitBang(frequ: Int) extends Module {
   val valReg = RegInit(0.U(32.W))
   valReg := dbg.io.dout
 
-  io.led := io.flash.miso ## valReg(2, 0) ## io.sram.miso ## valReg(2, 0) ## io.accell.miso ## valReg(2, 0)
+  io.led := io.sram.miso ## valReg(10, 8) ## io.flash.miso ## valReg(6, 4) ## io.accell.miso ## valReg(2, 0)
 
   io.accell.sclk := valReg(0)
   io.accell.mosi := valReg(1)
