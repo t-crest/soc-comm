@@ -31,7 +31,7 @@ class BitBang(frequ: Int) extends Module {
   dbg.io.rx := io.rx
   io.tx := dbg.io.tx
 
-  dbg.io.din := 0.U
+
 
   val valReg = RegInit(0.U(32.W))
   valReg := dbg.io.dout
@@ -41,7 +41,6 @@ class BitBang(frequ: Int) extends Module {
   io.accell.sclk := valReg(0)
   io.accell.mosi := valReg(1)
   io.accell.ncs := valReg(2)
-  dbg.io.din(3) := io.accell.miso
 
   io.flash.sclk := valReg(4)
   io.flash.mosi := valReg(5)
@@ -50,6 +49,8 @@ class BitBang(frequ: Int) extends Module {
   io.sram.sclk := valReg(8)
   io.sram.mosi := valReg(9)
   io.sram.ncs := valReg(10)
+
+  dbg.io.din := io.sram.miso ## 0.U(3.W) ## io.flash.miso ## 0.U(3.W) ## io.accell.miso ## 0.U(3.W)
 }
 
 // generate Verilog
