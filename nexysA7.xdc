@@ -87,10 +87,14 @@ set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports { reset 
 
 ##Pmod Headers
 ##Pmod Header JA
-set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { io_ncs }]; #IO_L20N_T3_A19_15 Sch=ja[1]
-set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { io_mosi }]; #IO_L21N_T3_DQS_A18_15 Sch=ja[2]
-set_property -dict { PACKAGE_PIN E18   IOSTANDARD LVCMOS33 } [get_ports { io_miso }]; #IO_L21P_T3_DQS_15 Sch=ja[3]
-set_property -dict { PACKAGE_PIN G17   IOSTANDARD LVCMOS33 } [get_ports { io_sck }]; #IO_L18N_T2_A23_15 Sch=ja[4]
+set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { io_sram_ncs }]; #IO_L20N_T3_A19_15 Sch=ja[1]
+set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { io_sram_mosi }]; #IO_L21N_T3_DQS_A18_15 Sch=ja[2]
+set_property -dict { PACKAGE_PIN E18   IOSTANDARD LVCMOS33 } [get_ports { io_sram_miso }]; #IO_L21P_T3_DQS_15 Sch=ja[3]
+set_property -dict { PACKAGE_PIN G17   IOSTANDARD LVCMOS33 } [get_ports { io_sram_sclk }]; #IO_L18N_T2_A23_15 Sch=ja[4]
+set_property -dict { PACKAGE_PIN D17   IOSTANDARD LVCMOS33 } [get_ports { io_flash_ncs }]; #IO_L16N_T2_A27_15 Sch=ja[7]
+set_property -dict { PACKAGE_PIN E17   IOSTANDARD LVCMOS33 } [get_ports { io_flash_mosi }]; #IO_L16P_T2_A28_15 Sch=ja[8]
+set_property -dict { PACKAGE_PIN F18   IOSTANDARD LVCMOS33 } [get_ports { io_flash_miso }]; #IO_L22N_T3_A16_15 Sch=ja[9]
+set_property -dict { PACKAGE_PIN G18   IOSTANDARD LVCMOS33 } [get_ports { io_flash_sclk }]; #IO_L22P_T3_A17_15 Sch=ja[10]
 #set_property -dict { PACKAGE_PIN C17   IOSTANDARD LVCMOS33 } [get_ports { JA[1] }]; #IO_L20N_T3_A19_15 Sch=ja[1]
 #set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { JA[2] }]; #IO_L21N_T3_DQS_A18_15 Sch=ja[2]
 #set_property -dict { PACKAGE_PIN E18   IOSTANDARD LVCMOS33 } [get_ports { JA[3] }]; #IO_L21P_T3_DQS_15 Sch=ja[3]
@@ -172,10 +176,10 @@ set_property -dict { PACKAGE_PIN B12   IOSTANDARD LVCMOS33 } [get_ports { vga_vs
 #set_property -dict { PACKAGE_PIN D2    IOSTANDARD LVCMOS33 } [get_ports { SD_DAT[3] }]; #IO_L14N_T2_SRCC_35 Sch=sd_dat[3]
 
 ##Accelerometer
-set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { io_miso }]; #IO_L11P_T1_SRCC_15 Sch=acl_miso
-set_property -dict { PACKAGE_PIN F14   IOSTANDARD LVCMOS33 } [get_ports { io_mosi }]; #IO_L5N_T0_AD9N_15 Sch=acl_mosi
-set_property -dict { PACKAGE_PIN F15   IOSTANDARD LVCMOS33 } [get_ports { io_sck }]; #IO_L14P_T2_SRCC_15 Sch=acl_sclk
-set_property -dict { PACKAGE_PIN D15   IOSTANDARD LVCMOS33 } [get_ports { io_ncs }]; #IO_L12P_T1_MRCC_15 Sch=acl_csn
+set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { io_accell_miso }]; #IO_L11P_T1_SRCC_15 Sch=acl_miso
+set_property -dict { PACKAGE_PIN F14   IOSTANDARD LVCMOS33 } [get_ports { io_accell_mosi }]; #IO_L5N_T0_AD9N_15 Sch=acl_mosi
+set_property -dict { PACKAGE_PIN F15   IOSTANDARD LVCMOS33 } [get_ports { io_accell_sclk }]; #IO_L14P_T2_SRCC_15 Sch=acl_sclk
+set_property -dict { PACKAGE_PIN D15   IOSTANDARD LVCMOS33 } [get_ports { io_accell_ncs }]; #IO_L12P_T1_MRCC_15 Sch=acl_csn
 #set_property -dict { PACKAGE_PIN E15   IOSTANDARD LVCMOS33 } [get_ports { ACL_MISO }]; #IO_L11P_T1_SRCC_15 Sch=acl_miso
 #set_property -dict { PACKAGE_PIN F14   IOSTANDARD LVCMOS33 } [get_ports { ACL_MOSI }]; #IO_L5N_T0_AD9N_15 Sch=acl_mosi
 #set_property -dict { PACKAGE_PIN F15   IOSTANDARD LVCMOS33 } [get_ports { ACL_SCLK }]; #IO_L14P_T2_SRCC_15 Sch=acl_sclk

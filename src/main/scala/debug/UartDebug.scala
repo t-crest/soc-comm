@@ -18,7 +18,6 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
   // ASCII -> hex including valid signal
   def ascii2hex(in: UInt) = {
     val out = Wire(UInt(8.W))
-    val valid = false.B
     out := 16.U
     switch(in) {
       is('0'.U) { out := "h0".U }
@@ -94,7 +93,7 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
     tx.io.channel.valid := true.B
   }
 
-  val doutReg = RegInit(0x1234.U(32.W))
+  val doutReg = RegInit(0x0.U(32.W))
   val doutShftReg = RegInit(0.U(32.W))
   val dinShftReg = RegInit(0.U(32.W))
   val cntRdReg = RegInit(0.U(4.W))

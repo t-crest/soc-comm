@@ -2,13 +2,17 @@ package spi
 
 import chisel3._
 import chisel3.util._
+
+class SpiIO extends Bundle {
+  val ncs = Output(Bool())
+  val sclk = Output(Bool())
+  val mosi = Output(Bool())
+  val miso = Input(Bool())
+}
+
 class SpiMaster extends Module {
-  val spi = IO (new Bundle {
-    val ncs = Output(Bool())
-    val sclk = Output(Bool())
-    val mosi = Output(Bool())
-    val miso = Input(Bool())
-  })
+  val spi = IO(new SpiIO)
+
   val io = IO(new Bundle {
     val dataOut = Output(UInt(8.W))
     val dataIn = Input(UInt(8.W))
