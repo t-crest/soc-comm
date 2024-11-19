@@ -25,47 +25,100 @@ object SerialSpiTest extends App {
       }
     }
     // print("Received: " + ret)
-    Thread.sleep(300)
+    // Thread.sleep(100)
     ret
   }
 
-  def writeByte(v: Int) = {
+  def setCmd(id: Int, v: Int): String = {
+    val cmd = v.toHexString
+    id match {
+      case 0 => "w44" + cmd + "\r"
+      case 1 => "w4" + cmd + "4\r"
+      case 2 => "w" + cmd + "44\r"
+    }
+  }
+
+  def writeByte(id: Int, v: Int) = {
     for (i <- 0 until 8) {
       val bits = ((v >> (7-i)) & 1) << 1
       // clock off, set data
-      writeRead(s"w44$bits\r")
+      writeRead(setCmd(id, bits)) // clock off, set data
       // clock on, keep data
-      writeRead(s"w44${bits + 1}\r")
+      writeRead(setCmd(id, bits + 1)) // clock on, keep data
     }
     // not now, writeRead("w440\r") // clock off
   }
 
-  def readByte() = {
+  def readByte(id: Int) = {
     var v = 0
     for (i <- 0 until 8) {
-      writeRead("w440\r") // clock off
+      writeRead(setCmd(id, 0)) // clock off
       // data changes after neg edge
-      writeRead("w441\r") // clock on
+      writeRead(setCmd(id, 1)) // clock on
       // sample on pos edge
       val rx = writeRead("r")
       // println("received: " + rx(8))
       // '8' is bit set
-      val bit = if (rx(8) == '8') 1 else 0
+      val bit = if (rx(8 - id) == '8') 1 else 0
       v = (v << 1) | bit
     }
-    writeRead("w440\r") // clock off (maybe?), does not heart on multibyte read
+    writeRead(setCmd(id, 0)) // clock off (maybe?), does not hurt on multibyte read
     v
   }
 
   def readAdx(cmd: Int): Int = {
-    writeRead("w444\r")
-    writeRead("w440\r")
-    writeByte(cmd)
-    writeByte(0)
-    val ret = readByte()
-    writeRead("w444\r")
+    writeRead(setCmd(0, 4))
+    writeRead(setCmd(0, 0)) // CS low
+    writeByte(0, cmd)
+    writeByte(0, 0)
+    val ret = readByte(0)
+    writeRead(setCmd(0, 4)) // CS high
     ret
   }
+
+  def readJedecId(id: Int) = {
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x9f)
+    val v = readByte(id)
+    println("Manufacturer is 0x" + v.toHexString)
+    println("Device type is 0x" + readByte(id).toHexString)
+    println("Device id is 0x" + readByte(id).toHexString)
+    writeRead(setCmd(id, 4)) // CS high
+    v
+  }
+
+  def readStatusRegister(id: Int) = {
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x05)
+    val v = readByte(id)
+    println("Status register is 0x" + v.toHexString)
+    writeRead(setCmd(id, 4)) // CS high
+    v
+  }
+
+  def readMemory(id: Int, addr: Int) = {
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x03)
+    writeByte(id, (addr >> 16) & 0xff)
+    writeByte(id, (addr >> 8) & 0xff)
+    writeByte(id, addr & 0xff)
+    val v = readByte(id)
+    println("Memory of " + id + " at 0x" + addr.toHexString + " is 0x" + v.toHexString)
+    writeRead(setCmd(id, 4)) // CS high
+    v
+  }
+
+  def readSram(id: Int, addr: Int) = {
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x03)
+    writeByte(id, (addr >> 8) & 0xff)
+    writeByte(id, addr & 0xff)
+    val v = readByte(id)
+    println("SRAM of " + id + " at 0x" + addr.toHexString + " is 0x" + v.toHexString)
+    writeRead(setCmd(id, 4)) // CS high
+    v
+  }
+
 
   // TODO: fix this hard coded thing
   val port = SerialPort.getCommPort("/dev/tty.usbserial-210292B408601")
@@ -75,12 +128,16 @@ object SerialSpiTest extends App {
   port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
   val out = port.getOutputStream
 
-  print(writeRead("w444\r"))
-  print(writeRead("w440\r"))
+  print(writeRead(setCmd(0, 4))) // all CS high
+  print(writeRead(setCmd(0, 0))) // CS low for ADX
   print(writeRead("r"))
   val v = readAdx(0x0b) // dev id
   println("device id is 0x" + v.toHexString)
-  writeRead("w444\r")
+  readJedecId(1) // Flash
+  readStatusRegister(2) // SRAM
+  readMemory(1, 0)
+  readSram(2, 0)
+  print(writeRead(setCmd(0, 4))) // all CS high
   out.close()
   port.closePort()
 }
