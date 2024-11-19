@@ -119,6 +119,41 @@ object SerialSpiTest extends App {
     v
   }
 
+  def programFlash(id: Int, addr: Int, data: Array[Byte]) = {
+
+    readStatusRegister(id)
+
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x01) // write status register
+    writeByte(id, 0x00) // write status register
+    writeRead(setCmd(id, 4)) // CS high
+
+    readStatusRegister(id)
+
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x06) // write enable
+    writeRead(setCmd(id, 4)) // CS high
+
+    readStatusRegister(id)
+
+    writeRead(setCmd(id, 0)) // CS low
+    writeByte(id, 0x02)
+    writeByte(id, (addr >> 16) & 0xff)
+    writeByte(id, (addr >> 8) & 0xff)
+    writeByte(id, addr & 0xff)
+    for (d <- data) {
+      println("Writing 0x" + d.toHexString)
+      writeByte(id, d)
+    }
+    // writeByte(id, 0x04) // write disable
+    writeRead(setCmd(id, 4)) // CS high
+
+    readStatusRegister(id)
+    Thread.sleep(300)
+    readStatusRegister(id)
+
+  }
+
 
   // TODO: fix this hard coded thing
   val port = SerialPort.getCommPort("/dev/tty.usbserial-210292B408601")
@@ -137,6 +172,17 @@ object SerialSpiTest extends App {
   readStatusRegister(2) // SRAM
   readMemory(1, 0)
   readSram(2, 0)
+
+  val s = "Hello, World!\n"
+  val data = s.getBytes
+  // programFlash(1, 0, data)
+  Thread.sleep(1000)
+
+  for (i <- 0 until 8) {
+    print(readMemory(1, i).toChar)
+  }
+  println()
+
   print(writeRead(setCmd(0, 4))) // all CS high
   out.close()
   port.closePort()
