@@ -2,13 +2,22 @@ package spi
 
 import com.fazecast.jSerialComm._
 
-class SerialSpiTest {
+/**
+ * A simple test for SPI communication.
+ * @param id (Adx, Flash, SRAM)
+ */
+class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B408601") {
 
-}
+  // TODO: fix the hard coded port name
+  val port = SerialPort.getCommPort(portName)
+  port.openPort()
+  port.setBaudRate(115200)
+  // port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0)
+  port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
+  val out = port.getOutputStream
+  csHigh()
 
-object SerialSpiTest extends App {
-
-  def writeRead(s: String): String = {
+  def writeReadSerial(s: String): String = {
     for (c <- s) {
       out.write(c.toByte)
     }
@@ -29,7 +38,7 @@ object SerialSpiTest extends App {
     ret
   }
 
-  def setCmd(id: Int, v: Int): String = {
+  def setCmd(v: Int): String = {
     val cmd = v.toHexString
     id match {
       case 0 => "w44" + cmd + "\r"
@@ -38,152 +47,193 @@ object SerialSpiTest extends App {
     }
   }
 
-  def writeByte(id: Int, v: Int) = {
+  def writeByte(v: Int) = {
     for (i <- 0 until 8) {
       val bits = ((v >> (7-i)) & 1) << 1
       // clock off, set data
-      writeRead(setCmd(id, bits)) // clock off, set data
+      writeReadSerial(setCmd(bits)) // clock off, set data
       // clock on, keep data
-      writeRead(setCmd(id, bits + 1)) // clock on, keep data
+      writeReadSerial(setCmd(bits + 1)) // clock on, keep data
     }
     // not now, writeRead("w440\r") // clock off
   }
 
-  def readByte(id: Int) = {
+  def readByte() = {
     var v = 0
     for (i <- 0 until 8) {
-      writeRead(setCmd(id, 0)) // clock off
+      writeReadSerial(setCmd(0)) // clock off
       // data changes after neg edge
-      writeRead(setCmd(id, 1)) // clock on
+      writeReadSerial(setCmd(1)) // clock on
       // sample on pos edge
-      val rx = writeRead("r")
-      // println("received: " + rx(8))
-      // '8' is bit set
+      val rx = writeReadSerial("r")
+      // '8' is MISO bit set
       val bit = if (rx(8 - id) == '8') 1 else 0
       v = (v << 1) | bit
     }
-    writeRead(setCmd(id, 0)) // clock off (maybe?), does not hurt on multibyte read
+    writeReadSerial(setCmd(0)) // clock off (maybe?), does not hurt on multibyte read
     v
   }
 
+  def csLow() = writeReadSerial(setCmd(0))
+
+  def csHigh() = writeReadSerial(setCmd(4))
+
   def readAdx(cmd: Int): Int = {
-    writeRead(setCmd(0, 4))
-    writeRead(setCmd(0, 0)) // CS low
-    writeByte(0, cmd)
-    writeByte(0, 0)
-    val ret = readByte(0)
-    writeRead(setCmd(0, 4)) // CS high
+    csHigh()
+    csLow()
+    writeByte(cmd)
+    writeByte(0)
+    val ret = readByte()
+    csHigh()
     ret
   }
 
-  def readJedecId(id: Int) = {
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x9f)
-    val v = readByte(id)
+  def readJedecId() = {
+    csLow()
+    writeByte(0x9f)
+    val v = readByte()
     println("Manufacturer is 0x" + v.toHexString)
-    println("Device type is 0x" + readByte(id).toHexString)
-    println("Device id is 0x" + readByte(id).toHexString)
-    writeRead(setCmd(id, 4)) // CS high
+    println("Device type is 0x" + readByte().toHexString)
+    println("Device id is 0x" + readByte().toHexString)
+    csHigh()
     v
   }
 
-  def readStatusRegister(id: Int) = {
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x05)
-    val v = readByte(id)
+  def readStatusRegister() = {
+    csLow()
+    writeByte(0x05)
+    val v = readByte()
     println("Status register is 0x" + v.toHexString)
-    writeRead(setCmd(id, 4)) // CS high
+    csHigh()
     v
   }
 
-  def readMemory(id: Int, addr: Int) = {
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x03)
-    writeByte(id, (addr >> 16) & 0xff)
-    writeByte(id, (addr >> 8) & 0xff)
-    writeByte(id, addr & 0xff)
-    val v = readByte(id)
+  def readMemory(addr: Int) = {
+
+    println("Reading Memory of " + id + " at 0x" + addr.toHexString)
+    csLow()
+    writeByte(0x03)
+    writeByte((addr >> 16) & 0xff)
+    writeByte((addr >> 8) & 0xff)
+    writeByte(addr & 0xff)
+    val v = readByte()
     println("Memory of " + id + " at 0x" + addr.toHexString + " is 0x" + v.toHexString)
-    writeRead(setCmd(id, 4)) // CS high
+    csHigh()
     v
   }
 
-  def readSram(id: Int, addr: Int) = {
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x03)
-    writeByte(id, (addr >> 8) & 0xff)
-    writeByte(id, addr & 0xff)
-    val v = readByte(id)
+  def readMemory(addr: Int, buf: Array[Byte]) = {
+
+    println("Reading Memory of " + id + " from 0x" + addr.toHexString)
+    csLow()
+    writeByte(0x03)
+    writeByte((addr >> 16) & 0xff)
+    writeByte((addr >> 8) & 0xff)
+    writeByte(addr & 0xff)
+    for (i <- 0 until buf.length) {
+      buf(i) = readByte().toByte
+    }
+    csHigh()
+  }
+
+  def readSram(addr: Int) = {
+    csLow()
+    writeByte(0x03)
+    writeByte((addr >> 8) & 0xff)
+    writeByte(addr & 0xff)
+    val v = readByte()
     println("SRAM of " + id + " at 0x" + addr.toHexString + " is 0x" + v.toHexString)
-    writeRead(setCmd(id, 4)) // CS high
+    csHigh()
     v
   }
 
+  def writeCmd(v: Int) = {
+    csLow()
+    writeByte(v)
+    csHigh()
+  }
+  def writeCmd(v: Int, d: Int) = {
+    csLow()
+    writeByte(v)
+    writeByte(d)
+    csHigh()
+  }
+
+  def eraseFlash() = {
+
+    println("Erasing Flash")
+    writeCmd(0x06) // write enable
+    writeCmd(0x01, 0x00) // write 0 into status register
+    writeCmd(0x06) // write enable
+    readStatusRegister()
+    writeCmd(0x60) // chip erase
+    readStatusRegister()
+    Thread.sleep(1000)
+    readStatusRegister()
+  }
   def programFlash(id: Int, addr: Int, data: Array[Byte]) = {
 
-    readStatusRegister(id)
+    println("Programming Flash at 0x" + addr.toHexString)
+    readStatusRegister()
+    writeCmd(0x06) // write enable
+    readStatusRegister()
+    writeCmd(0x01, 0x00) // write 0 into status register
+    readStatusRegister()
+    writeCmd(0x06) // write enable
+    readStatusRegister()
 
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x01) // write status register
-    writeByte(id, 0x00) // write status register
-    writeRead(setCmd(id, 4)) // CS high
-
-    readStatusRegister(id)
-
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x06) // write enable
-    writeRead(setCmd(id, 4)) // CS high
-
-    readStatusRegister(id)
-
-    writeRead(setCmd(id, 0)) // CS low
-    writeByte(id, 0x02)
-    writeByte(id, (addr >> 16) & 0xff)
-    writeByte(id, (addr >> 8) & 0xff)
-    writeByte(id, addr & 0xff)
+    csLow()
+    writeByte(0x02)
+    writeByte((addr >> 16) & 0xff)
+    writeByte((addr >> 8) & 0xff)
+    writeByte(addr & 0xff)
     for (d <- data) {
       println("Writing 0x" + d.toHexString)
-      writeByte(id, d)
+      writeByte(d)
     }
-    // writeByte(id, 0x04) // write disable
-    writeRead(setCmd(id, 4)) // CS high
+    csHigh()
 
-    readStatusRegister(id)
+    writeCmd(0x04) // write disable
+
+    readStatusRegister()
     Thread.sleep(300)
-    readStatusRegister(id)
-
+    readStatusRegister()
   }
+}
+
+object SerialSpiTest extends App {
 
 
-  // TODO: fix this hard coded thing
-  val port = SerialPort.getCommPort("/dev/tty.usbserial-210292B408601")
-  port.openPort()
-  port.setBaudRate(115200)
-  // port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0)
-  port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0)
-  val out = port.getOutputStream
+  val spi = new SerialSpiTest(1) // Flash
 
-  print(writeRead(setCmd(0, 4))) // all CS high
-  print(writeRead(setCmd(0, 0))) // CS low for ADX
-  print(writeRead("r"))
-  val v = readAdx(0x0b) // dev id
-  println("device id is 0x" + v.toHexString)
-  readJedecId(1) // Flash
-  readStatusRegister(2) // SRAM
-  readMemory(1, 0)
-  readSram(2, 0)
+  spi.csLow()
+  print(spi.writeReadSerial("r"))
+  spi.csHigh()
+  // val v = spi.readAdx(0x0b) // dev id
+  // println("device id is 0x" + v.toHexString)
+  spi.readJedecId() // Flash
+  spi.readStatusRegister()
+  spi.readMemory(0)
 
-  val s = "Hello, World!\n"
+  // spi.readSram(0)
+
+  // spi.eraseFlash()
+  val s = "Hello Wildcat!\n"
   val data = s.getBytes
-  // programFlash(1, 0, data)
+  // spi.programFlash(1, 0, data)
   Thread.sleep(1000)
 
-  for (i <- 0 until 8) {
-    print(readMemory(1, i).toChar)
+  val buf = new Array[Byte](20)
+  spi.readMemory(0, buf)
+  println(new String(buf))
+  /*
+  for (i <- 0 until 20) {
+    print(spi.readMemory(i).toChar)
   }
   println()
+   */
 
-  print(writeRead(setCmd(0, 4))) // all CS high
-  out.close()
-  port.closePort()
+  print(spi.writeReadSerial(spi.setCmd(4))) // all CS high
+  spi.out.close()
+  spi.port.closePort()
 }
