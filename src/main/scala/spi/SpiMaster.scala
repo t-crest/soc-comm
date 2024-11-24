@@ -17,10 +17,11 @@ class SpiMaster extends Module {
     val dataOut = Output(UInt(8.W))
     val dataIn = Input(UInt(8.W))
     val dataValid = Input(Bool())
+    val dataReady = Output(Bool())
   })
 
   object State extends ChiselEnum {
-    val start, idle, tx1, tx2, rx1, rx2 = Value
+    val start, idle, tx1, tx2, rx1, rx2, done = Value
   }
   import State._
   val state = RegInit(idle)
@@ -29,16 +30,17 @@ class SpiMaster extends Module {
   val misoReg = RegInit(0.U(8.W))
   val bitsReg = RegInit(0.U(8.W))
   val cntReg = RegInit(0.U(32.W))
-  val CNT_MAX = 100.U
+  val CNT_MAX = 1.U
 
 
+  // TODO: should those signals be in a register? Probably better timing
   spi.ncs := 1.U
   spi.sclk := 0.U
   spi.mosi := mosiReg(7)
   io.dataOut := misoReg
+  io.dataReady := false.B
 
-  // val JTAG_ID = 0x90.U
-  val JTAG_ID = 0xab.U
+  val JTAG_ID = 0x9f.U
   val RD_STATUS = 0x05.U
   val RDSR = 0x05.U
   val READ = 0x03.U
@@ -111,8 +113,18 @@ class SpiMaster extends Module {
         cntReg := 0.U
         bitsReg := bitsReg - 1.U
         when(bitsReg === 0.U) {
-          state := idle
+          state := done
         }
+      }
+    }
+    is(done) {
+      spi.ncs := 1.U
+      spi.sclk := 0.U
+      cntReg := cntReg + 1.U
+      io.dataReady := true.B
+      when(cntReg === CNT_MAX) {
+        state := start
+        cntReg := 0.U
       }
     }
   }
