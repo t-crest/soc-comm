@@ -137,15 +137,27 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     csHigh()
   }
 
+  // TODO: is this really the way to do it? Anas hae a different solution, sending  3 bytes of address.
   def readSram(addr: Int) = {
     csLow()
     writeByte(0x03)
+    writeByte((addr >> 16) & 0xff)
     writeByte((addr >> 8) & 0xff)
     writeByte(addr & 0xff)
     val v = readByte()
     println("SRAM of " + id + " at 0x" + addr.toHexString + " is 0x" + v.toHexString)
     csHigh()
     v
+  }
+
+  def writeSram(addr: Int, data: Int) = {
+    csLow()
+    writeByte(0x02)
+    writeByte((addr >> 16) & 0xff)
+    writeByte((addr >> 8) & 0xff)
+    writeByte(addr & 0xff)
+    writeByte(data)
+    csHigh()
   }
 
   def writeCmd(v: Int) = {
@@ -235,4 +247,10 @@ object SerialSpiTest extends App {
   print(spi.writeReadSerial(spi.setCmd(4))) // all CS high
   spi.out.close()
   spi.port.closePort()
+
+
+  println("SRAM test")
+  val sram = new SerialSpiTest(2) // SRAM
+  sram.writeSram(0, 0x55)
+  sram.readSram(0)
 }
