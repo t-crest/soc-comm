@@ -34,7 +34,8 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
       }
     }
     // print("Received: " + ret)
-    // Thread.sleep(100)
+
+    Thread.sleep(10)
     ret
   }
 
@@ -203,7 +204,6 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
 
 object SerialSpiTest extends App {
 
-
   val spi = new SerialSpiTest(1) // Flash
 
   spi.csLow()
@@ -232,7 +232,6 @@ object SerialSpiTest extends App {
   }
   println()
    */
-
   print(spi.writeReadSerial(spi.setCmd(4))) // all CS high
   spi.out.close()
   spi.port.closePort()

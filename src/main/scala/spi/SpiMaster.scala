@@ -21,7 +21,7 @@ class SpiMaster extends Module {
   })
 
   object State extends ChiselEnum {
-    val start, idle, tx1, tx2, rx1, rx2, done = Value
+    val start, idle, tx1, tx2, rx1, rx2, done1, done2 = Value
   }
   import State._
   val state = RegInit(idle)
@@ -98,10 +98,10 @@ class SpiMaster extends Module {
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
-        misoReg := misoReg(7, 1) ## spi.miso
+        misoReg := misoReg(6, 0) ## spi.miso
+        printf(cf"HW Data is shifting in: $misoReg \n")
         state := rx2
         cntReg := 0.U
-        bitsReg := bitsReg - 1.U
       }
     }
     is(rx2) {
@@ -113,17 +113,29 @@ class SpiMaster extends Module {
         cntReg := 0.U
         bitsReg := bitsReg - 1.U
         when(bitsReg === 0.U) {
-          state := done
+          state := done1
         }
       }
     }
-    is(done) {
+    is(done1) {
+      printf("done\n")
+      spi.ncs := 0.U
+      spi.sclk := 0.U
+      cntReg := cntReg + 1.U
+      io.dataReady := true.B
+      printf(cf"HW Data is $misoReg \n")
+      when(cntReg === CNT_MAX) {
+        state := done2
+        cntReg := 0.U
+      }
+    }
+    is(done2) {
       spi.ncs := 1.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       io.dataReady := true.B
       when(cntReg === CNT_MAX) {
-        state := start
+        state := done2
         cntReg := 0.U
       }
     }
