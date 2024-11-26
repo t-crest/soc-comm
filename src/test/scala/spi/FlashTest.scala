@@ -6,13 +6,24 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import spi.SerialSpiTest.spi
 
-class FlashTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTester {
+class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "FlashTest"
 
   it should "test the flash" in {
-    val spi = new SerialSpiTest(1)
+
+    var spi: SerialSpiTest = null
+    try {
+      spi = new SerialSpiTest(1)
+    } catch {
+      case e: Exception => {
+        println("Serial port not available")
+        cancel()
+      }
+    }
+
     test(new SpiMaster) { c =>
-      for(i <- 0 until 200) {
+
+      def echoPins() = {
         val sck = c.spi.sclk.peekInt()
         val mosi = c.spi.mosi.peekInt()
         val ncs = c.spi.ncs.peekInt()
@@ -26,13 +37,41 @@ class FlashTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTester 
         // println("rx: " + rx)
         // println("bit: " + bit)
         c.spi.miso.poke(bit)
-        println(s)
-        c.clock.step()
-        // println("dout: " + c.io.dataOut.peekInt())
-        if (c.io.dataReady.peekBoolean()) {
-          println("Data is " + c.io.dataOut.peekInt())
-        }
       }
+      def readByte(addr: Int) = {
+        c.io.readData.ready.poke(true.B)
+
+        c.io.readAddr.valid.poke(true.B)
+        c.io.readAddr.bits.poke(addr.U)
+        echoPins()
+        c.clock.step()
+        /*
+        while(!c.io.readAddr.ready.peekBoolean()) {
+          c.io.readAddr.valid.poke(true.B)
+          echoPins()
+          c.clock.step()
+        }
+        c.io.readAddr.valid.poke(false.B)
+
+         */
+        var ready = false
+        var ch = ' '
+        while(!ready) {
+          echoPins()
+          c.clock.step()
+          if (c.io.readData.valid.peekBoolean()) {
+            ready = true
+            ch = c.io.readData.bits.peekInt().toChar
+          }
+        }
+        c.clock.step()
+        ch
+      }
+      for (i <- 0 until 10) {
+        val c = readByte(i)
+        print(c)
+      }
+      println()
     }
   }
 

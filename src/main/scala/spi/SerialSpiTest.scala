@@ -35,7 +35,7 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     }
     // print("Received: " + ret)
 
-    Thread.sleep(10)
+    // Thread.sleep(10)
     ret
   }
 

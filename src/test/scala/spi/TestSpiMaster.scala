@@ -67,10 +67,10 @@ class TopTest extends Module {
   flash.io.HOLDNeg := true.B
   ctrl.spi.miso := flash.io.SO
 
-  ctrl.io.dataIn := 0.U
-  ctrl.io.dataValid := false.B
+  ctrl.io.readAddr.bits := 0.U
+  ctrl.io.readAddr.valid := false.B
 
-  io.dout := ctrl.io.dataOut
+  io.dout := ctrl.io.readData.bits
 }
 class TestSpiMaster(doNotRun: String) extends AnyFlatSpec with ChiselScalatestTester {
 

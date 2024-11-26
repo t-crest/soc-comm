@@ -14,10 +14,8 @@ class SpiMaster extends Module {
   val spi = IO(new SpiIO)
 
   val io = IO(new Bundle {
-    val dataOut = Output(UInt(8.W))
-    val dataIn = Input(UInt(8.W))
-    val dataValid = Input(Bool())
-    val dataReady = Output(Bool())
+    val readAddr = Flipped(Decoupled(UInt(24.W)))
+    val readData = Decoupled(UInt(8.W))
   })
 
   object State extends ChiselEnum {
@@ -26,7 +24,7 @@ class SpiMaster extends Module {
   import State._
   val state = RegInit(idle)
 
-  val mosiReg = RegInit(0.U(8.W))
+  val mosiReg = RegInit(0.U(32.W))
   val misoReg = RegInit(0.U(8.W))
   val bitsReg = RegInit(0.U(8.W))
   val cntReg = RegInit(0.U(32.W))
@@ -34,11 +32,13 @@ class SpiMaster extends Module {
 
 
   // TODO: should those signals be in a register? Probably better timing
+  // at least SCLK
   spi.ncs := 1.U
   spi.sclk := 0.U
-  spi.mosi := mosiReg(7)
-  io.dataOut := misoReg
-  io.dataReady := false.B
+  spi.mosi := mosiReg(31)
+  io.readData.bits := misoReg
+  io.readData.valid := false.B
+  io.readAddr.ready := false.B
 
   val JTAG_ID = 0x9f.U
   val RD_STATUS = 0x05.U
@@ -60,13 +60,14 @@ class SpiMaster extends Module {
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
-        // + when data is available
-        state := tx1
-        bitsReg := 7.U
-        cntReg := 0.U
-        mosiReg := JTAG_ID
+        io.readAddr.ready := true.B
+        when(io.readAddr.valid) {
+          state := tx1
+          bitsReg := 31.U
+          cntReg := 0.U
+          mosiReg := READ ## io.readAddr.bits
+        }
       }
-
     }
     is(tx1) {
       spi.ncs := 0.U
@@ -84,7 +85,7 @@ class SpiMaster extends Module {
       when(cntReg === CNT_MAX) {
         state := tx1
         cntReg := 0.U
-        mosiReg := mosiReg(6, 0) ## 0.U // io.dataIn(7))
+        mosiReg := mosiReg << 1
         bitsReg := bitsReg - 1.U
         when(bitsReg === 0.U) {
           state := rx1
@@ -99,7 +100,6 @@ class SpiMaster extends Module {
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
         misoReg := misoReg(6, 0) ## spi.miso
-        printf(cf"HW Data is shifting in: $misoReg \n")
         state := rx2
         cntReg := 0.U
       }
@@ -118,12 +118,9 @@ class SpiMaster extends Module {
       }
     }
     is(done1) {
-      printf("done\n")
       spi.ncs := 0.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
-      io.dataReady := true.B
-      printf(cf"HW Data is $misoReg \n")
       when(cntReg === CNT_MAX) {
         state := done2
         cntReg := 0.U
@@ -133,10 +130,9 @@ class SpiMaster extends Module {
       spi.ncs := 1.U
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
-      io.dataReady := true.B
-      when(cntReg === CNT_MAX) {
-        state := done2
-        cntReg := 0.U
+      io.readData.valid := true.B
+      when(io.readData.ready) {
+        state := idle
       }
     }
   }
