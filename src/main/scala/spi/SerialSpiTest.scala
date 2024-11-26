@@ -100,6 +100,21 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     v
   }
 
+  // The SRAM needs a delay after the command
+  def readJedecIdWait() = {
+    csLow()
+    writeByte(0x9f)
+    writeByte(0)
+    writeByte(0)
+    writeByte(0)
+    val v = readByte()
+    println("Manufacturer is 0x" + v.toHexString)
+    println("Device type is 0x" + readByte().toHexString)
+    println("Device id is 0x" + readByte().toHexString)
+    csHigh()
+    v
+  }
+
   def readStatusRegister() = {
     csLow()
     writeByte(0x05)
@@ -233,11 +248,11 @@ object SerialSpiTest extends App {
   val s = "Hello Wildcat!\n"
   val data = s.getBytes
   // spi.programFlash(1, 0, data)
-  Thread.sleep(1000)
+  // Thread.sleep(1000)
 
   val buf = new Array[Byte](20)
-  spi.readMemory(0, buf)
-  println(new String(buf))
+  // spi.readMemory(0, buf)
+  // println(new String(buf))
   /*
   for (i <- 0 until 20) {
     print(spi.readMemory(i).toChar)
@@ -251,6 +266,10 @@ object SerialSpiTest extends App {
 
   println("SRAM test")
   val sram = new SerialSpiTest(2) // SRAM
+  sram.readJedecIdWait()
+  sram.readMemory(0)
   sram.writeSram(0, 0x55)
-  sram.readSram(0)
+  sram.readMemory(0)
+  sram.writeSram(0, 0xaa)
+  sram.readMemory(0)
 }

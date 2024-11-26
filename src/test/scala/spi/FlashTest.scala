@@ -6,7 +6,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import spi.SerialSpiTest.spi
 
-class FlashTest extends AnyFlatSpec with ChiselScalatestTester {
+class FlashTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "FlashTest"
 
   it should "test the flash" in {
