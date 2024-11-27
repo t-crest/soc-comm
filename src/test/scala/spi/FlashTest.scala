@@ -38,7 +38,7 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
         // println("bit: " + bit)
         c.spi.miso.poke(bit)
       }
-      def readByte(addr: Int) = {
+      def readWord(addr: Int) = {
         c.io.readData.ready.poke(true.B)
 
         c.io.readAddr.valid.poke(true.B)
@@ -55,23 +55,22 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
 
          */
         var ready = false
-        var ch = ' '
+        var v = 0
         while(!ready) {
           echoPins()
           c.clock.step()
           if (c.io.readData.valid.peekBoolean()) {
             ready = true
-            ch = c.io.readData.bits.peekInt().toChar
+            v = c.io.readData.bits.peekInt().toInt
           }
         }
         c.clock.step()
-        ch
+        v
       }
-      for (i <- 0 until 10) {
-        val c = readByte(i)
-        print(c)
+      for (i <- 0 until 3) {
+        val v = readWord(i*4)
+        println(f"Read 0x$v%08x")
       }
-      println()
     }
   }
 

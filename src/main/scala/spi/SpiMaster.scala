@@ -15,7 +15,7 @@ class SpiMaster extends Module {
 
   val io = IO(new Bundle {
     val readAddr = Flipped(Decoupled(UInt(24.W)))
-    val readData = Decoupled(UInt(8.W))
+    val readData = Decoupled(UInt(32.W))
   })
 
   object State extends ChiselEnum {
@@ -25,7 +25,7 @@ class SpiMaster extends Module {
   val state = RegInit(idle)
 
   val mosiReg = RegInit(0.U(32.W))
-  val misoReg = RegInit(0.U(8.W))
+  val misoReg = RegInit(0.U(32.W))
   val bitsReg = RegInit(0.U(8.W))
   val cntReg = RegInit(0.U(32.W))
   val CNT_MAX = 1.U
@@ -36,7 +36,8 @@ class SpiMaster extends Module {
   spi.ncs := 1.U
   spi.sclk := 0.U
   spi.mosi := mosiReg(31)
-  io.readData.bits := misoReg
+  // little endian return
+  io.readData.bits := misoReg(7, 0) ## misoReg(15, 8) ## misoReg(23, 16) ## misoReg(31, 24)
   io.readData.valid := false.B
   io.readAddr.ready := false.B
 
@@ -89,7 +90,7 @@ class SpiMaster extends Module {
         bitsReg := bitsReg - 1.U
         when(bitsReg === 0.U) {
           state := rx1
-          bitsReg := 7.U
+          bitsReg := 31.U
         }
       }
     }
@@ -99,7 +100,7 @@ class SpiMaster extends Module {
       spi.sclk := 0.U
       cntReg := cntReg + 1.U
       when(cntReg === CNT_MAX) {
-        misoReg := misoReg(6, 0) ## spi.miso
+        misoReg := misoReg(30, 0) ## spi.miso
         state := rx2
         cntReg := 0.U
       }

@@ -249,10 +249,20 @@ object SerialSpiTest extends App {
   val data = s.getBytes
   // spi.programFlash(1, 0, data)
   // Thread.sleep(1000)
+  val prog = Array(0x11100093, 0x22200113, 0x002081b3)
+  val by = new Array[Byte](12)
+  for (i <- 0 until prog.length) {
+    for (j <- 0 until 4) {
+      val b = prog(i) >> (8 * j) & 0xff
+      println(f"$b%02x")
+      by(i * 4 + j) = b.toByte
+    }
+  }
+  // spi.programFlash(1, 0, by)
 
   val buf = new Array[Byte](20)
-  // spi.readMemory(0, buf)
-  // println(new String(buf))
+  spi.readMemory(0, buf)
+  println(new String(buf))
   /*
   for (i <- 0 until 20) {
     print(spi.readMemory(i).toChar)
