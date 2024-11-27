@@ -24,18 +24,10 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
     test(new SpiMaster) { c =>
 
       def echoPins() = {
-        val sck = c.spi.sclk.peekInt()
-        val mosi = c.spi.mosi.peekInt()
-        val ncs = c.spi.ncs.peekInt()
-        // println(s"ncs: $ncs, mosi: $mosi, sck: $sck")
-        val bits = (ncs << 2) | (mosi << 1) | sck
-        val s = "w4" + (bits + '0').toChar + "4\r"
-        spi.writeReadSerial(s)
-        val rx = spi.writeReadSerial("r")
-        // '8' is MISO bit set
-        val bit = if (rx(8 - 1) == '8') 1 else 0
-        // println("rx: " + rx)
-        // println("bit: " + bit)
+        val sck = c.spi.sclk.peekInt().toInt
+        val mosi = c.spi.mosi.peekInt().toInt
+        val ncs = c.spi.ncs.peekInt().toInt
+        val bit = spi.echoPins(sck, mosi, ncs)
         c.spi.miso.poke(bit)
       }
       def readWord(addr: Int) = {

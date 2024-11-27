@@ -227,6 +227,19 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     Thread.sleep(300)
     readStatusRegister()
   }
+
+  def echoPins(sck: Int, mosi: Int, ncs: Int) = {
+    // println(s"ncs: $ncs, mosi: $mosi, sck: $sck")
+    val bits = (ncs << 2) | (mosi << 1) | sck
+    val s = "w4" + (bits + '0').toChar + "4\r"
+    writeReadSerial(s)
+    val rx = writeReadSerial("r")
+    // '8' is MISO bit set
+    val bit = if (rx(8 - 1) == '8') 1 else 0
+    // println("rx: " + rx)
+    // println("bit: " + bit)
+    bit
+  }
 }
 
 object SerialSpiTest extends App {
