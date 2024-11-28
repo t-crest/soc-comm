@@ -2,6 +2,8 @@ package spi
 
 import com.fazecast.jSerialComm._
 
+import chiseltest._
+
 /**
  * A simple test for SPI communication.
  * @param id (Adx, Flash, SRAM)
@@ -228,7 +230,7 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     readStatusRegister()
   }
 
-  def echoPins(sck: Int, mosi: Int, ncs: Int) = {
+  def echoPinsOuter(sck: Int, mosi: Int, ncs: Int) = {
     // println(s"ncs: $ncs, mosi: $mosi, sck: $sck")
     val bits = (ncs << 2) | (mosi << 1) | sck
     val s = "w4" + (bits + '0').toChar + "4\r"
@@ -239,6 +241,14 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     // println("rx: " + rx)
     // println("bit: " + bit)
     bit
+  }
+
+  def echoPins(spi: SpiIO) = {
+    val sck = spi.sclk.peekInt().toInt
+    val mosi = spi.mosi.peekInt().toInt
+    val ncs = spi.ncs.peekInt().toInt
+    val bit = echoPinsOuter(sck, mosi, ncs)
+    spi.miso.poke(bit)
   }
 }
 

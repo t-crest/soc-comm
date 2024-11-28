@@ -11,9 +11,9 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
 
   it should "test the flash" in {
 
-    var spi: SerialSpiTest = null
+    var spiDriver: SerialSpiTest = null
     try {
-      spi = new SerialSpiTest(1)
+      spiDriver = new SerialSpiTest(1)
     } catch {
       case e: Exception => {
         println("Serial port not available")
@@ -23,19 +23,22 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
 
     test(new SpiMaster) { c =>
 
+      /*
       def echoPins() = {
         val sck = c.spi.sclk.peekInt().toInt
         val mosi = c.spi.mosi.peekInt().toInt
         val ncs = c.spi.ncs.peekInt().toInt
-        val bit = spi.echoPins(sck, mosi, ncs)
+        val bit = spiDriver.echoPinsOuter(sck, mosi, ncs)
         c.spi.miso.poke(bit)
       }
+
+       */
       def readWord(addr: Int) = {
         c.io.readData.ready.poke(true.B)
 
         c.io.readAddr.valid.poke(true.B)
         c.io.readAddr.bits.poke(addr.U)
-        echoPins()
+        spiDriver.echoPins(c.spi)
         c.clock.step()
         /*
         while(!c.io.readAddr.ready.peekBoolean()) {
@@ -49,7 +52,7 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
         var ready = false
         var v = 0
         while(!ready) {
-          echoPins()
+          spiDriver.echoPins(c.spi)
           c.clock.step()
           if (c.io.readData.valid.peekBoolean()) {
             ready = true
