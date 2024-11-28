@@ -3,6 +3,7 @@ package debug
 import chisel.lib.uart._
 import chisel3._
 import chisel3.util._
+import chisel3.experimental.ChiselEnum
 
 /**
   * Poor mans debugger, using a UART instead of JTAG.
