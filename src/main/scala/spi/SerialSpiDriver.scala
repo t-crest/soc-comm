@@ -5,10 +5,11 @@ import com.fazecast.jSerialComm._
 import chiseltest._
 
 /**
- * A simple test for SPI communication.
+ * A simple driver for SPI communication via the serial port and the debug interface.
+ * USed from this App, the FlashTest with testing the controller, and should be used by Wildcat in simulation.
  * @param id (Adx, Flash, SRAM)
  */
-class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B408601") {
+class SerialSpiDriver(id: Int, portName: String = "/dev/tty.usbserial-210292B408601") {
 
   // TODO: fix the hard coded port name
   val port = SerialPort.getCommPort(portName)
@@ -230,31 +231,31 @@ class SerialSpiTest(id: Int, portName: String = "/dev/tty.usbserial-210292B40860
     readStatusRegister()
   }
 
-  def echoPinsOuter(sck: Int, mosi: Int, ncs: Int) = {
-    // println(s"ncs: $ncs, mosi: $mosi, sck: $sck")
+  /**
+   * Watch SPI output pins in simulation and forward them via the serial port debugger to the real Flash.
+   * And the other way around, read the MISO pin from the Flash and forward it to the SPI input pin in simulation.
+   * @param spi
+   */
+  def echoPins(spi: SpiIO) = {
+    val sck = spi.sclk.peekInt().toInt
+    val mosi = spi.mosi.peekInt().toInt
+    val ncs = spi.ncs.peekInt().toInt
     val bits = (ncs << 2) | (mosi << 1) | sck
     val s = "w4" + (bits + '0').toChar + "4\r"
     writeReadSerial(s)
     val rx = writeReadSerial("r")
     // '8' is MISO bit set
     val bit = if (rx(8 - 1) == '8') 1 else 0
-    // println("rx: " + rx)
-    // println("bit: " + bit)
-    bit
-  }
-
-  def echoPins(spi: SpiIO) = {
-    val sck = spi.sclk.peekInt().toInt
-    val mosi = spi.mosi.peekInt().toInt
-    val ncs = spi.ncs.peekInt().toInt
-    val bit = echoPinsOuter(sck, mosi, ncs)
     spi.miso.poke(bit)
   }
 }
 
-object SerialSpiTest extends App {
+/**
+ * Test SPI components and program the Flash.
+ */
+object SerialSpiDriver extends App {
 
-  val spi = new SerialSpiTest(1) // Flash
+  val spi = new SerialSpiDriver(1) // Flash
 
   spi.csLow()
   print(spi.writeReadSerial("r"))
@@ -298,7 +299,7 @@ object SerialSpiTest extends App {
 
 
   println("SRAM test")
-  val sram = new SerialSpiTest(2) // SRAM
+  val sram = new SerialSpiDriver(2) // SRAM
   sram.readJedecIdWait()
   sram.readMemory(0)
   sram.writeSram(0, 0x55)

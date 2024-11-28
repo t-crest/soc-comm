@@ -1,19 +1,17 @@
 package spi
 
 import chisel3._
-import chisel3.util._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import spi.SerialSpiTest.spi
 
 class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "FlashTest"
 
   it should "test the flash" in {
 
-    var spiDriver: SerialSpiTest = null
+    var spiDriver: SerialSpiDriver = null
     try {
-      spiDriver = new SerialSpiTest(1)
+      spiDriver = new SerialSpiDriver(1)
     } catch {
       case e: Exception => {
         println("Serial port not available")
@@ -23,17 +21,7 @@ class FlashTest() extends AnyFlatSpec with ChiselScalatestTester {
 
     test(new SpiMaster) { c =>
 
-      /*
-      def echoPins() = {
-        val sck = c.spi.sclk.peekInt().toInt
-        val mosi = c.spi.mosi.peekInt().toInt
-        val ncs = c.spi.ncs.peekInt().toInt
-        val bit = spiDriver.echoPinsOuter(sck, mosi, ncs)
-        c.spi.miso.poke(bit)
-      }
-
-       */
-      def readWord(addr: Int) = {
+      def readWord(addr: Int): Int = {
         c.io.readData.ready.poke(true.B)
 
         c.io.readAddr.valid.poke(true.B)
