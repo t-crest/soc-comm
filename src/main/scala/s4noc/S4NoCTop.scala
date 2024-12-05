@@ -13,13 +13,13 @@ import soc._
   */
 class S4NoCTop(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val cpuPorts = Vec(conf.n, new PipeConIO(conf.width))
+    val cpuPorts = Vec(conf.n, new PipeConIO(4)) // TODO: shall we use MultiCoreDevice here?
     val cycCnt = Output(UInt(32.W))
   })
 
   val s4noc = Module(new S4NoC(conf))
   for (i <- 0 until conf.n) {
-    val ci = Module(new PipeConS4NoC(conf.width, Entry(UInt(conf.width.W))))
+    val ci = Module(new PipeConS4NoC(4, Entry(UInt(conf.width.W))))
     s4noc.io.networkPort(i) <> ci.rv
     io.cpuPorts(i) <> ci.cpuPort
   }

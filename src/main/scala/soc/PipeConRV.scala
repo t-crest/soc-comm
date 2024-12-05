@@ -72,8 +72,11 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
           stateReg := writeWait
         }
          */
-        txDataReg := cpuPort.wrData
-        txS4NocReg.data := cpuPort.wrData
+        if (s4noc) {
+          txS4NocReg.data := cpuPort.wrData
+        } else {
+          txDataReg := cpuPort.wrData
+        }
         stateReg := writeWait
       }
     }

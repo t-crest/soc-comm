@@ -204,7 +204,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
  * [ ] Get one-way memory back in here
  * [ ] AXI wrapper
 
-OCP Wrapper like this:
+OCP Wrapper like this (we have a different one, should check the difference)
 
 ```scala
 class S4nocOCPWrapper(nrCores: Int, txFifo: Int, rxFifo: Int) extends CmpDevice(nrCores) {
