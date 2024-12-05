@@ -14,7 +14,7 @@ class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
 
         def step() = d.clock.step()
 
-        val cp = d.io.cpuPort
+        val cp = d.cpuPort
         cp.ack.expect(false.B)
 
         // set some default values
@@ -130,7 +130,7 @@ class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
       dut => {
         def step() = dut.clock.step()
 
-        val helper = new MemoryMappedIOHelper(dut.cp, dut.clock)
+        val helper = new MemoryMappedIOHelper(dut.cpuPort, dut.clock)
 
         helper.setTimeOut(10)
         helper.read(4)

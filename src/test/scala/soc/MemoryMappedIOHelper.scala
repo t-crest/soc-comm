@@ -2,7 +2,11 @@ package soc
 
 import chisel3._
 import chiseltest._
-
+/**
+ * Helper class to read and write from a memory mapped IO device (PipeCon)
+ * @param mmio
+ * @param clock
+ */
 class MemoryMappedIOHelper(mmio: PipeConIO, clock: Clock) {
 
   private var clockCnt = 0

@@ -18,18 +18,18 @@ class HardwareLock() extends PipeCon(2) {
   val lockReg = RegInit(false.B)
   val ackReg = RegInit(false.B)
   val readReg = RegInit(0.U)
-  ackReg := cp.wr || cp.rd
-  cp.ack := ackReg
+  ackReg := cpuPort.wr || cpuPort.rd
+  cpuPort.ack := ackReg
 
-  when (cp.rd) {
+  when (cpuPort.rd) {
     readReg := 0.U
     when (!lockReg) {
       lockReg := true.B
       readReg := 1.U
     }
   }
-  when (cp.wr) {
+  when (cpuPort.wr) {
     lockReg := false.B
   }
-  cp.rdData := readReg
+  cpuPort.rdData := readReg
 }

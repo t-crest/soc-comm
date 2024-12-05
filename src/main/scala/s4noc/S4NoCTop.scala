@@ -21,7 +21,7 @@ class S4NoCTop(conf: Config) extends Module  {
   for (i <- 0 until conf.n) {
     val ci = Module(new PipeConS4NoC(conf.width, Entry(UInt(conf.width.W))))
     s4noc.io.networkPort(i) <> ci.rv
-    io.cpuPorts(i) <> ci.io.cpuPort
+    io.cpuPorts(i) <> ci.cpuPort
   }
 
   val cntReg = RegInit(0.U(32.W))

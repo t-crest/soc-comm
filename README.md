@@ -5,15 +5,12 @@
 Collection of different communication methods for chip mulitprocessors.
 
 This repo shall include all the multicore communication we have done in
-[T-CREST](https://github.com/t-crest) as a standalone repo to make the
-work more useful.
+[T-CREST](https://github.com/t-crest) as a standalone repo to make the work more useful.
 
 We use a simple rd/wr/address/data/rdy interface, which maps
-dirctly to the Patmos OCPcore interface (A command is acked in the next
+directly to the Patmos OCPcore interface (A command is acked in the next
 clock cycle or later, IO devices need to be ready to accept a command
 during the ack cycle).
-
-The S4NOC has currently a slightly different interface (no rdy needed).
 
 The repo also contains a Wishbone wrapper.
 
@@ -68,18 +65,15 @@ class PipeConIO(private val addrWidth: Int) extends Bundle {
 }
 ```
 
-```PipeCon``` itself is an abstract class, just containing  the interface:
+```PipeCon``` itself is an abstract class, just containing the interface:
 
 ```scala
 abstract class PipeCon(addrWidth: Int) extends Module {
-  val io = IO(new Bundle {
-    val cpuPort = new PipeConIO(addrWidth)
-  })
-  val cp = io.cpuPort
+   val cpuPort = IO(new PipeConIO(addrWidth))
 }
 ```
 
-The main rules define PipeCon:
+The main rules that define PipeCon:
 
  * There are two transactions: read and write
  * The transaction command is valid for a single clock cycle
@@ -195,17 +189,17 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
 ## TODO
 
  * [x] Use and document the PipeCon, direction from slave
- * [ ] Use a better name for the PipeCon interface (not io)
- * [ ] Wrapper for OCP (in Patmos)
+ * [x] Use a better name for the PipeCon interface (not io)
+ * [x] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST
-   * A multicore "Hello World"
+   * A multicore "Hello World" also for the handbook
  * [ ] Run S4NOC with T-CREST
  * [ ] Move (copy) the fair arbiter from the Chisel book into this repo
    * [ ] Write a test for the arbiter (or delegate it)
  * [ ] Use that arbiter for access to the serial port in T-CREST (using the ip-contributions version)
  * [ ] Do traffic generators like in the Dally book
  * [ ] Provide blocking in the CPU interface if not data available or TX FIFO full
-   * [x] DONE 
+   * [x] DONE
    * [ ] There is one in the Chisel book, compare them, maybe make them the same
  * [ ] Get one-way memory back in here
  * [ ] AXI wrapper

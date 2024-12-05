@@ -4,8 +4,8 @@ import chisel3._
 
 
 /**
-  * Channel directions
-  */
+ * Channel directions
+ */
 object Const {
   val NORTH = 0
   val EAST = 1

@@ -7,7 +7,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import s4noc.Entry
 
-class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
+class PipeConRVTest() extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterfaceRV"
 
   it should "do something" in {
@@ -16,24 +16,44 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
 
         def step() = d.clock.step()
 
-        val cp = d.io.cpuPort
+        val cp = d.cpuPort
         val rx = d.rv.rx
         val tx = d.rv.tx
 
-        val helper = new MemoryMappedIOHelper(d.cp, d.clock)
+        val helper = new MemoryMappedIOHelper(d.cpuPort, d.clock)
 
         step()
         cp.ack.expect(false.B)
 
-        // one cycle write
-        cp.address.poke(0.U)
+        // two cycle write into tx register
+        // TODO: should be a single cycle operation when the tx channel is ready
+        cp.address.poke(4.U)
         cp.wrData.poke(0x0123.U)
         cp.wr.poke(true.B)
         tx.ready.poke(true.B)
-        tx.bits.expect(0x0123.U)
+        tx.valid.expect(false.B)
         step()
+        tx.bits.expect(0x0123.U)
+        tx.valid.expect(true.B)
+
         cp.wr.poke(false.B)
+        step() // TODO: this should not be needed
         cp.ack.expect(true.B)
+        step()
+        cp.ack.expect(false.B)
+
+        // one cycle read of status register
+        cp.address.poke(0.U)
+        cp.rd.poke(true.B)
+        cp.ack.expect(false.B)
+        step()
+        cp.rd.poke(false.B)
+        cp.ack.expect(true.B)
+        cp.rdData.expect(0x01.U)
+        step()
+        cp.ack.expect(false.B)
+
+
 
         // println(helper.read(0))
 
@@ -61,7 +81,7 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
   class MyModule() extends PipeCon(4) {
     val cpif = Module(new PipeConRV(4, UInt(32.W)))
     val fifo = Module(new BubbleFifo(UInt(32.W), 4))
-    io.cpuPort <> cpif.io.cpuPort
+    cpuPort <> cpif.cpuPort
     cpif.tx <> fifo.io.enq
     cpif.rx <> fifo.io.deq
   }
@@ -69,7 +89,7 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "work with a FIFO connected between tx and rx" in {
     test(new MyModule()) { d =>
       d.clock.step(2)
-      val helper = new MemoryMappedIOHelper(d.io.cpuPort, d.clock)
+      val helper = new MemoryMappedIOHelper(d.cpuPort, d.clock)
 
       // should get back the data at some time
       helper.write(1, 0x1234)
@@ -100,8 +120,8 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
     val fifoA = Module(new MemFifo(UInt(32.W), 4))
     val fifoB = Module(new MemFifo(UInt(32.W), 4))
 
-    io.cpA <> cpifA.io.cpuPort
-    io.cpB <> cpifB.io.cpuPort
+    io.cpA <> cpifA.cpuPort
+    io.cpB <> cpifB.cpuPort
     cpifA.tx <> fifoA.io.enq
     cpifB.rx <> fifoA.io.deq
     cpifB.tx <> fifoB.io.enq
@@ -179,7 +199,7 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
   class MyModule3() extends PipeCon(4) {
     val cpif = Module(new PipeConRV(4, Entry(UInt(32.W)), true))
     val fifo = Module(new BubbleFifo(Entry(UInt(32.W)), 4))
-    cp <> cpif.io.cpuPort
+    cpuPort <> cpif.cpuPort
     cpif.tx <> fifo.io.enq
     cpif.rx <> fifo.io.deq
   }
@@ -187,10 +207,10 @@ class PipeConRVTest extends AnyFlatSpec with ChiselScalatestTester {
   it should "do work with a S4NOC Entry" in {
     test(new MyModule3()).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
-        val helper = new MemoryMappedIOHelper(d.cp, d.clock)
+        val helper = new MemoryMappedIOHelper(d.cpuPort, d.clock)
 
         d.clock.step()
-        d.cp.ack.expect(false.B)
+        d.cpuPort.ack.expect(false.B)
         helper.write(8, 0x12)
         helper.write(4, 0x34)
         // should come back on the RX port

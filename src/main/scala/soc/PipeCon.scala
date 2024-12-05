@@ -7,10 +7,9 @@ import chisel3._
   *
   */
 abstract class PipeCon(addrWidth: Int) extends Module {
-  val io = IO(new Bundle {
-    val cpuPort = new PipeConIO(addrWidth)
-  })
-  val cp = io.cpuPort
+
+  val cpuPort = IO(new PipeConIO(addrWidth))
+
   assert(addrWidth >= 2, "Address width needs some size for byte addresses")
 }
 

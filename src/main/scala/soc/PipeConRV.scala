@@ -13,6 +13,7 @@ import s4noc.Entry
   * 8: write receiver, read sender
   * TODO: compare with Chisel book version
   * TODO: make it generic and do a subtype for s4noc
+  * TODO: have some better tests
   */
 class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false) extends PipeCon(addrWidth) {
 
@@ -22,12 +23,21 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
   val rx = rv.rx
 
   val ackReg = RegInit(false.B)
-  cp.ack := ackReg
+  ackReg := false.B
+  cpuPort.ack := ackReg
+  // just look at lower bits
+  val address = cpuPort.address(3, 0)
 
   val status = rx.valid ## tx.ready
 
-  // Two additional registers, used by S4NOC for addressing of nodes
-  val txDestReg = RegInit(0.U(8.W))
+  // This is ugly: two different transmit registers for two different types
+  // dt should be usable here...
+  val txDataReg = RegInit(0.U.asTypeOf(dt))
+  val e = Wire(Entry(UInt(32.W)))
+  e.data := 0.U
+  e.core := 0.U
+  val txS4NocReg = RegInit(e)
+  // Aditional register, used by S4NOC for addressing of nodes
   val rxSourceReg = RegInit(0.U(8.W))
   // TODO: detect Entry type
   // println("Type: " + dt.isInstanceOf[Entry[UInt(32.W)]])
@@ -36,42 +46,43 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
   rx.ready := false.B
   tx.valid := false.B
   if (s4noc) {
-    val e = Wire(new Entry(UInt(32.W)))
-    e.data := cp.wrData
-    e.core := txDestReg
-    rv.tx.bits := e
-    cp.rdData := rv.rx.bits.asTypeOf(Entry(UInt(32.W))).data
+    cpuPort.rdData := rx.bits.asTypeOf(Entry(UInt(32.W))).data
+    tx.bits := txS4NocReg
   } else {
-    rv.tx.bits := cp.wrData
-    cp.rdData := rv.rx.bits
+    cpuPort.rdData := rx.bits
+    tx.bits := txDataReg
   }
 
   val idle :: readStatus :: readSource :: readWait :: writeWait :: Nil = Enum(5)
   val stateReg = RegInit(idle)
-  val wrDataReg = Reg(UInt(32.W))
 
   def idleReaction() = {
-    when (cp.wr) {
-      // printf("Write %d to %d\n", cp.wrData, cp.address)
-      when (cp.address === 8.U) {
-        txDestReg := cp.wrData
+    when (cpuPort.wr) {
+      // printf("Write %d to %d\n", cp.wrData, address)
+      when (address === 8.U) {
+        txS4NocReg.core := cpuPort.wrData
         ackReg := true.B
-      } .otherwise {
+      } .elsewhen (address === 4.U) {
+        /* lets not have this single cycle write for now
         tx.valid := true.B
         when (tx.ready) {
           ackReg := true.B
         } .otherwise {
-          wrDataReg := cp.wrData
+          txReg.data := cpuPort.wrData
           stateReg := writeWait
         }
+         */
+        txDataReg := cpuPort.wrData
+        txS4NocReg.data := cpuPort.wrData
+        stateReg := writeWait
       }
     }
-    when (cp.rd) {
-      // printf("Read from %d\n", cp.address)
-      when (cp.address === 0.U) {
+    when (cpuPort.rd) {
+      // printf("Read from %d\n", address)
+      when (address === 0.U) {
         stateReg := readStatus
         ackReg := true.B
-      } .elsewhen (cp.address === 8.U) {
+      } .elsewhen (address === 8.U) {
         stateReg := readSource
         ackReg := true.B
       } .otherwise {
@@ -80,19 +91,20 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
     }
   }
 
-  ackReg := false.B
   switch(stateReg) {
     is (idle) {
       idleReaction()
     }
     is (readStatus) {
-      cp.rdData := status
+      cpuPort.rdData := status
       stateReg := idle
+      ackReg := false.B
       idleReaction()
     }
     is (readSource) {
-      cp.rdData := rxSourceReg
+      cpuPort.rdData := rxSourceReg
       stateReg := idle
+      ackReg := false.B
       idleReaction()
     }
     is (readWait) {
@@ -103,19 +115,14 @@ class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc:
           rxSourceReg := rx.bits.asTypeOf(Entry(UInt(32.W))).core
         }
         // this is different from write - check
-        cp.ack := true.B
+        cpuPort.ack := true.B
+        ackReg := false.B
         idleReaction()
       }
     }
 
     is (writeWait) {
       tx.valid := true.B
-      if (s4noc) {
-        val e = tx.bits.asTypeOf(Entry(UInt(32.W)))
-        e.data := wrDataReg
-      } else {
-        tx.bits := wrDataReg
-      }
       when (tx.ready) {
         stateReg := idle
         ackReg := true.B
