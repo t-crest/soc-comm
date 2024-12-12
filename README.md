@@ -139,6 +139,8 @@ Additionally, for the S4NOC we provide following port:
 
 ### S4NOC
 
+See more details in [S4NoC.md](S4NoC.md)
+
 The network interface and the S4NOC are written in Chisel and the
 source can be found in [s4noc](src/main/scala/s4noc)
 
