@@ -116,8 +116,8 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
   // Connect two CPU interfaces to two FIFOs
   class MyModule2() extends Module {
     val io = IO(new Bundle {
-      val cpA = new PipeConIO(4)
-      val cpB = new PipeConIO(4)
+      val cpA = new PipeCon(4)
+      val cpB = new PipeCon(4)
     })
     val cpifA = Module(new PipeConDeviceRV(4, UInt(32.W)))
     val cpifB = Module(new PipeConDeviceRV(4, UInt(32.W)))

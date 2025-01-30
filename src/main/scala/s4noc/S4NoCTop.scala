@@ -13,7 +13,7 @@ import soc._
   */
 class S4NoCTop(conf: Config) extends Module  {
   val io = IO(new Bundle {
-    val cpuPorts = Vec(conf.n, new PipeConIO(4)) // TODO: shall we use MultiCoreDevice here?
+    val cpuPorts = Vec(conf.n, new PipeCon(4)) // TODO: shall we use MultiCoreDevice here?
     val cycCnt = Output(UInt(32.W))
   })
 

@@ -7,7 +7,7 @@ import chiseltest._
  * @param mmio
  * @param clock
  */
-class MemoryMappedIOHelper(mmio: PipeConIO, clock: Clock) {
+class MemoryMappedIOHelper(mmio: PipeCon, clock: Clock) {
 
   private var clockCnt = 0
 
