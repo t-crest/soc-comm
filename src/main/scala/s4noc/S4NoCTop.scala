@@ -19,7 +19,7 @@ class S4NoCTop(conf: Config) extends Module  {
 
   val s4noc = Module(new S4NoC(conf))
   for (i <- 0 until conf.n) {
-    val ci = Module(new PipeConS4NoC(4, Entry(UInt(conf.width.W))))
+    val ci = Module(new PipeConDeviceS4NoC(4, Entry(UInt(conf.width.W))))
     s4noc.io.networkPort(i) <> ci.rv
     io.cpuPorts(i) <> ci.cpuPort
   }

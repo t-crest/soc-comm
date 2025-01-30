@@ -7,11 +7,11 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import s4noc.Entry
 
-class PipeConRVTest() extends AnyFlatSpec with ChiselScalatestTester {
+class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The CpuInterfaceRV"
 
   it should "do something" in {
-    test(new PipeConRV(4, UInt(32.W))).withAnnotations(Seq(WriteVcdAnnotation)) {
+    test(new PipeConDeviceRV(4, UInt(32.W))).withAnnotations(Seq(WriteVcdAnnotation)) {
       d => {
 
         def step() = d.clock.step()
@@ -82,8 +82,8 @@ class PipeConRVTest() extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Connect a CPU interface to a FIFO
-  class MyModule() extends PipeCon(4) {
-    val cpif = Module(new PipeConRV(4, UInt(32.W)))
+  class MyModule() extends PipeConDevice(4) {
+    val cpif = Module(new PipeConDeviceRV(4, UInt(32.W)))
     val fifo = Module(new BubbleFifo(UInt(32.W), 4))
     cpuPort <> cpif.cpuPort
     cpif.tx <> fifo.io.enq
@@ -119,8 +119,8 @@ class PipeConRVTest() extends AnyFlatSpec with ChiselScalatestTester {
       val cpA = new PipeConIO(4)
       val cpB = new PipeConIO(4)
     })
-    val cpifA = Module(new PipeConRV(4, UInt(32.W)))
-    val cpifB = Module(new PipeConRV(4, UInt(32.W)))
+    val cpifA = Module(new PipeConDeviceRV(4, UInt(32.W)))
+    val cpifB = Module(new PipeConDeviceRV(4, UInt(32.W)))
     val fifoA = Module(new MemFifo(UInt(32.W), 4))
     val fifoB = Module(new MemFifo(UInt(32.W), 4))
 
@@ -200,8 +200,8 @@ class PipeConRVTest() extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Connect a CPU interface to a FIFO with Entry
-  class MyModule3() extends PipeCon(4) {
-    val cpif = Module(new PipeConRV(4, Entry(UInt(32.W)), true))
+  class MyModule3() extends PipeConDevice(4) {
+    val cpif = Module(new PipeConDeviceRV(4, Entry(UInt(32.W)), true))
     val fifo = Module(new BubbleFifo(Entry(UInt(32.W)), 4))
     cpuPort <> cpif.cpuPort
     cpif.tx <> fifo.io.enq

@@ -15,7 +15,7 @@ import s4noc.Entry
   * TODO: make it generic and do a subtype for s4noc
   * TODO: have some better tests
   */
-class PipeConRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false) extends PipeCon(addrWidth) {
+class PipeConDeviceRV[T <: Data](private val addrWidth: Int, private val dt: T, s4noc: Boolean = false) extends PipeConDevice(addrWidth) {
 
   val rv = IO(new ReadyValidChannelsIO(dt))
 

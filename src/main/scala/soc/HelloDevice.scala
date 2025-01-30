@@ -9,7 +9,7 @@ import chisel3._
   *
   * @param coreId
   */
-class HelloDevice(coreId: Int) extends PipeCon(3) {
+class HelloDevice(coreId: Int) extends PipeConDevice(3) {
 
   // TODO: following five lines are duplicated in PipeConRV, back to PipeCon class?
   val addrReg = RegInit(0.U(3.W))

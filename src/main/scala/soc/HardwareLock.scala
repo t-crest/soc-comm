@@ -13,7 +13,7 @@ import chisel3._
   *
   * Could be extended to a multicore lock.
   */
-class HardwareLock() extends PipeCon(2) {
+class HardwareLock() extends PipeConDevice(2) {
 
   val lockReg = RegInit(false.B)
   val ackReg = RegInit(false.B)
