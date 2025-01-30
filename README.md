@@ -54,7 +54,7 @@ name `PipeCon` for pipelined connection.
 The interface consisting of following signals:
 
 ```scala
-class PipeConIO(private val addrWidth: Int) extends Bundle {
+class PipeCon(private val addrWidth: Int) extends Bundle {
    val address = Input(UInt(addrWidth.W))
    val rd = Input(Bool())
    val wr = Input(Bool())
@@ -68,7 +68,7 @@ class PipeConIO(private val addrWidth: Int) extends Bundle {
 ```PipeCon``` itself is an abstract class, just containing the interface:
 
 ```scala
-abstract class PipeCon(addrWidth: Int) extends Module {
+abstract class PipeConDevice(addrWidth: Int) extends Module {
    val cpuPort = IO(new PipeConIO(addrWidth))
 }
 ```
@@ -195,7 +195,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
  * [x] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST
    * A multicore "Hello World" also for the handbook
- * [ ] Run S4NOC with T-CREST
+ * [*] Run S4NOC with T-CREST
  * [ ] Move (copy) the fair arbiter from the Chisel book into this repo
    * [ ] Write a test for the arbiter (or delegate it)
  * [ ] Use that arbiter for access to the serial port in T-CREST (using the ip-contributions version)
