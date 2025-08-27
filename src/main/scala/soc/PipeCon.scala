@@ -17,3 +17,7 @@ class PipeCon(private val addrWidth: Int) extends Bundle {
   val wrMask = Input(UInt(4.W))
   val ack = Output(Bool())
 }
+
+object PipeCon {
+  def apply(addrWidth: Int): PipeCon = new PipeCon(addrWidth)
+}
