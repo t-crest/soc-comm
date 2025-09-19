@@ -13,7 +13,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
 
-import Const._
+import s4noc.Const._
 
 /**
  * A manually connected 2x2 NoC for testing.

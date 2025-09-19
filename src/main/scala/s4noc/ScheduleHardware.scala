@@ -15,23 +15,23 @@ import chisel3.util._
 class ScheduleHardware[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   val io = IO(new Bundle() {
     val in = Input(UInt(16.W))
-    val out = Output(Vec(Const.NR_OF_PORTS, UInt(3.W)))
+    val out = Output(Vec(s4noc.Const.NR_OF_PORTS, UInt(3.W)))
   })
 
   // Just convert schedule table to a Chisel type table
   // unused slot is -1, convert to 0.U
-  val sched = Wire(Vec(schedule.length, Vec(Const.NR_OF_PORTS, UInt(3.W))))
+  val sched = Wire(Vec(schedule.length, Vec(s4noc.Const.NR_OF_PORTS, UInt(3.W))))
   for (i <- 0 until schedule.length) {
-    for (j <- 0 until Const.NR_OF_PORTS) {
+    for (j <- 0 until s4noc.Const.NR_OF_PORTS) {
       val s = schedule(i)(j)
-      val v = if (s == -1) Const.INVALID else s
+      val v = if (s == -1) s4noc.Const.INVALID else s
       sched(i)(j) := v.U(3.W)
     }
   }
 
   val currentSched = sched(io.in)
 
-  for (j <- 0 until Const.NR_OF_PORTS) {
+  for (j <- 0 until s4noc.Const.NR_OF_PORTS) {
     io.out(j) := currentSched(j)
   }
 }

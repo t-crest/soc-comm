@@ -23,11 +23,11 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
 
   // Just convert schedule table to a Chisel type table
   // unused slot is -1, convert to 0.U
-  val sched = Wire(Vec(schedule.length, Vec(Const.NR_OF_PORTS, UInt(3.W))))
+  val sched = Wire(Vec(schedule.length, Vec(s4noc.Const.NR_OF_PORTS, UInt(3.W))))
   for (i <- 0 until schedule.length) {
-    for (j <- 0 until Const.NR_OF_PORTS) {
+    for (j <- 0 until s4noc.Const.NR_OF_PORTS) {
       val s = schedule(i)(j)
-      val v = if (s == -1) Const.INVALID else s
+      val v = if (s == -1) s4noc.Const.INVALID else s
       sched(i)(j) := v.U(3.W)
     }
   }
@@ -38,9 +38,9 @@ class S4Router[T <: Data](schedule: Array[Array[Int]], dt: T) extends Module {
   // TODO: test if this movement of the register past the schedule table works, better here a register
   // val currentSched = RegNext(sched(regCounter))
 
-  for (j <- 0 until Const.NR_OF_PORTS) {
+  for (j <- 0 until s4noc.Const.NR_OF_PORTS) {
     io.ports(j).out.data := RegNext(io.ports(currentSched(j)).in.data)
-    io.ports(j).out.valid := RegNext(Mux(currentSched(j) === Const.INVALID.U, false.B, io.ports(currentSched(j)).in.valid), init = false.B)
+    io.ports(j).out.valid := RegNext(Mux(currentSched(j) === s4noc.Const.INVALID.U, false.B, io.ports(currentSched(j)).in.valid), init = false.B)
   }
 }
 

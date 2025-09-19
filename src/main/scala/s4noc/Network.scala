@@ -7,7 +7,7 @@
 package s4noc
 
 import chisel3._
-import Const._
+import s4noc.Const._
 
 /**
  * Create and connect a n x n NoC.
