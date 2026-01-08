@@ -37,10 +37,10 @@ object x extends App {
     println(b.depth)
     b match {
       case MemType(depth) => println(s"Mem ${b.depth}")
-      case BubbleType(depth) => println(s"Bubble ${b.depth}")
+      case RegType(depth) => println(s"Bubble ${b.depth}")
     }
   }
-  val t = BubbleType(10)
+  val t = RegType(10)
   println(t.depth)
   foo(t)
 

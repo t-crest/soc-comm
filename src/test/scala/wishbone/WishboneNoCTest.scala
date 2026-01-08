@@ -10,7 +10,7 @@ class WishboneNoCTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "NoC Tester"
 
   "S4NoC in Wishbone" should "have a simple test" in {
-    test(new S4NoCTopWB(Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32))) { d =>
+    test(new S4NoCTopWB(Config(4, RegType(2), RegType(2), RegType(2), 32))) { d =>
       val helpSnd = new WishboneIOHelper(d.io.wbPorts(0), d.clock)
       val helpRcv = new WishboneIOHelper(d.io.wbPorts(3), d.clock)
       helpSnd.setDest(3)

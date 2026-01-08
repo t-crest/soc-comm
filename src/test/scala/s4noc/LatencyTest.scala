@@ -17,7 +17,7 @@ class LatencyTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTeste
   for (i <- 0 until CNT) data(i) = rnd.nextInt()
 
   it should "not overrun the channel" in {
-    test(new S4NoCTop(Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32))) { d =>
+    test(new S4NoCTop(Config(4, RegType(2), RegType(2), RegType(2), 32))) { d =>
 
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
@@ -40,7 +40,7 @@ class LatencyTest(dontRun: String) extends AnyFlatSpec with ChiselScalatestTeste
   }
 
   it should "measure the latency" in {
-    test(new S4NoCTop(Config(4, BubbleType(2), BubbleType(2), BubbleType(2), 32))) { d =>
+    test(new S4NoCTop(Config(4, RegType(2), RegType(2), RegType(2), 32))) { d =>
 
       val helpSnd = new MemoryMappedIOHelper(d.io.cpuPorts(0), d.clock)
       val helpRcv = new MemoryMappedIOHelper(d.io.cpuPorts(3), d.clock)
