@@ -195,7 +195,7 @@ To analyze memory issues (e.g., increase the heap size with Xmx) use a ```.sbtop
  * [x] Wrapper for OCP (in Patmos)
  * [ ] Integrate a simple multicore device with T-CREST
    * A multicore "Hello World" also for the handbook
- * [*] Run S4NOC with T-CREST
+ * [x] Run S4NOC with T-CREST
  * [ ] Move (copy) the fair arbiter from the Chisel book into this repo
    * [ ] Write a test for the arbiter (or delegate it)
  * [ ] Use that arbiter for access to the serial port in T-CREST (using the ip-contributions version)

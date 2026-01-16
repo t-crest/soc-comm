@@ -6,7 +6,7 @@ import chisel3.util._
 
 // Only one will be ready, as we cannot take two values
 // This would need a shadow register, a reasonable optimisation
-// Without optimisation one channel can only take one data every 2 clock cycles
+// Without optimisation, one channel can only take one data every 2 clock cycles
 class ArbiterTree[T <: Data: Manifest](n: Int, private val gen: T) extends Module {
   val io = IO(new Bundle {
     val in = Flipped(Vec(n, new DecoupledIO(gen)))
