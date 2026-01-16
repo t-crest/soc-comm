@@ -132,7 +132,7 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
     cpifA.rx <> fifoB.io.deq
   }
 
-  it should "Send and receive one word every 2 clock cycles" in {
+  it should "send and receive one word every 2 clock cycles" in {
     test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
@@ -147,7 +147,7 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "Should be able to run in full speed" in {
+  it should "be able to run at full speed" in {
     test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
@@ -162,7 +162,7 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "Should do HW handshake when rcv is slowing down" in {
+  it should "do HW handshake when rcv is slowing down" in {
     test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
@@ -180,7 +180,7 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "Should do HW handshake when send is slowing down" in {
+  it should "do HW handshake when send is slowing down" in {
     test(new MyModule2()) { d =>
       d.clock.step(2)
       val sndHelper = new MemoryMappedIOHelper(d.io.cpA, d.clock)
@@ -208,7 +208,7 @@ class PipeConDeviceRVTest() extends AnyFlatSpec with ChiselScalatestTester {
     cpif.rx <> fifo.io.deq
   }
 
-  it should "work with a S4NOC Entry" in {
+  it should "work with an S4NOC Entry" in {
     test(new MyModule3()) {
       d => {
         val helper = new MemoryMappedIOHelper(d.cpuPort, d.clock)

@@ -79,7 +79,7 @@ class WishboneTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  it should "the lock should work" in {
+  it should "support the lock" in {
     test(new WBHardwareLock()) {
       d => {
         val wbh = new WishboneIOHelper(d.io.port, d.clock)

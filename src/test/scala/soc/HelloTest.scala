@@ -8,7 +8,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class HelloTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "The HelloDevice"
 
-  it should "have single cycle timing" in {
+  it should "have single-cycle timing" in {
     test(new HelloDevice(3)) {
       d => {
 

@@ -70,9 +70,9 @@ class NocTest extends AnyFlatSpec with ChiselScalatestTester {
   }
 
 
-  // TODO: this test fails with BubbleType FIFOs
-  // Maybe because the bubble can only handle one receive every two clock cycles?
-  it should "have the correct sender ID in the IO register, multi threaded" in {
+  // This test fails with BubbleType FIFOs
+  // Probably because the bubble FIFO can only handle one receive every two clock cycles?
+  it should "have the correct sender ID in the IO register, multi-threaded" in {
     val n = 4
     test(new S4NoCTop(Config(n, MemType(16), MemType(2), MemType(2), 32))).withAnnotations(Seq(WriteVcdAnnotation)) { d =>
 
