@@ -7,13 +7,15 @@ import chisel3.util._
 /**
   * Poor mans debugger, using a UART instead of JTAG.
   */
-class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
+class UartDebug(frequ: Int, baudRate: Int = 115200, n: Int = 32) extends Module {
   val io = IO(new Bundle {
     val rx = Input(Bool())
     val tx = Output(Bool())
-    val dout = Output(UInt(32.W))
-    val din = Input(UInt(32.W))
+    val dout = Output(UInt(n.W))
+    val din = Input(UInt(n.W))
   })
+
+  assert(n % 4 == 0, "number of bits must be a multiple of 4")
 
   // ASCII -> hex including valid signal
   def ascii2hex(in: UInt) = {
@@ -93,10 +95,10 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
     tx.io.channel.valid := true.B
   }
 
-  val doutReg = RegInit(0x0.U(32.W))
-  val doutShftReg = RegInit(0.U(32.W))
-  val dinShftReg = RegInit(0.U(32.W))
-  val cntRdReg = RegInit(0.U(4.W))
+  val doutReg = RegInit(0x0.U(n.W))
+  val doutShftReg = RegInit(0.U(n.W))
+  val dinShftReg = RegInit(0.U(n.W))
+  val cntRdReg = RegInit(0.U(8.W))
 
   object State extends ChiselEnum {
     val sIdle, sLineFeed, sWrite, sRead, sCr = Value
@@ -113,7 +115,7 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
       when (validReg && inReg === 'r'.U) {
         stateReg := sRead
         dinShftReg := io.din
-        cntRdReg := 8.U
+        cntRdReg := (n/4).U
       }
     }
     is(sWrite) {
@@ -124,7 +126,6 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
         }
         val (out, valid) = ascii2hex(inReg)
         when (valid) {
-          doutShftReg := doutShftReg(31, 8)
           doutShftReg := doutShftReg ## out
         }
       }
@@ -139,7 +140,7 @@ class UartDebug(frequ: Int, baudRate: Int = 115200) extends Module {
     is(sRead) {
       when (cntRdReg =/= 0.U) {
         tx.io.channel.valid := true.B
-        tx.io.channel.bits := hex2ascii(dinShftReg(31, 28))
+        tx.io.channel.bits := hex2ascii(dinShftReg(n-1, n-4))
         when (tx.io.channel.ready) {
           dinShftReg := dinShftReg << 4
           cntRdReg := cntRdReg - 1.U
