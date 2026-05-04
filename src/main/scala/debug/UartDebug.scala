@@ -72,8 +72,8 @@ class UartDebug(frequ: Int, baudRate: Int = 115200, n: Int = 32) extends Module 
     out
   }
 
-  val tx = Module(new BufferedTx(100000000, baudRate))
-  val rx = Module(new Rx(100000000, baudRate))
+  val tx = Module(new BufferedTx(frequ, baudRate))
+  val rx = Module(new Rx(frequ, baudRate))
 
   io.tx := tx.io.txd
   rx.io.rxd := io.rx
