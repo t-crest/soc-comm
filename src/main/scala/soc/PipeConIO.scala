@@ -8,7 +8,7 @@ import chisel3._
  *
  * @param addrWidth width of the address part
  */
-class PipeCon(private val addrWidth: Int) extends Bundle {
+class PipeConIO(private val addrWidth: Int) extends Bundle {
   val address = Input(UInt(addrWidth.W))
   val rd = Input(Bool())
   val wr = Input(Bool())
@@ -18,6 +18,6 @@ class PipeCon(private val addrWidth: Int) extends Bundle {
   val ack = Output(Bool())
 }
 
-object PipeCon {
-  def apply(addrWidth: Int): PipeCon = new PipeCon(addrWidth)
+object PipeConIO {
+  def apply(addrWidth: Int): PipeConIO = new PipeConIO(addrWidth)
 }

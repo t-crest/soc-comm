@@ -21,7 +21,7 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
   val tagBits = addrWidth - indexBits - 2
   require(tagBits > 0, "addrWidth is too small for the requested number of cache lines")
 
-  val memPort = IO(Flipped(new PipeCon(addrWidth)))
+  val memPort = IO(Flipped(new PipeConIO(addrWidth)))
 
   val dataMem = SyncReadMem(numLines, UInt(32.W))
   val tagMem = SyncReadMem(numLines, UInt(tagBits.W))

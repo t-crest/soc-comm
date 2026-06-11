@@ -14,8 +14,8 @@ class PipeConArbiter(addrWidth: Int, nrPorts: Int) extends Module {
   require(addrWidth >= 2, "PipeCon addresses are byte addresses")
   require(nrPorts >= 1, "PipeConArbiter needs at least one input port")
 
-  val cpuPorts = IO(Vec(nrPorts, new PipeCon(addrWidth)))
-  val memPort = IO(Flipped(new PipeCon(addrWidth)))
+  val cpuPorts = IO(Vec(nrPorts, new PipeConIO(addrWidth)))
+  val memPort = IO(Flipped(new PipeConIO(addrWidth)))
 
   val portBits = log2Ceil(nrPorts max 2)
 

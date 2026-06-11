@@ -12,7 +12,7 @@ import chisel3._
 import chisel3.util.DecoupledIO
 
 abstract class MultiCoreDevice(nrCores: Int, addrWidth: Int) extends Module {
-  val ports = IO(Vec(nrCores, new PipeCon(addrWidth)))
+  val ports = IO(Vec(nrCores, new PipeConIO(addrWidth)))
 }
 
 /**
