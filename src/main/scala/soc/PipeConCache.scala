@@ -13,7 +13,7 @@ import chisel3.util._
   * This simple version caches one 32-bit word per line. The lower two address
   * bits select byte lanes through wrMask, while tag/index are word based.
   */
-class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidth) {
+class PipeConCache(addrWidth: Int = 32, numLines: Int = 16) extends PipeConDevice(addrWidth) {
   require(addrWidth >= 4, "PipeConCache expects byte addresses with room for tag/index")
   require(numLines >= 2 && isPow2(numLines), "numLines must be a power of two and at least 2")
 
