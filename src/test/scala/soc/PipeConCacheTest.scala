@@ -153,6 +153,41 @@ class PipeConCacheTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  it should "acknowledge pipelined read hits one cycle after each request" in {
+    test(new PipeConCache(addrWidth = 8, numLines = 4)) { dut =>
+      initCpu(dut)
+      val mem = new PipeConMemoryModel(
+        dut,
+        Map(
+          0x00 -> BigInt("11112222", 16),
+          0x04 -> BigInt("33334444", 16)
+        )
+      )
+      mem.cycle()
+
+      assert(read(dut, mem, 0x00) == BigInt("11112222", 16))
+      assert(read(dut, mem, 0x04) == BigInt("33334444", 16))
+
+      dut.cpuPort.address.poke(0x00.U)
+      dut.cpuPort.rd.poke(true.B)
+      dut.cpuPort.wr.poke(false.B)
+      mem.cycle()
+      dut.cpuPort.ack.expect(true.B)
+      dut.cpuPort.rdData.expect(BigInt("11112222", 16).U)
+
+      dut.cpuPort.address.poke(0x04.U)
+      dut.cpuPort.rd.poke(true.B)
+      mem.cycle()
+      dut.cpuPort.ack.expect(true.B)
+      dut.cpuPort.rdData.expect(BigInt("33334444", 16).U)
+
+      dut.cpuPort.rd.poke(false.B)
+      mem.cycle()
+      dut.cpuPort.ack.expect(false.B)
+      assert(mem.reads == 2, "pipelined hits should not issue additional memory reads")
+    }
+  }
+
   it should "merge byte writes on a hit" in {
     test(new PipeConCache(addrWidth = 8, numLines = 4)) { dut =>
       initCpu(dut)

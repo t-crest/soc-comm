@@ -23,8 +23,8 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
 
   val memPort = IO(Flipped(new PipeCon(addrWidth)))
 
-  val dataArray = Reg(Vec(numLines, UInt(32.W)))
-  val tagArray = Reg(Vec(numLines, UInt(tagBits.W)))
+  val dataMem = SyncReadMem(numLines, UInt(32.W))
+  val tagMem = SyncReadMem(numLines, UInt(tagBits.W))
   val validArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
   val dirtyArray = RegInit(VecInit(Seq.fill(numLines)(false.B)))
 
@@ -36,7 +36,7 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
   val evictData = Reg(UInt(32.W))
   val ackData = RegInit(0.U(32.W))
 
-  val sIdle :: sCpuAck :: sWriteBackCmd :: sWriteBackWait :: sRefillCmd :: sRefillWait :: sInstallWrite :: Nil = Enum(7)
+  val sIdle :: sLookup :: sCpuAck :: sWriteBackCmd :: sWriteBackWait :: sRefillCmd :: sRefillWait :: sInstallWrite :: Nil = Enum(8)
   val state = RegInit(sIdle)
 
   def indexOf(addr: UInt): UInt = addr(indexBits + 1, 2)
@@ -50,8 +50,21 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
     }).asUInt
   }
 
-  cpuPort.ack := state === sCpuAck
-  cpuPort.rdData := ackData
+  val cpuCmd = cpuPort.rd || cpuPort.wr
+  val lookupRead = (state === sIdle || state === sLookup || state === sCpuAck) && cpuCmd
+  val lookupIndex = indexOf(cpuPort.address)
+  val lookupData = dataMem.read(lookupIndex, lookupRead)
+  val lookupTag = tagMem.read(lookupIndex, lookupRead)
+  val lookupReqIndex = indexOf(reqAddr)
+  val lookupReqTag = tagOf(reqAddr)
+  val lookupValid = validArray(lookupReqIndex)
+  val lookupHit = state === sLookup && lookupValid && lookupTag === lookupReqTag
+  val lookupOldDirty = lookupValid && dirtyArray(lookupReqIndex)
+  val lookupFullWriteAllocate = state === sLookup && !lookupHit && !lookupOldDirty && reqWrite && reqMask === "b1111".U
+  val lookupWriteData = mergeBytes(lookupData, reqWdata, reqMask)
+
+  cpuPort.ack := state === sCpuAck || lookupHit || lookupFullWriteAllocate
+  cpuPort.rdData := Mux(lookupHit, Mux(reqWrite, lookupWriteData, lookupData), Mux(lookupFullWriteAllocate, reqWdata, ackData))
 
   memPort.address := 0.U
   memPort.rd := false.B
@@ -64,54 +77,61 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
   def installWrite(): Unit = {
     val idx = indexOf(reqAddr)
     val tag = tagOf(reqAddr)
-    val merged = mergeBytes(0.U, reqWdata, reqMask)
 
-    dataArray(idx) := merged
-    tagArray(idx) := tag
+    dataMem.write(idx, reqWdata)
+    tagMem.write(idx, tag)
     validArray(idx) := true.B
     dirtyArray(idx) := true.B
-    ackData := merged
+    ackData := reqWdata
     state := sCpuAck
   }
 
   def startCpuCommand(): Unit = {
-    val cpuCmd = cpuPort.rd || cpuPort.wr
-    val idx = indexOf(cpuPort.address)
-    val tag = tagOf(cpuPort.address)
-    val hit = validArray(idx) && tagArray(idx) === tag
-    val oldDirty = validArray(idx) && dirtyArray(idx)
-    val writeData = mergeBytes(dataArray(idx), cpuPort.wrData, cpuPort.wrMask)
-
     when(cpuCmd) {
       reqAddr := cpuPort.address
       reqWrite := cpuPort.wr
       reqWdata := cpuPort.wrData
       reqMask := cpuPort.wrMask
+      state := sLookup
+    }
+  }
 
-      when(hit) {
-        when(cpuPort.wr) {
-          dataArray(idx) := writeData
-          dirtyArray(idx) := true.B
-          ackData := writeData
-        }.otherwise {
-          ackData := dataArray(idx)
-        }
-        state := sCpuAck
+  def finishLookup(): Unit = {
+    when(lookupHit) {
+      when(reqWrite) {
+        dataMem.write(lookupReqIndex, lookupWriteData)
+        dirtyArray(lookupReqIndex) := true.B
+      }
+      when(cpuCmd) {
+        reqAddr := cpuPort.address
+        reqWrite := cpuPort.wr
+        reqWdata := cpuPort.wrData
+        reqMask := cpuPort.wrMask
+        state := sLookup
       }.otherwise {
-        evictTag := tagArray(idx)
-        evictData := dataArray(idx)
-        when(oldDirty) {
-          state := sWriteBackCmd
-        }.elsewhen(cpuPort.wr && cpuPort.wrMask === "b1111".U) {
-          dataArray(idx) := cpuPort.wrData
-          tagArray(idx) := tag
-          validArray(idx) := true.B
-          dirtyArray(idx) := true.B
-          ackData := cpuPort.wrData
-          state := sCpuAck
+        state := sIdle
+      }
+    }.otherwise {
+      evictTag := lookupTag
+      evictData := lookupData
+      when(lookupOldDirty) {
+        state := sWriteBackCmd
+      }.elsewhen(reqWrite && reqMask === "b1111".U) {
+        dataMem.write(lookupReqIndex, reqWdata)
+        tagMem.write(lookupReqIndex, lookupReqTag)
+        validArray(lookupReqIndex) := true.B
+        dirtyArray(lookupReqIndex) := true.B
+        when(cpuCmd) {
+          reqAddr := cpuPort.address
+          reqWrite := cpuPort.wr
+          reqWdata := cpuPort.wrData
+          reqMask := cpuPort.wrMask
+          state := sLookup
         }.otherwise {
-          state := sRefillCmd
+          state := sIdle
         }
+      }.otherwise {
+        state := sRefillCmd
       }
     }
   }
@@ -119,6 +139,10 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
   switch(state) {
     is(sIdle) {
       startCpuCommand()
+    }
+
+    is(sLookup) {
+      finishLookup()
     }
 
     is(sCpuAck) {
@@ -155,8 +179,8 @@ class PipeConCache(addrWidth: Int, numLines: Int) extends PipeConDevice(addrWidt
         val idx = indexOf(reqAddr)
         val refillData = Mux(reqWrite, mergeBytes(memPort.rdData, reqWdata, reqMask), memPort.rdData)
 
-        dataArray(idx) := refillData
-        tagArray(idx) := tagOf(reqAddr)
+        dataMem.write(idx, refillData)
+        tagMem.write(idx, tagOf(reqAddr))
         validArray(idx) := true.B
         dirtyArray(idx) := reqWrite
         ackData := refillData
