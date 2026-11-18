@@ -39,7 +39,11 @@ crossPaths := false
 // add sonatype repository settings
 // snapshot versions publish to sonatype snapshot repository
 // other versions publish to sonatype staging repository
-publishTo := Some(Opts.resolver.sonatypeStaging)
+// publishTo := Some(Opts.resolver.sonatypeStaging)
+  publishTo := {
+    if (isSnapshot.value) Some(Resolver.sonatypeCentralSnapshots)
+    else localStaging.value
+  }
 
 
 lazy val soc_comm = (project in file("."))
