@@ -11,11 +11,11 @@ import slimflit._
 trait BufferFactory {
   def name: String
   def create[T <: Data](d: SlimPackPort[T], depth: Int)(implicit p: SlimFlitParams[T]): InputBuffer[T] = {
-    val buf = buffer(d.bits, depth)
+    val buf = Module(buffer(d.bits, depth)).io
     InputBuffer(d.dir, buf.enq.asTypeOf(d), buf.deq.asTypeOf(d))
   }
 
-  def buffer[T <: Data](d: T, depth: Int): QueueIO[T]
+  def buffer[T <: Data](d: T, depth: Int): Module { val io: QueueIO[T] }
 }
 
 case class InputBuffer[T <: Data](

@@ -24,7 +24,7 @@ object BarrelRotater {
       case d::_ =>
         val rot = rotatedLeft(in, i)
         val muxed = in.zip(rot).map { case (noShift, shift) => sel(d, shift, noShift) }
-        barrelRotateLeft(muxed, ds.tail, i << i)(sel)
+        barrelRotateLeft(muxed, ds.tail, i << 1)(sel)
     }
   }
 
@@ -41,7 +41,7 @@ object BarrelRotater {
       case d::_ =>
         val rot = rotatedRight(in, i)
         val muxed = in.zip(rot).map { case (noShift, shift) => sel(d, shift, noShift) }
-        barrelRotateRight(muxed, ds.tail, i << i)(sel)
+        barrelRotateRight(muxed, ds.tail, i << 1)(sel)
     }
   }
   def right[T <: Data](in: Seq[T], shamt: UInt): Vec[T] = {

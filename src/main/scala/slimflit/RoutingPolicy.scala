@@ -57,11 +57,11 @@ class XYRouting(torus: Boolean) extends RoutingPolicy {
       val dy = (to.y - from.y + p.ny) % p.ny
       val eastbound = true // dx <= p.nx / 2
       val southbound = true // dy <= p.ny / 2
-      SlimPack.Lit(to, southbound, eastbound, payload)
+      SlimPack.Lit(to, eastbound, southbound, payload)
     } else {
       val southbound = to.y > from.y
       val eastbound = to.x > from.x
-      SlimPack.Lit(to, southbound, eastbound, payload)
+      SlimPack.Lit(to, eastbound, southbound, payload)
     }
   }
 

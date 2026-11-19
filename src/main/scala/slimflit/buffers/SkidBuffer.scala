@@ -41,7 +41,7 @@ class SkidBuffer[T <: Data](d: T) extends Module {
     }
   }
 
-  io.count := mainValid + skidValid
+  io.count := mainValid +& skidValid
 
 }
 
@@ -49,6 +49,6 @@ object SkidBuffer extends BufferFactory {
   def name: String = "SkidBuffer"
   def buffer[T <: Data](d: T, depth: Int) = {
     require(depth == 2, "SkidBuffer only supports depth of 2")
-    Module(new SkidBuffer(d)).io
+    new SkidBuffer(d)
   }
 }

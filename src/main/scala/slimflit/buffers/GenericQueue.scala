@@ -11,12 +11,12 @@ import slimflit._
 object GenericQueue extends BufferFactory {
   def name: String = "GenericQueue"
   def buffer[T <: Data](d: T, depth: Int) = 
-    Module(new Queue(
+    new Queue(
       gen = d, 
       entries = depth,
       pipe = false,
       flow = false,
       useSyncReadMem = true,
       hasFlush = false
-    )).io
+    )
 }
