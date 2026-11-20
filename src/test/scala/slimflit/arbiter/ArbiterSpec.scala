@@ -75,13 +75,14 @@ class ArbiterWrapped[T <: Data](f: ArbiterFactory, d: T, n: Int) extends Module 
 
 abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselScalatestTester {
 
+  val annotations = Seq(WriteVcdAnnotation)
 
   f.name should "serve requests after at most n-1 cycles" in {
     for (n <- Seq(2, 4, 8, 16, 32)) {
 
       val w = 8.W
       val reps = 10
-      test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(annotations) { dut =>
         val bfm = new ArbiterBfm(dut.io, dut.clock)
 
 
@@ -105,7 +106,7 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
     for (n <- Seq(2, 4, 8, 16)) {
       val w = 8.W
       val reps = 8
-      test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(annotations) { dut =>
         val bfm = new ArbiterBfm(dut.io, dut.clock)
 
 
@@ -138,14 +139,11 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
   }
 
   if (f.firstComeFirstServe) it should "hold a grant under backpressure" in {
-    // plan: let requests arrive staggered, and first dequeue after all requests have arrived
-    // the first request to arrive should be granted first
     val n = 4
     val w = 8.W
-    test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(annotations) { dut =>
       
       val bfm = new ArbiterBfm(dut.io, dut.clock)
-
 
       // insert two requests to fill the buffer
       val t0 = bfm.enqueue(0, 0.U)
@@ -153,6 +151,8 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
       val t1 = bfm.enqueue(0, 1.U)
       dut.clock.step(1)
 
+      // now let requests arrive staggered in time
+      // none of them should be granted until the buffer is drained
       val ts = fork {
         // 3 comes first
         val t3 = bfm.enqueue(3, 3.U)
@@ -169,15 +169,19 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
         val t1 = bfm.enqueue(1, 1.U)
       }
 
+      // drain the buffer
       dut.clock.step(5)
       val _ = bfm.dequeue()
-      dut.clock.step(1)
+      dut.clock.step()
       val _ = bfm.dequeue()
-      dut.clock.step(1)
+      dut.clock.step()
+
+      // the next request should be the one that came first, which is 3
       val (data, _) = bfm.dequeue()
       assert(data.litValue == 3, s"Expected 3 to be granted first, but got ${data.litValue}")
-      dut.clock.step(1)
+      dut.clock.step()
 
+      // finish draining the rest of the requests
       for (i <- 0 until 3) bfm.dequeue() 
 
       ts.joinAndStep(dut.clock)
@@ -188,6 +192,32 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
   it should "provide a single requester with full throughput" in {
     // plan: for each input, let it send a burst of 10 and check that there is full throughput at the ingress
     // egress is eagerly consumed
+
+    val n = 4
+    val w = 8.W
+    val burst = 10
+    test(new ArbiterWrapped(f, UInt(w), n)).withAnnotations(annotations) { dut =>
+      val bfm = new ArbiterBfm(dut.io, dut.clock)
+
+      // consumer
+      fork {
+        dut.clock.step() // wait for the first enqueue to be buffered
+        for (i <- 0 until n * burst) {
+          val start = dut.clock.getStepCount
+          val (data, end) = bfm.dequeue()
+          assert(end - start == 0, s"Dequeue took ${end - start} cycles, expected no more than 1 cycles")
+        }
+      }
+
+      for (i <- 0 until n) {
+        for (j <- 0 until burst) {
+          val start = dut.clock.getStepCount
+          val end = bfm.enqueue(i, (i + 1).U)
+          assert(end - start == 0, s"Request $i was served in ${end - start} cycles, expected no more than 1 cycles")
+        }
+      }
+
+    }
   }
 
 
