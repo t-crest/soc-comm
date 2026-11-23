@@ -6,54 +6,28 @@ import chiseltest._
 
 import org.scalatest.flatspec.AnyFlatSpec
 
-
-class BufferBfm[T <: Data](io: QueueIO[T], val clock: Clock) {
-
-  def enqueue(data: T): Long = {
-    io.enq.bits.poke(data)
-    io.enq.valid.poke(1.B)
-
-    while (!io.enq.ready.peekBoolean()) {
-      clock.step()
-    }
-    val t = clock.getStepCount
-    
-    clock.step()
-    io.enq.valid.poke(0.B)
-    t
-  }
-
-  def dequeue(): (T, Long) = {
-    io.deq.ready.poke(true.B)
-
-    while (!io.deq.valid.peekBoolean()) {
-      clock.step()
-    }
-
-    val data = io.deq.bits.peek()
-    val t = clock.getStepCount
-    clock.step()
-    io.deq.ready.poke(false.B)
-    data -> t
-  }
-
-  def expectDequeue(expected: T): Long = {
-    io.deq.ready.poke(true.B)
-
-    while (!io.deq.valid.peekBoolean()) {
-      clock.step()
-    }
-
-    io.deq.bits.expect(expected)
-    val t = clock.getStepCount
-    clock.step()
-    io.deq.ready.poke(false.B)
-    t
-  }
-
-}
+class BubbleBufferSpec extends BufferSpec(
+  BubbleBuffer, 
+  minCapacity = 1, 
+  maxCapacity = 64, 
+  throughput = 0.5
+)
+class SkidBufferSpec extends BufferSpec(
+  SkidBuffer, 
+  minCapacity = 2, 
+  maxCapacity = 2, 
+  throughput = 1.0
+)
+class GenericQueueSpec extends BufferSpec(
+  GenericQueue, 
+  minCapacity = 1, 
+  maxCapacity = 128, 
+  throughput = 1.0
+)
 
 abstract class BufferSpec(f: BufferFactory, minCapacity: Int, maxCapacity: Int, throughput: Double) extends AnyFlatSpec with ChiselScalatestTester {
+
+  val annotations: firrtl.AnnotationSeq = Seq()
 
   def rate(cycles: Seq[Long]): Double =
     if (cycles.length < 2) 1.0
@@ -64,7 +38,7 @@ abstract class BufferSpec(f: BufferFactory, minCapacity: Int, maxCapacity: Int, 
 
   def queueTest(depth: Int, txs: Seq[UInt], delay: => Int, serial: Boolean, expectedThroughput: Option[Double]) = {
     test(f.buffer(UInt(8.W), depth))
-      .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      .withAnnotations(annotations) { dut =>
       val bfm = new BufferBfm(dut.io, dut.clock)
 
       val enqCycles = scala.collection.mutable.ArrayBuffer[Long]()
@@ -138,6 +112,3 @@ abstract class BufferSpec(f: BufferFactory, minCapacity: Int, maxCapacity: Int, 
 }
 
 
-class BubbleBufferSpec extends BufferSpec(BubbleBuffer, 1, 64, 0.5)
-class SkidBufferSpec extends BufferSpec(SkidBuffer, 2, 2, 1.0)
-class GenericQueueSpec extends BufferSpec(GenericQueue, 1, 128, 1.0)

@@ -3,14 +3,13 @@ package slimflit.arbiter
 import chisel3._
 import chisel3.util.{isPow2, log2Ceil, ArbiterIO, OHToUInt}
 
-object MaskedPrioArbiter extends ArbiterFactory {
+case class MaskedPrioArbiter(firstComeFirstServe: Boolean) extends ArbiterFactory {
   def name: String = "MaskedPrioArbiter"
-  def firstComeFirstServe: Boolean = true
-  def arbiter[T <: Data](d: T, n: Int): Module { val io: ArbiterIO[T] } = new Arbiter(d, n, new MaskedPrioMutex(n))
+  def arbiter[T <: Data](d: T, n: Int): Module { val io: ArbiterIO[T] } = new Arbiter(d, n, new MaskedPrioMutex(n, firstComeFirstServe))
 }
 
 /// Weber, Matt. "Arbiters: design ideas and coding styles." SNUG Boston (2001).
-class MaskedPrioMutex(n: Int) extends Module {
+class MaskedPrioMutex(n: Int, firstComeFirstServe: Boolean) extends Module {
   require(isPow2(n), "MaskedPrioMutex requires n to be a power of 2")
   val io = IO(new MutexIO(n))
 
@@ -38,20 +37,25 @@ class MaskedPrioMutex(n: Int) extends Module {
     (grants :+ take, alreadyTaken || take)
   }
 
-  val grantVec = maskedGnt.zip(unmaskedGnt).map { case (mg, ug) => mg || (ug && noMaskNeeded) }
+  val gnt = maskedGnt.zip(unmaskedGnt).map { case (mg, ug) => mg || (ug && noMaskNeeded) }
 
-  io.gnt := grantVec
+  io.gnt := gnt
 
-  val release = VecInit(grantVec.zip(io.rel).map { case (g, r) => g && r}).reduceTree(_ || _)
+  val granted = VecInit(gnt).reduceTree(_ || _)
 
-  val granted = VecInit(grantVec).reduceTree(_ || _)
+  val chosen = OHToUInt(gnt)
+  io.chosen := chosen
 
-  
-
-  when(release) {
-    counterReg := OHToUInt(VecInit(grantVec)) + 1.U
-  }.elsewhen(granted) {
-    counterReg := OHToUInt(VecInit(grantVec))
+  if (firstComeFirstServe) {
+    when(io.release) {
+      counterReg := chosen + 1.U
+    }.elsewhen(granted) {
+      counterReg := chosen
+    }
+  } else {
+    when(io.release) {
+      counterReg := chosen + 1.U
+    }
   }
 
 }

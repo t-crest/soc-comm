@@ -6,7 +6,11 @@ import chisel3.experimental.BundleLiterals._
 import slimflit.buffers._
 import slimflit.arbiter._
 
+import scala.collection.immutable.SeqMap
+
 package slimflit {
+
+ 
 
 
   /**
@@ -19,14 +23,14 @@ package slimflit {
     * @param arbiterFactory Configure the arbiter type
     * @param routingPolicy Configure the routing policy
     */
-  case class SlimFlitParams[T <: Data](
-    dim: (Int, Int),
-    payloadGen: () => T,
-    bufferFactory: BufferFactory,
-    bufferDepth: Int = 1,
-    arbiterFactory: ArbiterFactory,
-    routingPolicy: RoutingPolicy,
-
+  class SlimFlitParams[T <: Data](
+    val dim: (Int, Int),
+    val payloadGen: () => T,
+    val bufferFactory: BufferFactory,
+    val bufferDepth: Int = 1,
+    val arbiterFactory: ArbiterFactory,
+    val topology: Topology,
+    val debug: Boolean = false
   ) {
     /** The x dimension of the network. */
     def nx = dim._1
@@ -43,7 +47,25 @@ package slimflit {
     /** The type of the payload. */
     def payloadType = payloadGen()
 
+    def coords: Seq[Coord] = for {
+      x <- 0 until nx
+      y <- 0 until ny
+    } yield Coord(x, y)
 
+    def routingPolicy: RoutingPolicy = topology.routingPolicy
+
+  }
+
+  object SlimFlitParams {
+    def apply[T <: Data](
+      dim: (Int, Int),
+      payloadGen: => T,
+      bufferFactory: BufferFactory,
+      bufferDepth: Int = 1,
+      arbiterFactory: ArbiterFactory,
+      topology: Topology,
+      debug: Boolean = false
+    ): SlimFlitParams[T] = new SlimFlitParams(dim, () => payloadGen, bufferFactory, bufferDepth, arbiterFactory, topology, debug)
   }
 
   /** Coordinates of a node in the network. */
@@ -163,6 +185,16 @@ package slimflit {
   class SlimRouterPort[T <: Data](val coord: Coord, val dir: Direction)(implicit p: SlimFlitParams[T]) extends Bundle {
     val incoming = Flipped(new SlimPackPort[T](dir)).suggestName(s"in_${dir}")
     val outgoing = new SlimPackPort[T](dir).suggestName(s"out_${dir}")
+
+    def <>(that: SlimRouterPort[T]): Unit = {
+      this.incoming <> that.incoming
+      this.outgoing <> that.outgoing
+    }
+  }
+
+  class SlimFlitPort[T <: Data](implicit p: SlimFlitParams[T]) extends Bundle {
+    val ingress = Flipped(new SlimPackPort[T](Local))
+    val egress = new SlimPackPort[T](Local)
   }
 
   class SlimRouterPorts[T <: Data](val coord: Coord)(implicit p: SlimFlitParams[T]) extends Bundle {
@@ -185,21 +217,37 @@ package slimflit {
   }
 
 
-  class DirectionBundle[T <: Data](val directions: Seq[Direction])(implicit p: SlimFlitParams[T]) extends Record {
-
-    import scala.collection.immutable.SeqMap
-
-    val map = SeqMap(directions.map(dir => dir -> new SlimPackPort[T](dir)):_*)
-    override def elements: SeqMap[String,Data] = SeqMap(map.toSeq.map { case (dir, signal) => dir.toString -> signal }:_*)
-    def apply(dir: Direction): SlimPackPort[T] = this.map(dir)
-    def all: Seq[SlimPackPort[T]] = directions.map(map)
-
-    def <>(that: DirectionBundle[T]): Unit = {
-      require(this.directions.toSet == that.directions.toSet, "DirectionBundles must have the same directions to connect")
-      for (dir <- directions) {
-        this(dir) <> that(dir)
+  class MapBundle[K, V <: Data](ks: Seq[K], gen: K => V) extends Record {
+    val signalMap = ks.map(k => k -> gen(k)).toMap
+    override def elements: SeqMap[String,Data] = SeqMap(signalMap.toSeq.map { case (k, signal) => 
+      k.toString -> signal 
+    }:_*)
+    def apply(k: K): V = this.signalMap(k)
+    def keys: Seq[K] = signalMap.keys.toSeq
+    def values: Seq[V] = signalMap.values.toSeq
+    def <>(that: MapBundle[K, V]): Unit = {
+      require(this.keys.toSet == that.keys.toSet, "MapBundles must have the same keys to connect")
+      for (k <- keys) {
+        this(k) <> that(k)
       }
     }
+    def map[U](f: (K, V) => U): Seq[U] = {
+      signalMap.map { case (k, v) => f(k, v) }.toSeq
+    }
+  }
+
+  object MapBundle {
+    def apply[K, V <: Data](ks: Seq[K], gen: K => V): MapBundle[K, V] = new MapBundle(ks, gen)
+    def apply[K, V <: Data](ks: Seq[K], gen: => V): MapBundle[K, V] = new MapBundle(ks, _ => gen)
+  }
+
+  class RouterDebugElement[P <: Data](packetGen: => P) extends Bundle {
+    val reqs = MapBundle(Direction.all, Bool())
+    val valid = Bool()
+    val packet = packetGen
+  }
+  class RouterDebugPort[P <: Data](packetGen: => P) extends MapBundle[Direction, RouterDebugElement[P]](Direction.all, _ => new RouterDebugElement(packetGen)){
+
   }
 
 

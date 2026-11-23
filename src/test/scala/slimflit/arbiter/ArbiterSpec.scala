@@ -7,75 +7,25 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import slimflit.buffers.SkidBuffer
 
-class ArbiterBfm[T <: Data](io: ArbiterIO[T], val clock: Clock) {
-
-  def enqueue(i: Int, data: T): Long = {
-    io.in(i).bits.poke(data)
-    io.in(i).valid.poke(1.B)
-
-    var t = 0L
-
-    fork.withRegion(Monitor) {
-      while (!io.in(i).ready.peekBoolean()) {
-        clock.step()
-      }
-      t = clock.getStepCount
-    }.joinAndStep(clock)
-  
-    io.in(i).valid.poke(0.B)
-    t
-  }
-
-  def dequeue(): (T, Long) = {
-    io.out.ready.poke(true.B)
-
-    var data = null.asInstanceOf[T]
-    var t = 0L
-
-    fork.withRegion(Monitor) {
-      while (!io.out.valid.peekBoolean()) {
-        clock.step()
-      }
-      data = io.out.bits.peek()
-      t = clock.getStepCount
-    }.joinAndStep(clock)
-    
-    io.out.ready.poke(false.B)
-    data -> t
-  }
-
-  def expectDequeue(expected: T): Long = {
-    io.out.ready.poke(true.B)
-
-    var t = 0L
-
-    fork.withRegion(Monitor) {
-      while (!io.out.valid.peekBoolean()) {
-        clock.step()
-      }
-      io.out.bits.expect(expected)
-      t = clock.getStepCount
-    }.joinAndStep(clock)
-
-    io.out.ready.poke(false.B)
-    t
-  }
-
-}
-
-class ArbiterWrapped[T <: Data](f: ArbiterFactory, d: T, n: Int) extends Module {
-  val io = IO(new ArbiterIO(d, n))
-  val arb = Module(f.arbiter(d, n))
-  val buf = Module(SkidBuffer.buffer(d, 2))
-  io.in <> arb.io.in
-  arb.io.out <> buf.io.enq
-  buf.io.deq <> io.out
-  io.chosen := arb.io.chosen
-}
+class ChiselRRArbiterSpec extends ArbiterSpec(ChiselRRArbiter)
+class RotateArbiterFCFSSpec extends ArbiterSpec(RotateArbiter(firstComeFirstServe = true))
+class RotateArbiterSpec extends ArbiterSpec(RotateArbiter(firstComeFirstServe = false))
+class MaskedPrioArbiterFCFSSpec extends ArbiterSpec(MaskedPrioArbiter(firstComeFirstServe = true))
+class MaskedPrioArbiterSpec extends ArbiterSpec(MaskedPrioArbiter(firstComeFirstServe = false))
 
 abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselScalatestTester {
 
-  val annotations = Seq(WriteVcdAnnotation)
+  val annotations: firrtl.AnnotationSeq = Seq()
+
+  class ArbiterWrapped[T <: Data](f: ArbiterFactory, d: T, n: Int) extends Module {
+    val io = IO(new ArbiterIO(d, n))
+    val arb = Module(f.arbiter(d, n))
+    val buf = Module(SkidBuffer.buffer(d, 2))
+    io.in <> arb.io.in
+    arb.io.out <> buf.io.enq
+    buf.io.deq <> io.out
+    io.chosen := arb.io.chosen
+  }
 
   f.name should "serve requests after at most n-1 cycles" in {
     for (n <- Seq(2, 4, 8, 16, 32)) {
@@ -209,6 +159,7 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
         }
       }
 
+      // every input (one at a time) should be able to send a burst of 10 without being blocked
       for (i <- 0 until n) {
         for (j <- 0 until burst) {
           val start = dut.clock.getStepCount
@@ -222,7 +173,3 @@ abstract class ArbiterSpec(f: ArbiterFactory) extends AnyFlatSpec with ChiselSca
 
 
 }
-
-class ChiselRRArbiterSpec extends ArbiterSpec(ChiselRRArbiter)
-class RotateArbiterSpec extends ArbiterSpec(RotateArbiter)
-class MaskedPrioArbiterSpec extends ArbiterSpec(MaskedPrioArbiter)

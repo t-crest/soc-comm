@@ -3,14 +3,14 @@ package slimflit.arbiter
 import chisel3._
 import chisel3.util.{isPow2, log2Ceil, ArbiterIO, OHToUInt}
 
-object RotateArbiter extends ArbiterFactory {
+case class RotateArbiter(firstComeFirstServe: Boolean) extends ArbiterFactory {
   def name: String = "RotateArbiter"
-  def firstComeFirstServe: Boolean = true
-  def arbiter[T <: Data](d: T, n: Int): Module { val io: ArbiterIO[T] } = new Arbiter(d, n, new RotateUnrotateMutex(n))
+
+  def arbiter[T <: Data](d: T, n: Int): Module { val io: ArbiterIO[T] } = new Arbiter(d, n, new RotateUnrotateMutex(n, firstComeFirstServe))
 }
 
 /// Weber, Matt. "Arbiters: design ideas and coding styles." SNUG Boston (2001).
-class RotateUnrotateMutex(n: Int) extends Module {
+class RotateUnrotateMutex(n: Int, firstComeFirstServe: Boolean) extends Module {
   require(isPow2(n), "RotateUnrotateMutex requires n to be a power of 2")
 
   val io = IO(new MutexIO(n))
@@ -27,15 +27,22 @@ class RotateUnrotateMutex(n: Int) extends Module {
   val gnt = BarrelRotater.right(rotatedGnt, counterReg)
   io.gnt := gnt
 
-  val release = VecInit(gnt.zip(io.rel).map { case (g, r) => g && r}).reduceTree(_ || _)
-
   val granted = gnt.reduceTree(_ || _)
 
+  val chosen = OHToUInt(gnt)
+  io.chosen := chosen
 
-  when(release) {
-    counterReg := OHToUInt(gnt) + 1.U
-  }.elsewhen(granted) {
-    counterReg := OHToUInt(gnt)
+
+  if (firstComeFirstServe) {
+    when(io.release) {
+      counterReg := chosen + 1.U
+    }.elsewhen(granted) {
+      counterReg := chosen
+    }
+  } else {
+    when(io.release) {
+      counterReg := chosen + 1.U
+    }
   }
 
 }
