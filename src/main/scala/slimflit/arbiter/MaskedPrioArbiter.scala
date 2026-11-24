@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util.{isPow2, log2Ceil, ArbiterIO, OHToUInt}
 
 case class MaskedPrioArbiter(firstComeFirstServe: Boolean) extends ArbiterFactory {
-  def name: String = "MaskedPrioArbiter"
+  def name: String = "MaskedPrioArbiter" + (if (firstComeFirstServe) "_FCFS" else "")
   def arbiter[T <: Data](d: T, n: Int): Module { val io: ArbiterIO[T] } = new Arbiter(d, n, new MaskedPrioMutex(n, firstComeFirstServe))
 }
 

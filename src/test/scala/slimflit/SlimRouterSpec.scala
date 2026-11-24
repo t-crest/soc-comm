@@ -11,7 +11,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class SlimRouterSpec extends AnyFlatSpec with ChiselScalatestTester {
 
-  val annotations: firrtl.AnnotationSeq = Seq(WriteVcdAnnotation)
+  val annotations: firrtl.AnnotationSeq = Seq()
 
   implicit val config: SlimFlitParams[UInt] = SlimFlitParams[UInt](
     dim = (4,4),

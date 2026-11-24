@@ -52,7 +52,8 @@ class XYRouting(torus: Boolean) extends RoutingPolicy {
 
   def createPacket[T <: Data](fromto: (Coord, Coord), payload: T)(implicit p: SlimFlitParams[T]): SlimPack[T] = {
     val (from, to) = fromto
-    if (torus) {
+    require(from != to, "Source and destination coordinates must be different.")
+    val packet = if (torus) {
       val dx = (to.x - from.x + p.nx) % p.nx
       val dy = (to.y - from.y + p.ny) % p.ny
       val eastbound = true // dx <= p.nx / 2
@@ -63,6 +64,10 @@ class XYRouting(torus: Boolean) extends RoutingPolicy {
       val eastbound = to.x > from.x
       SlimPack.Lit(to, eastbound, southbound, payload)
     }
+
+    packet.setSrc(from)
+    packet.setDest(to)
+    packet
   }
 
   def getRule(ingressDir: Direction): RoutingRule = ingressDir match {

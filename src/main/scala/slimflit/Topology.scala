@@ -16,8 +16,8 @@ object Mesh extends Topology {
     for ((coord, router) <- routers) {
       val x = coord.x
       val y = coord.y
-      val northCoord = Coord(x, y + 1)
-      val southCoord = Coord(x, y - 1)
+      val northCoord = Coord(x, y - 1)
+      val southCoord = Coord(x, y + 1)
       val eastCoord = Coord(x + 1, y)
       val westCoord = Coord(x - 1, y)
 
@@ -65,17 +65,20 @@ object Torus extends Topology {
     for ((coord, router) <- routers) {
       val x = coord.x
       val y = coord.y
-      val northCoord = Coord(x, (y + 1) % routers.size)
-      val southCoord = Coord(x, (y - 1 + routers.size) % routers.size)
+      val northCoord = Coord(x, (y - 1 + routers.size) % routers.size)
+      val southCoord = Coord(x, (y + 1) % routers.size)
       val eastCoord = Coord((x + 1) % routers.size, y)
       val westCoord = Coord((x - 1 + routers.size) % routers.size, y)
 
       router.port(North).outgoing <> routers(northCoord).port(South).incoming
       router.port(North).incoming <> routers(northCoord).port(South).outgoing
+
       router.port(South).outgoing <> routers(southCoord).port(North).incoming
       router.port(South).incoming <> routers(southCoord).port(North).outgoing
+
       router.port(East).outgoing <> routers(eastCoord).port(West).incoming
       router.port(East).incoming <> routers(eastCoord).port(West).outgoing
+      
       router.port(West).outgoing <> routers(westCoord).port(East).incoming
       router.port(West).incoming <> routers(westCoord).port(East).outgoing
     }

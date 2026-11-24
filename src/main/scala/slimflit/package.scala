@@ -159,6 +159,17 @@ package slimflit {
   class SlimPack[T <: Data](implicit p: SlimFlitParams[T]) extends Bundle {
     val dest = new Destination
     val payload = p.payloadType
+
+    var dest_ = Option.empty[Coord]
+    var src_ = Option.empty[Coord]
+    def setDest(dest: Coord): Unit = {
+      dest_ = Some(dest)
+    }
+    def setSrc(src: Coord): Unit = {
+      src_ = Some(src)
+    }
+    def destCoord: Coord = dest_.getOrElse(throw new Exception("Destination coordinate not set"))
+    def srcCoord: Coord = src_.getOrElse(throw new Exception("Source coordinate not set"))
   }
 
   object SlimPack {
