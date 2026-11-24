@@ -54,6 +54,10 @@ package slimflit {
 
     def routingPolicy: RoutingPolicy = topology.routingPolicy
 
+    def createPacket(fromto: (Coord, Coord), payload: T): SlimPack[T] = {
+      routingPolicy.createPacket(fromto, payload)(this)
+    }
+
   }
 
   object SlimFlitParams {
@@ -144,7 +148,6 @@ package slimflit {
     val y = p.yCoordType
     val eastbound = Bool()
     val southbound = Bool()
-    def coord = Coord(x.litValue.toInt, y.litValue.toInt)
   }
 
 
@@ -168,7 +171,7 @@ package slimflit {
       * @param payload The payload of the packet.
       * @return The new SlimPack literal.
       */
-    def Lit[T <: Data](dest: Coord, eastbound: Boolean, southbound: Boolean, payload: T)(implicit p: SlimFlitParams[T]): SlimPack[T] = {
+    def Lit[T <: Data](dest: Coord, eastbound: Boolean, southbound: Boolean, payload: => T)(implicit p: SlimFlitParams[T]): SlimPack[T] = {
       (new SlimPack()).Lit(
         _.dest.x -> dest.x.U,
         _.dest.y -> dest.y.U,
